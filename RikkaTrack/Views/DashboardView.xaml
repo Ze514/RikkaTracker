@@ -3,17 +3,44 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="概览仪表盘" Style="{StaticResource TitleText}" Foreground="White" HorizontalAlignment="Center"/>
-            <TextBlock Text="{Binding WelcomeMessage}" Style="{StaticResource BaseText}" Foreground="#AAAAAA" Margin="0,10,0,0"/>
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <Grid Margin="20">
+        <StackPanel>
+            <ui:TextBlock Text="概览" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
             
-            <!-- 这里以后会放图表 -->
-            <Border Background="{StaticResource BrushPinkShadow}" Height="200" Width="400" CornerRadius="10" Margin="0,20,0,0">
-                <TextBlock Text="图表占位符 (LiveCharts2)" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            </Border>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <ui:Card Grid.Column="0" Margin="0,0,10,0" Padding="20">
+                    <StackPanel>
+                        <ui:SymbolIcon Symbol="Clock24" FontSize="32" Foreground="{StaticResource BrushPink}"/>
+                        <ui:TextBlock Text="今日软件时长" FontSize="12" Margin="0,10,0,5"/>
+                        <ui:TextBlock Text="4h 20m" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    </StackPanel>
+                </ui:Card>
+
+                <ui:Card Grid.Column="1" Margin="10,0,0,0" Padding="20">
+                    <StackPanel>
+                        <ui:SymbolIcon Symbol="Globe24" FontSize="32" Foreground="{StaticResource BrushGreenGradient}"/>
+                        <ui:TextBlock Text="今日网页时长" FontSize="12" Margin="0,10,0,5"/>
+                        <ui:TextBlock Text="2h 15m" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    </StackPanel>
+                </ui:Card>
+            </Grid>
+
+            <ui:Card Margin="0,20,0,0" Padding="20">
+                <StackPanel>
+                    <ui:TextBlock Text="使用趋势 (LiveCharts2)" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <Border Height="250" Background="#11FFFFFF" CornerRadius="4">
+                        <ui:TextBlock Text="图表区域" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#44FFFFFF"/>
+                    </Border>
+                </StackPanel>
+            </ui:Card>
         </StackPanel>
     </Grid>
 </UserControl>

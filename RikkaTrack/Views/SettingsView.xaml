@@ -3,25 +3,61 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <Border Padding="40">
-            <StackPanel>
-            <TextBlock Text="设置" Style="{StaticResource TitleText}" Foreground="White" Margin="0,0,0,30"/>
-            
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                <TextBlock Text="开机自启动" Foreground="White" Width="100" VerticalAlignment="Center"/>
-                <CheckBox IsChecked="{Binding IsAutoStart}" VerticalAlignment="Center"/>
-            </StackPanel>
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <Grid Margin="20">
+        <StackPanel>
+            <ui:TextBlock Text="设置" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                <TextBlock Text="数据存储路径" Foreground="White" Width="100" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding StoragePath}" Width="300" IsReadOnly="True" Background="#333333" Foreground="White" BorderThickness="0" Padding="5"/>
-            </StackPanel>
+            <ui:Card Padding="20" Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <ui:TextBlock Text="通用设置" FontSize="18" FontWeight="SemiBold"/>
+                        <ui:TextBlock Text="配置软件的基础运行行为" FontSize="12" Foreground="#88FFFFFF"/>
+                    </StackPanel>
+                </Grid>
+            </ui:Card>
+
+            <ui:Card Padding="20">
+                <StackPanel>
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="开机自启动" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="随系统启动自动进入监控状态" FontSize="12" Foreground="#88FFFFFF"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAutoStart}" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Separator Margin="0,0,0,20"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="数据存储路径" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="#88FFFFFF"/>
+                        </StackPanel>
+                        <ui:Button Grid.Column="1" Content="更改" Icon="{ui:SymbolIcon Folder24}" VerticalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </ui:Card>
             
-            <Button Content="导出数据" Background="{StaticResource BrushOrangeShadow}" Foreground="White" BorderThickness="0" Padding="10,5" Width="100" HorizontalAlignment="Left" Margin="0,20,0,0"/>
+            <ui:Button Content="导出全部数据" 
+                       Appearance="Primary" 
+                       Margin="0,20,0,0" 
+                       Padding="20,10"
+                       Icon="{ui:SymbolIcon Share24}"/>
         </StackPanel>
-        </Border>
     </Grid>
 </UserControl>
