@@ -1,0 +1,33 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Brand Colors -->
+    <Color x:Key="BrandPink">#ED90BD</Color>
+    <Color x:Key="BrandPinkShadow">#B5447B</Color>
+    
+    <Color x:Key="BrandPurple">#5D5F86</Color>
+    <Color x:Key="BrandPurpleShadow">#3C3D4F</Color>
+    
+    <Color x:Key="BrandOrange">#C87438</Color>
+    <Color x:Key="BrandOrangeShadow">#873706</Color>
+    
+    <!-- Green Gradient -->
+    <Color x:Key="BrandGreenStart">#54C1CC</Color>
+    <Color x:Key="BrandGreenEnd">#335F66</Color>
+    <Color x:Key="BrandGreenShadow">#2B3E44</Color>
+    
+    <!-- Solid Brushes -->
+    <SolidColorBrush x:Key="BrushPink" Color="{StaticResource BrandPink}"/>
+    <SolidColorBrush x:Key="BrushPinkShadow" Color="{StaticResource BrandPinkShadow}"/>
+    
+    <SolidColorBrush x:Key="BrushPurple" Color="{StaticResource BrandPurple}"/>
+    <SolidColorBrush x:Key="BrushPurpleShadow" Color="{StaticResource BrandPurpleShadow}"/>
+    
+    <SolidColorBrush x:Key="BrushOrange" Color="{StaticResource BrandOrange}"/>
+    <SolidColorBrush x:Key="BrushOrangeShadow" Color="{StaticResource BrandOrangeShadow}"/>
+    
+    <LinearGradientBrush x:Key="BrushGreenGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource BrandGreenStart}" Offset="0"/>
+        <GradientStop Color="{StaticResource BrandGreenEnd}" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="BrushGreenShadow" Color="{StaticResource BrandGreenShadow}"/>
+</ResourceDictionary>

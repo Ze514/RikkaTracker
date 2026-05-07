@@ -1,5 +1,5 @@
-﻿using System.Text;
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -19,6 +19,17 @@ namespace RikkaTrack
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = App.Current.ServiceProvider.GetService<ViewModels.MainViewModel>();
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }
