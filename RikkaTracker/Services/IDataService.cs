@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RikkaTrack.Models;
+using RikkaTracker.Models;
 
-namespace RikkaTrack.Services
+namespace RikkaTracker.Services
 {
     public interface IDataService
     {

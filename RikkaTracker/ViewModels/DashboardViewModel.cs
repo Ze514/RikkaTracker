@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace RikkaTrack.ViewModels
+namespace RikkaTracker.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject
     {

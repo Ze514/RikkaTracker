@@ -1,10 +1,10 @@
 using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using RikkaTrack.ViewModels;
-using RikkaTrack.Services;
+using RikkaTracker.ViewModels;
+using RikkaTracker.Services;
 
-namespace RikkaTrack
+namespace RikkaTracker
 {
     public partial class App : Application
     {

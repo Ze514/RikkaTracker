@@ -1,6 +1,6 @@
 using System;
 
-namespace RikkaTrack.Models
+namespace RikkaTracker.Models
 {
     public class AppUsage
     {

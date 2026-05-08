@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace RikkaTrack.Views
+namespace RikkaTracker.Views
 {
     public partial class SettingsView : UserControl
     {

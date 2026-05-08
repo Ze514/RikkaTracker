@@ -1,6 +1,6 @@
 using System;
 
-namespace RikkaTrack.Services
+namespace RikkaTracker.Services
 {
     public interface IWebMonitorService
     {

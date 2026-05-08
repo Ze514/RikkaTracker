@@ -2,12 +2,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RikkaTrack.ViewModels
+namespace RikkaTracker.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         [ObservableProperty]
-        private string _statusText = "RikkaTrack 运行中...";
+        private string _statusText = "RikkaTracker 运行中...";
 
         [ObservableProperty]
         private ObservableObject? _currentViewModel;

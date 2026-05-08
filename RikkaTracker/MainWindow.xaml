@@ -1,14 +1,14 @@
-<ui:FluentWindow x:Class="RikkaTrack.MainWindow"
+<ui:FluentWindow x:Class="RikkaTracker.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        xmlns:local="clr-namespace:RikkaTrack"
-        xmlns:vm="clr-namespace:RikkaTrack.ViewModels"
-        xmlns:views="clr-namespace:RikkaTrack.Views"
+        xmlns:local="clr-namespace:RikkaTracker"
+        xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
+        xmlns:views="clr-namespace:RikkaTracker.Views"
         mc:Ignorable="d"
-        Title="RikkaTrack" Height="750" Width="1200"
+        Title="RikkaTracker" Height="750" Width="1200"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
@@ -31,7 +31,7 @@
 
         <!-- TitleBar -->
         <ui:TitleBar
-            Title="RikkaTrack"
+            Title="RikkaTracker"
             Grid.Row="0">
             <ui:TitleBar.Header>
                 <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource BrushPink}" VerticalAlignment="Center" Margin="10,0,0,0"/>

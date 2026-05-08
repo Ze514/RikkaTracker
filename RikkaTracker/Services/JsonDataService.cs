@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using RikkaTrack.Models;
+using RikkaTracker.Models;
 
-namespace RikkaTrack.Services
+namespace RikkaTracker.Services
 {
     public class JsonDataService : IDataService
     {
@@ -15,7 +15,7 @@ namespace RikkaTrack.Services
 
         public JsonDataService()
         {
-            _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RikkaTrack", "Data");
+            _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RikkaTracker", "Data");
             if (!Directory.Exists(_dataDirectory))
             {
                 Directory.CreateDirectory(_dataDirectory);
