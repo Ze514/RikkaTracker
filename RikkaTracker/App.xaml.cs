@@ -5,6 +5,7 @@ using RikkaTracker.ViewModels;
 using RikkaTracker.Services;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows.Controls;
+using RikkaTracker.Core.Monitor;
 
 namespace RikkaTracker
 {
@@ -52,6 +53,19 @@ namespace RikkaTracker
             {
                 if (arg.Equals("/show", StringComparison.OrdinalIgnoreCase)) startMinimized = false;
             }
+
+            // Start Monitoring Services
+            var activityTracker = ServiceProvider.GetRequiredService<IAppActivityTracker>();
+            activityTracker.AppActivityChanged += (s, args) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"[Activity] {args.ProcessName} ({args.ProcessId}) -> {args.NewStatus} | {args.WindowTitle}");
+            };
+            activityTracker.Start();
+
+            var processMonitor = ServiceProvider.GetRequiredService<IProcessMonitor>();
+            processMonitor.ProcessStarted += (s, args) => System.Diagnostics.Debug.WriteLine($"[Process] Started: {args.ProcessName} ({args.ProcessId})");
+            processMonitor.ProcessExited += (s, args) => System.Diagnostics.Debug.WriteLine($"[Process] Exited: PID {args.ProcessId}");
+            processMonitor.Start();
 
             // Apply saved theme
             var themeService = ServiceProvider.GetRequiredService<IThemeService>();
@@ -105,6 +119,8 @@ namespace RikkaTracker
             services.AddSingleton<IConfigService, ConfigService>();
             services.AddSingleton<IThemeService, ThemeService>();
             services.AddSingleton<IDataService, JsonDataService>();
+            services.AddSingleton<IAppActivityTracker, AppActivityTracker>();
+            services.AddSingleton<IProcessMonitor, ProcessMonitor>();
             
             // ViewModels
             services.AddTransient<MainViewModel>(); // Transient so it's recreated
