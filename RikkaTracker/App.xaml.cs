@@ -130,6 +130,7 @@ namespace RikkaTracker
             services.AddSingleton<SqliteDbContext>();
             services.AddSingleton<IActivityLogStore, SqliteLogStore>();
             services.AddSingleton<IDataService, SqliteDataService>();
+            services.AddSingleton<RikkaTracker.Core.Strategies.IFilterEngine, RikkaTracker.Core.Strategies.FilterEngine>();
             services.AddSingleton<IAppActivityTracker, AppActivityTracker>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
             

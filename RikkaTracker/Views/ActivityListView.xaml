@@ -19,7 +19,7 @@
             <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <ui:Card Grid.Row="1" Padding="10">
+        <ui:Card Grid.Row="1" Padding="10" VerticalAlignment="Top">
             <Grid>
                 <ListView ItemsSource="{Binding Processes}" BorderThickness="0" Background="Transparent">
                     <ListView.ItemTemplate>

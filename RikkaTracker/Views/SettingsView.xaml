@@ -7,7 +7,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
     <Grid Margin="20">
-        <StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
             <ui:TextBlock Text="设置" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
             <ui:Card Padding="20" Margin="0,0,0,10">
@@ -18,38 +19,39 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <ui:TextBlock Text="通用设置" FontSize="18" FontWeight="SemiBold"/>
-                        <ui:TextBlock Text="配置软件的基础运行行为" FontSize="12" Foreground="#88FFFFFF"/>
+                        <ui:TextBlock Text="配置软件的基础运行行为" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </Grid>
             </ui:Card>
 
-            <ui:Card Padding="20">
+            <ui:Card Padding="20" Margin="0,0,0,10">
                 <StackPanel>
-                    <Grid Margin="0,0,0,20">
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="空闲超时 (分钟)" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="在此时间后无操作，活跃应用将标记为非活动状态" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:TextBlock Text="{Binding IdleTimeoutMinutes}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <Slider Value="{Binding IdleTimeoutMinutes}" Minimum="1" Maximum="60" Width="100"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <ui:TextBlock Text="开机自启动" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="随系统启动自动进入监控状态" FontSize="12" Foreground="#88FFFFFF"/>
+                            <ui:TextBlock Text="随系统启动自动进入监控状态" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAutoStart}" VerticalAlignment="Center"/>
                     </Grid>
-
-                    <Grid Margin="0,0,0,20">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="深色模式" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="切换应用的主题风格" FontSize="12" Foreground="#88FFFFFF"/>
-                        </StackPanel>
-                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center"/>
-                    </Grid>
-
-                    <Separator Margin="0,0,0,20"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -57,12 +59,67 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="数据存储路径" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="#88FFFFFF"/>
+                            <ui:TextBlock Text="深色模式" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="切换应用的主题风格" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                        <ui:Button Grid.Column="1" Content="更改" Icon="{ui:SymbolIcon Folder24}" VerticalAlignment="Center"/>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center"/>
                     </Grid>
                 </StackPanel>
+            </ui:Card>
+
+            <ui:TextBlock Text="应用策略规则" FontSize="20" FontWeight="SemiBold" Margin="0,20,0,10"/>
+            <ui:Card Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <ListView ItemsSource="{Binding FilterRules}" MaxHeight="300" BorderThickness="0" Background="Transparent" d:ItemsSource="{d:SampleData ItemCount=3}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <ui:TextBox Text="{Binding ProcessPattern, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="进程名 (支持 *)" Margin="0,0,10,0"/>
+                                    
+                                    <CheckBox Grid.Column="1" Content="忽略记录" IsChecked="{Binding Ignore}" VerticalAlignment="Center"/>
+                                    <CheckBox Grid.Column="2" Content="免空闲检测" IsChecked="{Binding DisableIdleDetection}" VerticalAlignment="Center"/>
+                                    
+                                    <ui:Button Grid.Column="3" 
+                                               Icon="{ui:SymbolIcon Delete24}" 
+                                               Appearance="Transparent" 
+                                               Command="{Binding DataContext.RemoveRuleCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
+                                               CommandParameter="{Binding}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
+                        <ui:Button Content="新增规则" Icon="{ui:SymbolIcon Add24}" Command="{Binding AddRuleCommand}"/>
+                        <ui:Button Content="保存并生效" Appearance="Primary" Margin="10,0,0,0" Command="{Binding SaveRulesCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </ui:Card>
+
+            <ui:Card Padding="20" Margin="0,20,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <ui:TextBlock Text="数据存储路径" VerticalAlignment="Center"/>
+                        <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <ui:Button Grid.Column="1" Content="更改" Icon="{ui:SymbolIcon Folder24}" VerticalAlignment="Center"/>
+                </Grid>
             </ui:Card>
             
             <ui:Button Content="导出全部数据" 
@@ -70,6 +127,7 @@
                        Margin="0,20,0,0" 
                        Padding="20,10"
                        Icon="{ui:SymbolIcon Share24}"/>
-        </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

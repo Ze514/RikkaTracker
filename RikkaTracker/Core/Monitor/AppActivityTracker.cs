@@ -35,6 +35,7 @@ namespace RikkaTracker.Core.Monitor
     public class AppActivityTracker : IAppActivityTracker
     {
         private readonly IConfigService _configService;
+        private readonly Strategies.IFilterEngine _filterEngine;
         private readonly DispatcherTimer _idleTimer;
         private Win32Api.WinEventDelegate? _winEventDelegate;
         private IntPtr _hHook;
@@ -53,9 +54,10 @@ namespace RikkaTracker.Core.Monitor
 
         public event EventHandler<AppActivityChangedEventArgs> AppActivityChanged;
 
-        public AppActivityTracker(IConfigService configService)
+        public AppActivityTracker(IConfigService configService, Strategies.IFilterEngine filterEngine)
         {
             _configService = configService;
+            _filterEngine = filterEngine;
             _idleTimer = new DispatcherTimer(DispatcherPriority.Background)
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -116,9 +118,10 @@ namespace RikkaTracker.Core.Monitor
         private void UpdateForegroundStatusDirect(IntPtr hwnd, int newPid, string title, bool isIconic, bool isVisible)
         {
             // 1. 系统 UI 过滤器 (Explorer 相关)
-            if (IsSystemUI(newPid, title))
+            string processName = GetProcessName(newPid);
+            if (IsSystemUI(newPid, title) || _filterEngine.ShouldIgnore(processName))
             {
-                return; // 忽略系统 UI 切换，保持原状
+                return; // 忽略系统 UI 或黑名单进程
             }
 
             ActivityStatus newStatus = (isIconic || !isVisible)
@@ -217,6 +220,13 @@ namespace RikkaTracker.Core.Monitor
 
                 if (idleMinutes >= _configService.Config.IdleTimeoutMinutes)
                 {
+                    // 检查是否免除空闲检测
+                    string processName = GetProcessName(_currentForegroundPid);
+                    if (_filterEngine.ShouldDisableIdleDetection(processName))
+                    {
+                        return; // 豁免，保持 Active
+                    }
+
                     UpdateProcessStatus(_currentForegroundPid, string.Empty, ActivityStatus.ForegroundInactive);
                     _idleTimer.Stop();
                 }
