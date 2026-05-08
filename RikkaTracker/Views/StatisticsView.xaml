@@ -5,20 +5,51 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
+             xmlns:controls="clr-namespace:RikkaTracker.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800"
+             d:DesignHeight="600" d:DesignWidth="1000"
              d:DataContext="{d:DesignInstance vm:StatisticsViewModel}">
     <Grid Margin="20">
-        <StackPanel>
-            <ui:TextBlock Text="分析统计" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
-            
-            <ui:Card Padding="40">
-                <StackPanel HorizontalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Clock24" FontSize="64" Opacity="0.2"/>
-                    <ui:TextBlock Text="历史分析功能开发中..." FontSize="18" Margin="0,20,0,0" Opacity="0.5"/>
-                    <ui:TextBlock Text="即将支持饼图与占比雷达图" FontSize="14" HorizontalAlignment="Center" Opacity="0.3"/>
-                </StackPanel>
-            </ui:Card>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <ui:TextBlock Text="分析统计" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+            <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
+            <ui:TextBlock Text="时间轴比例" VerticalAlignment="Center" Margin="20,0,10,0"/>
+            <Slider x:Name="ZoomSlider" Minimum="100" Maximum="2000" Value="400" Width="200" VerticalAlignment="Center"/>
         </StackPanel>
+
+        <ui:Card Grid.Row="1" Padding="0">
+            <Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 固定应用名称列 -->
+                        <controls:GanttChart ItemsSource="{Binding GanttSegments}" 
+                                             DisplayMode="Header" />
+
+                        <!-- 可水平滚动的时间轴条带 -->
+                        <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto">
+                            <controls:GanttChart ItemsSource="{Binding GanttSegments}" 
+                                                 DisplayMode="Timeline"
+                                                 PixelsPerHour="{Binding Value, ElementName=ZoomSlider}"/>
+                        </ScrollViewer>
+                    </Grid>
+                </ScrollViewer>
+
+                <!-- 加载中遮罩 -->
+                <ui:ProgressRing IsIndeterminate="True" 
+                               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                               VerticalAlignment="Center" 
+                               HorizontalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
     </Grid>
 </UserControl>
