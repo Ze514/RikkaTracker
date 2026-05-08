@@ -11,5 +11,9 @@ namespace RikkaTracker.Services
         
         Task SaveWebsiteUsageAsync(IEnumerable<WebsiteUsage> usage);
         Task<IEnumerable<WebsiteUsage>> LoadWebsiteUsageAsync();
+
+        // Phase 3: SQLite Statistics
+        Task<IEnumerable<Core.Models.ActivitySegment>> GetSegmentsAsync(DateTime from, DateTime to);
+        Task<Dictionary<string, TimeSpan>> GetTotalTimeByProcessAsync(DateTime from, DateTime to, int? statusFilter = null);
     }
 }

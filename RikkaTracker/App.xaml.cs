@@ -6,6 +6,7 @@ using RikkaTracker.Services;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows.Controls;
 using RikkaTracker.Core.Monitor;
+using RikkaTracker.Core.Data;
 
 namespace RikkaTracker
 {
@@ -56,9 +57,12 @@ namespace RikkaTracker
 
             // Start Monitoring Services
             var activityTracker = ServiceProvider.GetRequiredService<IAppActivityTracker>();
+            var logStore = ServiceProvider.GetRequiredService<IActivityLogStore>();
+
             activityTracker.AppActivityChanged += (s, args) =>
             {
                 System.Diagnostics.Debug.WriteLine($"[Activity] {args.ProcessName} ({args.ProcessId}) -> {args.NewStatus} | {args.WindowTitle}");
+                logStore.RecordTransition(args.ProcessName, args.WindowTitle, args.NewStatus, args.Timestamp);
             };
             activityTracker.Start();
 
@@ -107,6 +111,11 @@ namespace RikkaTracker
 
         private void ExitApplication()
         {
+            if (ServiceProvider != null)
+            {
+                var logStore = ServiceProvider.GetService<IActivityLogStore>() as IDisposable;
+                logStore?.Dispose();
+            }
             _notifyIcon?.Dispose();
             Shutdown();
         }
@@ -118,7 +127,9 @@ namespace RikkaTracker
             // Services
             services.AddSingleton<IConfigService, ConfigService>();
             services.AddSingleton<IThemeService, ThemeService>();
-            services.AddSingleton<IDataService, JsonDataService>();
+            services.AddSingleton<SqliteDbContext>();
+            services.AddSingleton<IActivityLogStore, SqliteLogStore>();
+            services.AddSingleton<IDataService, SqliteDataService>();
             services.AddSingleton<IAppActivityTracker, AppActivityTracker>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
             

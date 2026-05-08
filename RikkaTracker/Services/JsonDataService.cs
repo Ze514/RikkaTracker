@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RikkaTracker.Models;
+using RikkaTracker.Core.Models;
 
 namespace RikkaTracker.Services
 {
@@ -50,5 +51,8 @@ namespace RikkaTracker.Services
             var json = await File.ReadAllTextAsync(_webUsageFile);
             return JsonConvert.DeserializeObject<List<WebsiteUsage>>(json) ?? new List<WebsiteUsage>();
         }
+
+        public Task<IEnumerable<ActivitySegment>> GetSegmentsAsync(DateTime from, DateTime to) => Task.FromResult<IEnumerable<ActivitySegment>>(new List<ActivitySegment>());
+        public Task<Dictionary<string, TimeSpan>> GetTotalTimeByProcessAsync(DateTime from, DateTime to, int? statusFilter = null) => Task.FromResult(new Dictionary<string, TimeSpan>());
     }
 }
