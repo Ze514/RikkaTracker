@@ -37,6 +37,18 @@
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAutoStart}" VerticalAlignment="Center"/>
                     </Grid>
 
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="深色模式" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="切换应用的主题风格" FontSize="12" Foreground="#88FFFFFF"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center"/>
+                    </Grid>
+
                     <Separator Margin="0,0,0,20"/>
 
                     <Grid>
