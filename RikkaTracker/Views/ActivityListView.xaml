@@ -1,0 +1,65 @@
+<UserControl x:Class="RikkaTracker.Views.ActivityListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance vm:ActivityListViewModel}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <ui:TextBlock Text="应用统计" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+            <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <ui:Card Grid.Row="1" Padding="10">
+            <Grid>
+                <ListView ItemsSource="{Binding Processes}" BorderThickness="0" Background="Transparent">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 图标占位 -->
+                                <ui:SymbolIcon Symbol="Apps24" FontSize="24" Margin="0,0,15,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <ui:TextBlock Text="{Binding ProcessName}" FontSize="14" FontWeight="SemiBold"/>
+                                    
+                                    <!-- Tai 风格进度条 -->
+                                    <Grid Margin="0,5,0,0" Height="6">
+                                        <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" CornerRadius="3"/>
+                                        <Border HorizontalAlignment="Left" Background="{StaticResource BrushPink}" CornerRadius="3">
+                                            <Border.Width>
+                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                    <Binding Path="Percentage"/>
+                                                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Grid}"/>
+                                                </MultiBinding>
+                                            </Border.Width>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+
+                                <ui:TextBlock Grid.Column="2" Text="{Binding TimeDisplay}" VerticalAlignment="Center" Margin="15,0,0,0" Opacity="0.8"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <!-- 加载中遮罩 -->
+                <ui:ProgressRing IsIndeterminate="True" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Grid>
+        </ui:Card>
+    </Grid>
+</UserControl>

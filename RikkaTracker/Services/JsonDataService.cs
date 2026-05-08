@@ -1,58 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using RikkaTracker.Models;
 using RikkaTracker.Core.Models;
+using RikkaTracker.Models;
 
 namespace RikkaTracker.Services
 {
     public class JsonDataService : IDataService
     {
-        private readonly string _dataDirectory;
-        private readonly string _appUsageFile;
-        private readonly string _webUsageFile;
+        public Task<IEnumerable<AppUsage>> LoadAppUsageAsync() => Task.FromResult<IEnumerable<AppUsage>>(new List<AppUsage>());
+        public Task SaveAppUsageAsync(IEnumerable<AppUsage> usage) => Task.CompletedTask;
+        public Task<IEnumerable<WebsiteUsage>> LoadWebsiteUsageAsync() => Task.FromResult<IEnumerable<WebsiteUsage>>(new List<WebsiteUsage>());
+        public Task SaveWebsiteUsageAsync(IEnumerable<WebsiteUsage> usage) => Task.CompletedTask;
 
-        public JsonDataService()
-        {
-            _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RikkaTracker", "Data");
-            if (!Directory.Exists(_dataDirectory))
-            {
-                Directory.CreateDirectory(_dataDirectory);
-            }
+        public Task<IEnumerable<RikkaTracker.Core.Models.ActivitySegment>> GetSegmentsAsync(DateTime start, DateTime end) 
+            => Task.FromResult<IEnumerable<RikkaTracker.Core.Models.ActivitySegment>>(new List<RikkaTracker.Core.Models.ActivitySegment>());
 
-            _appUsageFile = Path.Combine(_dataDirectory, "app_usage.json");
-            _webUsageFile = Path.Combine(_dataDirectory, "web_usage.json");
-        }
+        public Task<IEnumerable<(string ProcessName, TimeSpan TotalTime)>> GetTotalTimeByProcessAsync(DateTime start, DateTime end)
+            => Task.FromResult<IEnumerable<(string ProcessName, TimeSpan TotalTime)>>(new List<(string, TimeSpan)>());
 
-        public async Task SaveAppUsageAsync(IEnumerable<AppUsage> usage)
-        {
-            var json = JsonConvert.SerializeObject(usage, Formatting.Indented);
-            await File.WriteAllTextAsync(_appUsageFile, json);
-        }
+        public Task<IEnumerable<(int Hour, TimeSpan TotalTime)>> GetHourlyUsageAsync(DateTime date)
+            => Task.FromResult<IEnumerable<(int Hour, TimeSpan TotalTime)>>(new List<(int, TimeSpan)>());
 
-        public async Task<IEnumerable<AppUsage>> LoadAppUsageAsync()
-        {
-            if (!File.Exists(_appUsageFile)) return new List<AppUsage>();
-            var json = await File.ReadAllTextAsync(_appUsageFile);
-            return JsonConvert.DeserializeObject<List<AppUsage>>(json) ?? new List<AppUsage>();
-        }
-
-        public async Task SaveWebsiteUsageAsync(IEnumerable<WebsiteUsage> usage)
-        {
-            var json = JsonConvert.SerializeObject(usage, Formatting.Indented);
-            await File.WriteAllTextAsync(_webUsageFile, json);
-        }
-
-        public async Task<IEnumerable<WebsiteUsage>> LoadWebsiteUsageAsync()
-        {
-            if (!File.Exists(_webUsageFile)) return new List<WebsiteUsage>();
-            var json = await File.ReadAllTextAsync(_webUsageFile);
-            return JsonConvert.DeserializeObject<List<WebsiteUsage>>(json) ?? new List<WebsiteUsage>();
-        }
-
-        public Task<IEnumerable<ActivitySegment>> GetSegmentsAsync(DateTime from, DateTime to) => Task.FromResult<IEnumerable<ActivitySegment>>(new List<ActivitySegment>());
-        public Task<Dictionary<string, TimeSpan>> GetTotalTimeByProcessAsync(DateTime from, DateTime to, int? statusFilter = null) => Task.FromResult(new Dictionary<string, TimeSpan>());
+        public Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime)> GetStatsSummaryAsync(DateTime start, DateTime end)
+            => Task.FromResult((TimeSpan.Zero, 0, "N/A", TimeSpan.Zero));
     }
 }

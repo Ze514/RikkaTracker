@@ -3,14 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:local="clr-namespace:RikkaTracker"
+             xmlns:conv="clr-namespace:RikkaTracker.Converters"
              ShutdownMode="OnExplicitShutdown">
-    <Application.Resources>
+     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
                 <ResourceDictionary Source="Styles/Styles.xaml"/>
+                <ResourceDictionary Source="Styles/Charts.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            
+            <conv:MultiplyConverter x:Key="MultiplyConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

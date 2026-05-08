@@ -21,6 +21,12 @@
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <views:SettingsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ActivityListViewModel}">
+            <views:ActivityListView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StatisticsViewModel}">
+            <views:StatisticsView/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -50,21 +56,23 @@
                     Content="概览"
                     Command="{Binding NavigateToDashboardCommand}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Board24"/>
+                        <ui:SymbolIcon Symbol="Home24"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 
                 <ui:NavigationViewItem
-                    Content="应用统计">
+                    Content="应用统计"
+                    Command="{Binding NavigateToActivityListCommand}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Apps24"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem
-                    Content="网页统计">
+                    Content="分析统计"
+                    Command="{Binding NavigateToStatisticsCommand}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Globe24"/>
+                        <ui:SymbolIcon Symbol="ChartMultiple24"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>

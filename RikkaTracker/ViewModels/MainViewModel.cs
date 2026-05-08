@@ -24,10 +24,22 @@ namespace RikkaTracker.ViewModels
             CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<DashboardViewModel>();
         }
 
-        [RelayCommand]
+         [RelayCommand]
         private void NavigateToSettings()
         {
             CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<SettingsViewModel>();
+        }
+
+         [RelayCommand]
+        private void NavigateToActivityList()
+        {
+            CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<ActivityListViewModel>();
+        }
+
+        [RelayCommand]
+        private void NavigateToStatistics()
+        {
+            CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<StatisticsViewModel>();
         }
     }
 }

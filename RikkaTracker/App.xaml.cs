@@ -137,6 +137,8 @@ namespace RikkaTracker
             services.AddTransient<MainViewModel>(); // Transient so it's recreated
             services.AddTransient<DashboardViewModel>();
             services.AddTransient<SettingsViewModel>();
+            services.AddTransient<ActivityListViewModel>();
+            services.AddTransient<StatisticsViewModel>();
 
             return services.BuildServiceProvider();
         }
