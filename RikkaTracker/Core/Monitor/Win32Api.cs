@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -31,6 +31,39 @@ namespace RikkaTracker.Core.Monitor
 
         [DllImport("user32.dll")]
         public static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+        [DllImport("user32", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumChildWindows(IntPtr hWndParent, EnumWindowProc lpEnumFunc, IntPtr lParam);
+
+        public delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct GUITHREADINFO
+        {
+            public uint cbSize;
+            public uint flags;
+            public IntPtr hwndActive;
+            public IntPtr hwndFocus;
+            public IntPtr hwndCapture;
+            public IntPtr hwndMenuOwner;
+            public IntPtr hwndMoveSize;
+            public IntPtr hwndCaret;
+            public RECT rcCaret;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct LASTINPUTINFO
@@ -115,6 +148,51 @@ namespace RikkaTracker.Core.Monitor
                 }
             }
             return string.Empty;
+        }
+
+        public static int ResolveUwpProcessId(IntPtr hWnd, int currentPid)
+        {
+            WINDOWINFO windowinfo = new WINDOWINFO();
+            windowinfo.ownerpid = (uint)currentPid;
+            windowinfo.childpid = windowinfo.ownerpid;
+
+            IntPtr pWindowinfo = Marshal.AllocHGlobal(Marshal.SizeOf(windowinfo));
+            try
+            {
+                Marshal.StructureToPtr(windowinfo, pWindowinfo, false);
+
+                EnumWindowProc lpEnumFunc = new EnumWindowProc(EnumChildWindowsCallback);
+                EnumChildWindows(hWnd, lpEnumFunc, pWindowinfo);
+
+                windowinfo = (WINDOWINFO)Marshal.PtrToStructure(pWindowinfo, typeof(WINDOWINFO));
+                return (int)windowinfo.childpid;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(pWindowinfo);
+            }
+        }
+
+        private struct WINDOWINFO
+        {
+            public uint ownerpid;
+            public uint childpid;
+        }
+
+        private static bool EnumChildWindowsCallback(IntPtr hWnd, IntPtr lParam)
+        {
+            WINDOWINFO info = (WINDOWINFO)Marshal.PtrToStructure(lParam, typeof(WINDOWINFO));
+
+            uint pID;
+            GetWindowThreadProcessId(hWnd, out pID);
+
+            if (pID != info.ownerpid)
+            {
+                info.childpid = pID;
+            }
+
+            Marshal.StructureToPtr(info, lParam, true);
+            return true;
         }
     }
 }

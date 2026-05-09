@@ -106,6 +106,15 @@ namespace RikkaTracker.Core.Monitor
             // 在系统线程提取非托管信息
             uint pid;
             Win32Api.GetWindowThreadProcessId(hwnd, out pid);
+            int actualPid = (int)pid;
+
+            // 处理 UWP 应用
+            string processName = GetProcessName(actualPid);
+            if (processName == "ApplicationFrameHost")
+            {
+                actualPid = Win32Api.ResolveUwpProcessId(hwnd, actualPid);
+            }
+
             string title = Win32Api.GetWindowTitle(hwnd);
             bool isIconic = Win32Api.IsIconic(hwnd);
             bool isVisible = Win32Api.IsWindowVisible(hwnd);
@@ -116,13 +125,13 @@ namespace RikkaTracker.Core.Monitor
                 switch (eventType)
                 {
                     case Win32Api.EVENT_SYSTEM_FOREGROUND:
-                        HandleForegroundChange(hwnd, (int)pid, title, isIconic, isVisible);
+                        HandleForegroundChange(hwnd, actualPid, title, isIconic, isVisible);
                         break;
                     case Win32Api.EVENT_SYSTEM_MINIMIZESTART:
-                        HandleMinimize(hwnd, (int)pid);
+                        HandleMinimize(hwnd, actualPid);
                         break;
                     case Win32Api.EVENT_SYSTEM_MINIMIZEEND:
-                        HandleRestore(hwnd, (int)pid, title);
+                        HandleRestore(hwnd, actualPid, title);
                         break;
                 }
             });
@@ -137,7 +146,12 @@ namespace RikkaTracker.Core.Monitor
             if (hwnd == IntPtr.Zero) return;
 
             Win32Api.GetWindowThreadProcessId(hwnd, out uint pid);
-            HandleForegroundChange(hwnd, (int)pid, Win32Api.GetWindowTitle(hwnd), Win32Api.IsIconic(hwnd), Win32Api.IsWindowVisible(hwnd));
+            int actualPid = (int)pid;
+            if (GetProcessName(actualPid) == "ApplicationFrameHost")
+            {
+                actualPid = Win32Api.ResolveUwpProcessId(hwnd, actualPid);
+            }
+            HandleForegroundChange(hwnd, actualPid, Win32Api.GetWindowTitle(hwnd), Win32Api.IsIconic(hwnd), Win32Api.IsWindowVisible(hwnd));
         }
 
         /// <summary>

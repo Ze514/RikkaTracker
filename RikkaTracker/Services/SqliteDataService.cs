@@ -69,7 +69,7 @@ namespace RikkaTracker.Services
                 SELECT ProcessName, ProcessPath, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TotalSeconds
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status
-                GROUP BY ProcessName
+                GROUP BY ProcessName, ProcessPath
                 ORDER BY TotalSeconds DESC
             ";
             command.Parameters.AddWithValue("$from", start.ToString("o"));
