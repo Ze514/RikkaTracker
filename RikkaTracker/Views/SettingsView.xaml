@@ -12,19 +12,6 @@
             <ui:TextBlock Text="设置" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
             <ui:Card Padding="20" Margin="0,0,0,10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <ui:TextBlock Text="通用设置" FontSize="18" FontWeight="SemiBold"/>
-                        <ui:TextBlock Text="配置软件的基础运行行为" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                </Grid>
-            </ui:Card>
-
-            <ui:Card Padding="20" Margin="0,0,0,10">
                 <StackPanel>
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
@@ -75,8 +62,12 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     
-                    <ListView ItemsSource="{Binding FilterRules}" MaxHeight="300" BorderThickness="0" Background="Transparent" d:ItemsSource="{d:SampleData ItemCount=3}">
-                        <ListView.ItemTemplate>
+                    <ItemsControl ItemsSource="{Binding FilterRules}" 
+                                  BorderThickness="0" 
+                                  Background="Transparent" 
+                                  Margin="0,0,0,10"
+                                  d:ItemsSource="{d:SampleData ItemCount=3}">
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,5">
                                     <Grid.ColumnDefinitions>
@@ -94,12 +85,12 @@
                                     <ui:Button Grid.Column="3" 
                                                Icon="{ui:SymbolIcon Delete24}" 
                                                Appearance="Transparent" 
-                                               Command="{Binding DataContext.RemoveRuleCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
+                                               Command="{Binding DataContext.RemoveRuleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" 
                                                CommandParameter="{Binding}"/>
                                 </Grid>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
                         <ui:Button Content="新增规则" Icon="{ui:SymbolIcon Add24}" Command="{Binding AddRuleCommand}"/>
@@ -118,7 +109,11 @@
                         <ui:TextBlock Text="数据存储路径" VerticalAlignment="Center"/>
                         <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
-                    <ui:Button Grid.Column="1" Content="更改" Icon="{ui:SymbolIcon Folder24}" VerticalAlignment="Center"/>
+                    <ui:Button Grid.Column="1" 
+                               Content="更改" 
+                               Icon="{ui:SymbolIcon Folder24}" 
+                               Command="{Binding ChangeStoragePathCommand}"
+                               VerticalAlignment="Center"/>
                 </Grid>
             </ui:Card>
             

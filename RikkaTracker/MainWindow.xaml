@@ -39,9 +39,6 @@
         <ui:TitleBar
             Title="RikkaTracker"
             Grid.Row="0">
-            <ui:TitleBar.Header>
-                <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource BrushPink}" VerticalAlignment="Center" Margin="10,0,0,0"/>
-            </ui:TitleBar.Header>
         </ui:TitleBar>
 
         <ui:NavigationView

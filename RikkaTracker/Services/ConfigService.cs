@@ -21,12 +21,15 @@ namespace RikkaTracker.Services
 
         public ConfigService()
         {
-            string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RikkaTracker");
-            if (!Directory.Exists(appDataPath))
+            // 使用应用安装目录下的 Config 文件夹，而不是 AppData
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string configDir = Path.Combine(baseDir, "Config");
+            
+            if (!Directory.Exists(configDir))
             {
-                Directory.CreateDirectory(appDataPath);
+                Directory.CreateDirectory(configDir);
             }
-            _configFilePath = Path.Combine(appDataPath, "config.json");
+            _configFilePath = Path.Combine(configDir, "config.json");
             Load();
         }
 
@@ -47,8 +50,8 @@ namespace RikkaTracker.Services
             else
             {
                 _config = new AppConfig();
-                // Set default data path
-                _config.DataStoragePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RikkaTracker", "Data");
+                // 默认数据路径设为安装目录下的 Data 文件夹
+                _config.DataStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
                 Save();
             }
         }

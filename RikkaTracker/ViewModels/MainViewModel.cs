@@ -7,7 +7,7 @@ namespace RikkaTracker.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         [ObservableProperty]
-        private string _statusText = "RikkaTracker 运行中...";
+        private string _statusText = string.Empty;
 
         [ObservableProperty]
         private ObservableObject? _currentViewModel;

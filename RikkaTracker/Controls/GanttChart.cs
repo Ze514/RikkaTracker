@@ -51,11 +51,38 @@ namespace RikkaTracker.Controls
             set => SetValue(DisplayModeProperty, value);
         }
 
+        public static readonly DependencyProperty SegmentClickedCommandProperty =
+            DependencyProperty.Register("SegmentClickedCommand", typeof(System.Windows.Input.ICommand), typeof(GanttChart), new PropertyMetadata(null));
+
+        public System.Windows.Input.ICommand SegmentClickedCommand
+        {
+            get => (System.Windows.Input.ICommand)GetValue(SegmentClickedCommandProperty);
+            set => SetValue(SegmentClickedCommandProperty, value);
+        }
+
+        private System.Windows.Controls.ScrollViewer _parentScrollViewer;
+
         public GanttChart()
         {
             _children = new VisualCollection(this);
             _mainVisual = new DrawingVisual();
             _children.Add(_mainVisual);
+
+            this.Loaded += GanttChart_Loaded;
+        }
+
+        private void GanttChart_Loaded(object sender, RoutedEventArgs e)
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(this);
+            while (parent != null && !(parent is System.Windows.Controls.ScrollViewer))
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            _parentScrollViewer = parent as System.Windows.Controls.ScrollViewer;
+            if (_parentScrollViewer != null)
+            {
+                _parentScrollViewer.ScrollChanged += (s, args) => this.InvalidateVisual();
+            }
         }
 
         private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -131,8 +158,17 @@ namespace RikkaTracker.Controls
                 // 只有在非 Header 模式下才绘制条带
                 if (DisplayMode != GanttDisplayMode.Header)
                 {
+                    // 视图剔除 (虚拟化)
+                    double visibleTop = _parentScrollViewer?.VerticalOffset ?? 0;
+                    double visibleBottom = visibleTop + (_parentScrollViewer?.ViewportHeight ?? RenderSize.Height);
+
+                    int startRow = Math.Max(0, (int)((visibleTop - topOffset) / (rowHeight + rowSpacing)));
+                    int endRow = (int)((visibleBottom - topOffset) / (rowHeight + rowSpacing)) + 1;
+
                     foreach (var segment in ItemsSource)
                     {
+                        if (segment.RowIndex < startRow || segment.RowIndex > endRow) continue;
+
                         DateTime start = segment.Start < baseTime ? baseTime : segment.Start;
                         DateTime end = segment.End > baseTime.AddDays(1) ? baseTime.AddDays(1) : segment.End;
                         if (start >= end) continue;
@@ -235,7 +271,14 @@ namespace RikkaTracker.Controls
 
             if (hit != null)
             {
-                this.ToolTip = $"{hit.ProcessName}\n{hit.WindowTitle}\n{hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n时长: {hit.Duration:hh\\:mm\\:ss}";
+                string statusText = hit.Status switch
+                {
+                    ActivityStatus.ForegroundActive => "前台活动",
+                    ActivityStatus.ForegroundInactive => "前台非活动",
+                    ActivityStatus.Background => "后台运行",
+                    _ => hit.Status.ToString()
+                };
+                this.ToolTip = $"{hit.ProcessName}\n{hit.WindowTitle}\n{hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n状态: {statusText}\n时长: {hit.Duration:hh\\:mm\\:ss}";
             }
             else
             {
@@ -243,14 +286,48 @@ namespace RikkaTracker.Controls
             }
         }
 
+        protected override void OnMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            if (ItemsSource == null || !ItemsSource.Any() || DisplayMode == GanttDisplayMode.Header) return;
+
+            Point pos = e.GetPosition(this);
+            DateTime baseTime = ItemsSource.First().Start.Date;
+
+            double rowHeight = 40;
+            double rowSpacing = 10;
+            double topOffset = 40;
+            double xOffset = DisplayMode == GanttDisplayMode.Timeline ? 0 : _rowHeaderWidth;
+
+            int rowIndex = (int)((pos.Y - topOffset) / (rowHeight + rowSpacing));
+            if (rowIndex < 0 || pos.X < xOffset) return;
+
+            double timeInHours = (pos.X - xOffset) / PixelsPerHour;
+            DateTime timeAtMouse = baseTime.AddHours(timeInHours);
+
+            var hit = ItemsSource.FirstOrDefault(s => s.RowIndex == rowIndex && s.Start <= timeAtMouse && s.End >= timeAtMouse);
+
+            if (hit != null && SegmentClickedCommand != null && SegmentClickedCommand.CanExecute(hit))
+            {
+                SegmentClickedCommand.Execute(hit);
+            }
+        }
+
         private Brush GetBrushForSegment(GanttSegment segment)
         {
-            if (segment.Status != ActivityStatus.ForegroundActive)
+            var solidBrush = _palette[segment.RowIndex % _palette.Length] as SolidColorBrush;
+            var baseColor = solidBrush?.Color ?? Colors.Gray;
+
+            if (segment.Status == ActivityStatus.ForegroundInactive)
             {
-                return new SolidColorBrush(Color.FromArgb(60, 173, 216, 230));
+                return new SolidColorBrush(Color.FromArgb(100, baseColor.R, baseColor.G, baseColor.B)); // 40% opacity
+            }
+            else if (segment.Status == ActivityStatus.Background)
+            {
+                return new SolidColorBrush(Color.FromRgb(224, 224, 224)); // #E0E0E0
             }
 
-            return _palette[segment.RowIndex % _palette.Length];
+            return new SolidColorBrush(baseColor);
         }
     }
 }
