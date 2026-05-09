@@ -20,6 +20,7 @@ namespace RikkaTracker.Controls
     {
         private readonly VisualCollection _children;
         private readonly DrawingVisual _mainVisual;
+        private System.Windows.Controls.ToolTip _internalToolTip;
         
         public static readonly DependencyProperty ItemsSourceProperty =
             DependencyProperty.Register("ItemsSource", typeof(IEnumerable<GanttSegment>), typeof(GanttChart),
@@ -67,6 +68,12 @@ namespace RikkaTracker.Controls
             _children = new VisualCollection(this);
             _mainVisual = new DrawingVisual();
             _children.Add(_mainVisual);
+
+            _internalToolTip = new System.Windows.Controls.ToolTip();
+            _internalToolTip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
+            _internalToolTip.Background = Brushes.Transparent;
+            _internalToolTip.BorderThickness = new Thickness(0);
+            _internalToolTip.Padding = new Thickness(0);
 
             this.Loaded += GanttChart_Loaded;
         }
@@ -145,7 +152,6 @@ namespace RikkaTracker.Controls
                     : DateTime.Today;
 
                 double rowHeight = 40;
-                double segmentHeight = 24;
                 double rowSpacing = 10;
                 double topOffset = 40;
                 double xOffset = DisplayMode == GanttDisplayMode.Timeline ? 0 : _rowHeaderWidth;
@@ -176,6 +182,16 @@ namespace RikkaTracker.Controls
                         double xStart = xOffset + (start - baseTime).TotalHours * PixelsPerHour;
                         double xEnd = xOffset + (end - baseTime).TotalHours * PixelsPerHour;
                         double width = Math.Max(2, xEnd - xStart);
+                        
+                        // 三档粗细
+                        double segmentHeight = segment.Status switch
+                        {
+                            ActivityStatus.ForegroundActive => 32,
+                            ActivityStatus.ForegroundInactive => 20,
+                            ActivityStatus.Background => 10,
+                            _ => 20
+                        };
+
                         double y = topOffset + segment.RowIndex * (rowHeight + rowSpacing) + (rowHeight - segmentHeight) / 2;
 
                         Brush brush = GetBrushForSegment(segment);
@@ -273,12 +289,14 @@ namespace RikkaTracker.Controls
             double xOffset = DisplayMode == GanttDisplayMode.Timeline ? 0 : _rowHeaderWidth;
 
             int rowIndex = (int)((pos.Y - topOffset) / (rowHeight + rowSpacing));
-            if (rowIndex < 0 || pos.X < xOffset) { this.ToolTip = null; return; }
-
-            double timeInHours = (pos.X - xOffset) / PixelsPerHour;
-            DateTime timeAtMouse = baseTime.AddHours(timeInHours);
-
-            var hit = ItemsSource.FirstOrDefault(s => s.RowIndex == rowIndex && s.Start <= timeAtMouse && s.End >= timeAtMouse);
+            
+            GanttSegment hit = null;
+            if (rowIndex >= 0 && pos.X >= xOffset)
+            {
+                double timeInHours = (pos.X - xOffset) / PixelsPerHour;
+                DateTime timeAtMouse = baseTime.AddHours(timeInHours);
+                hit = ItemsSource.FirstOrDefault(s => s.RowIndex == rowIndex && s.Start <= timeAtMouse && s.End >= timeAtMouse);
+            }
 
             if (hit != null)
             {
@@ -289,11 +307,42 @@ namespace RikkaTracker.Controls
                     ActivityStatus.Background => "后台运行",
                     _ => hit.Status.ToString()
                 };
-                this.ToolTip = $"{hit.ProcessName}\n{hit.WindowTitle}\n{hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n状态: {statusText}\n时长: {hit.Duration:hh\\:mm\\:ss}";
+
+                string tooltipContent = $"【应用详情】\n" +
+                                       $"名称: {hit.ProcessName}\n" +
+                                       $"标题: {hit.WindowTitle}\n" +
+                                       $"时间: {hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n" +
+                                       $"持续: {hit.Duration:hh\\:mm\\:ss}\n" +
+                                       $"状态: {statusText}";
+
+                // 使用单独的 ToolTip 控件以确保跟随鼠标且实时更新
+                if (_internalToolTip.Parent == null)
+                {
+                    this.ToolTip = _internalToolTip;
+                }
+                
+                _internalToolTip.Content = tooltipContent;
+                _internalToolTip.IsOpen = true;
+                
+                // 强制更新位置
+                _internalToolTip.HorizontalOffset = 10;
+                _internalToolTip.VerticalOffset = 10;
             }
             else
             {
-                this.ToolTip = null;
+                if (_internalToolTip != null)
+                {
+                    _internalToolTip.IsOpen = false;
+                }
+            }
+        }
+
+        protected override void OnMouseLeave(System.Windows.Input.MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+            if (_internalToolTip != null)
+            {
+                _internalToolTip.IsOpen = false;
             }
         }
 
@@ -318,9 +367,15 @@ namespace RikkaTracker.Controls
 
             var hit = ItemsSource.FirstOrDefault(s => s.RowIndex == rowIndex && s.Start <= timeAtMouse && s.End >= timeAtMouse);
 
-            if (hit != null && SegmentClickedCommand != null && SegmentClickedCommand.CanExecute(hit))
+            if (hit != null)
             {
-                SegmentClickedCommand.Execute(hit);
+                // TODO: 占位操作 - 查看该应用的使用统计
+                System.Diagnostics.Debug.WriteLine($"点击了片段: {hit.ProcessName}, 将跳转到应用统计详情...");
+                
+                if (SegmentClickedCommand != null && SegmentClickedCommand.CanExecute(hit))
+                {
+                    SegmentClickedCommand.Execute(hit);
+                }
             }
         }
 
@@ -331,13 +386,16 @@ namespace RikkaTracker.Controls
 
             if (segment.Status == ActivityStatus.ForegroundInactive)
             {
-                return new SolidColorBrush(Color.FromArgb(100, baseColor.R, baseColor.G, baseColor.B)); // 40% opacity
+                // 二档：40% 透明度
+                return new SolidColorBrush(Color.FromArgb(100, baseColor.R, baseColor.G, baseColor.B)); 
             }
             else if (segment.Status == ActivityStatus.Background)
             {
-                return new SolidColorBrush(Color.FromRgb(224, 224, 224)); // #E0E0E0
+                // 三档：极浅灰色
+                return new SolidColorBrush(Color.FromRgb(240, 240, 240)); 
             }
 
+            // 一档：深色（不透明）
             return new SolidColorBrush(baseColor);
         }
     }

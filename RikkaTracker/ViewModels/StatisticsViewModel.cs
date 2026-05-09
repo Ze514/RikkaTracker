@@ -174,12 +174,8 @@ namespace RikkaTracker.ViewModels
         {
             if (segment == null) return;
             
-            // 暂时使用弹窗提示，后续可替换为导航到应用详情页的逻辑
-            System.Windows.MessageBox.Show(
-                $"选中了片段:\n应用: {segment.ProcessName}\n时间: {segment.Start:HH:mm:ss} - {segment.End:HH:mm:ss}\n状态: {segment.Status}",
-                "片段详情",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Information);
+            // TODO: 后续替换为导航到应用详情页的逻辑
+            System.Diagnostics.Debug.WriteLine($"选中了应用: {segment.ProcessName}");
         }
     }
 }

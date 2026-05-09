@@ -66,10 +66,10 @@
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem
-                    Content="分析统计"
+                    Content="时间轴"
                     Command="{Binding NavigateToStatisticsCommand}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="ChartMultiple24"/>
+                        <ui:SymbolIcon Symbol="Clock24"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
