@@ -7,6 +7,58 @@ namespace RikkaTracker.Views
         public StatisticsView()
         {
             InitializeComponent();
+            this.DataContextChanged += StatisticsView_DataContextChanged;
+            this.Loaded += (s, e) => 
+            {
+                // 页面加载时尝试滚动一次
+                Dispatcher.BeginInvoke(new Action(() => ScrollToLatest()), System.Windows.Threading.DispatcherPriority.Background);
+            };
+        }
+
+        private void StatisticsView_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is ViewModels.StatisticsViewModel oldVm)
+            {
+                oldVm.PropertyChanged -= ViewModel_PropertyChanged;
+            }
+            if (e.NewValue is ViewModels.StatisticsViewModel newVm)
+            {
+                newVm.PropertyChanged += ViewModel_PropertyChanged;
+            }
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModels.StatisticsViewModel.GanttSegments))
+            {
+                // 当数据加载完成并更新到 UI 时，滚动到最新记录
+                Dispatcher.BeginInvoke(new Action(() => 
+                {
+                    ScrollToLatest();
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+        }
+
+        private void ScrollToLatest()
+        {
+            if (TimelineScroller == null || DataContext is not ViewModels.StatisticsViewModel vm) return;
+            if (vm.GanttSegments == null || !vm.GanttSegments.Any()) return;
+
+            // 强制布局更新以确保 ViewportWidth 准确
+            TimelineScroller.UpdateLayout();
+
+            var segments = vm.GanttSegments.ToList();
+            var latestEnd = segments.Max(s => s.End);
+            var baseTime = segments.First().Start.Date;
+            var pixelsPerHour = ZoomSlider.Value;
+
+            double x = (latestEnd - baseTime).TotalHours * pixelsPerHour;
+            
+            // 将最新记录定位在视图中间
+            double targetOffset = x - (TimelineScroller.ViewportWidth / 2);
+            if (targetOffset < 0) targetOffset = 0;
+            
+            TimelineScroller.ScrollToHorizontalOffset(targetOffset);
         }
 
         private void TimelineScroller_ScrollChanged(object sender, ScrollChangedEventArgs e)

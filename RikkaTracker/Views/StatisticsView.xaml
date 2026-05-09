@@ -19,7 +19,7 @@
             <ui:TextBlock Text="时间轴" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
             <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
             <ui:TextBlock Text="时间轴比例" VerticalAlignment="Center" Margin="20,0,10,0"/>
-            <Slider x:Name="ZoomSlider" Minimum="100" Maximum="2000" Value="400" Width="100" VerticalAlignment="Center"/>
+            <Slider x:Name="ZoomSlider" Minimum="100" Maximum="2000" Value="1050" Width="100" VerticalAlignment="Center"/>
             
             <ui:TextBox PlaceholderText="搜索应用..." Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="20,0,10,0" VerticalAlignment="Center"/>
             <ui:ToggleSwitch IsChecked="{Binding ShowInactive}" Content="显示非活动" Margin="10,0,0,0" VerticalAlignment="Center"/>
