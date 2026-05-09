@@ -62,13 +62,18 @@ namespace RikkaTracker
             activityTracker.AppActivityChanged += (s, args) =>
             {
                 System.Diagnostics.Debug.WriteLine($"[Activity] {args.ProcessName} ({args.ProcessId}) -> {args.NewStatus} | {args.WindowTitle}");
-                logStore.RecordTransition(args.ProcessName, args.WindowTitle, args.NewStatus, args.Timestamp);
+                logStore.RecordTransition(args.ProcessName, args.ProcessPath, args.WindowTitle, args.NewStatus, args.Timestamp);
             };
             activityTracker.Start();
 
             var processMonitor = ServiceProvider.GetRequiredService<IProcessMonitor>();
             processMonitor.ProcessStarted += (s, args) => System.Diagnostics.Debug.WriteLine($"[Process] Started: {args.ProcessName} ({args.ProcessId})");
-            processMonitor.ProcessExited += (s, args) => System.Diagnostics.Debug.WriteLine($"[Process] Exited: PID {args.ProcessId}");
+            processMonitor.ProcessExited += (s, args) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"[Process] Exited: {args.ProcessName} ({args.ProcessId})");
+                // 进程退出时闭合其开放segment
+                logStore.CloseProcess(args.ProcessName, DateTime.Now);
+            };
             processMonitor.Start();
 
             // Apply saved theme
@@ -133,6 +138,7 @@ namespace RikkaTracker
             services.AddSingleton<RikkaTracker.Core.Strategies.IFilterEngine, RikkaTracker.Core.Strategies.FilterEngine>();
             services.AddSingleton<IAppActivityTracker, AppActivityTracker>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
+            services.AddSingleton<IIconService, IconService>();
             
             // ViewModels
             services.AddTransient<MainViewModel>(); // Transient so it's recreated

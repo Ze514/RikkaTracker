@@ -16,8 +16,8 @@ namespace RikkaTracker.Services
         public Task<IEnumerable<RikkaTracker.Core.Models.ActivitySegment>> GetSegmentsAsync(DateTime start, DateTime end) 
             => Task.FromResult<IEnumerable<RikkaTracker.Core.Models.ActivitySegment>>(new List<RikkaTracker.Core.Models.ActivitySegment>());
 
-        public Task<IEnumerable<(string ProcessName, TimeSpan TotalTime)>> GetTotalTimeByProcessAsync(DateTime start, DateTime end)
-            => Task.FromResult<IEnumerable<(string ProcessName, TimeSpan TotalTime)>>(new List<(string, TimeSpan)>());
+        public Task<IEnumerable<(string ProcessName, string ProcessPath, TimeSpan TotalTime)>> GetTotalTimeByProcessAsync(DateTime start, DateTime end)
+            => Task.FromResult<IEnumerable<(string ProcessName, string ProcessPath, TimeSpan TotalTime)>>(new List<(string, string, TimeSpan)>());
 
         public Task<IEnumerable<(int Hour, TimeSpan TotalTime)>> GetHourlyUsageAsync(DateTime date)
             => Task.FromResult<IEnumerable<(int Hour, TimeSpan TotalTime)>>(new List<(int, TimeSpan)>());

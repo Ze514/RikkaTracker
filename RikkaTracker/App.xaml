@@ -15,6 +15,8 @@
             </ResourceDictionary.MergedDictionaries>
             
             <conv:MultiplyConverter x:Key="MultiplyConverter"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

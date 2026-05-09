@@ -13,10 +13,12 @@ namespace RikkaTracker.ViewModels
     public partial class StatisticsViewModel : ObservableObject
     {
         private readonly IDataService _dataService;
+        private readonly IIconService _iconService;
 
-        public StatisticsViewModel(IDataService dataService)
+        public StatisticsViewModel(IDataService dataService, IIconService iconService)
         {
             _dataService = dataService;
+            _iconService = iconService;
             SelectedDate = DateTime.Today;
         }
 
@@ -73,10 +75,12 @@ namespace RikkaTracker.ViewModels
                             current = new GanttSegment
                             {
                                 ProcessName = s.ProcessName,
+                                ProcessPath = s.ProcessPath,
                                 WindowTitle = s.WindowTitle,
                                 Status = s.Status,
                                 Start = s.StartTime,
-                                End = s.EndTime
+                                End = s.EndTime,
+                                Icon = _iconService.GetIcon(s.ProcessName, s.ProcessPath)
                             };
                         }
                         else
@@ -92,10 +96,12 @@ namespace RikkaTracker.ViewModels
                                 current = new GanttSegment
                                 {
                                     ProcessName = s.ProcessName,
+                                    ProcessPath = s.ProcessPath,
                                     WindowTitle = s.WindowTitle,
                                     Status = s.Status,
                                     Start = s.StartTime,
-                                    End = s.EndTime
+                                    End = s.EndTime,
+                                    Icon = _iconService.GetIcon(s.ProcessName, s.ProcessPath)
                                 };
                             }
                         }
@@ -148,10 +154,12 @@ namespace RikkaTracker.ViewModels
                     var copy = new GanttSegment
                     {
                         ProcessName = s.ProcessName,
+                        ProcessPath = s.ProcessPath,
                         WindowTitle = s.WindowTitle,
                         Status = s.Status,
                         Start = s.Start,
                         End = s.End,
+                        Icon = s.Icon,
                         RowIndex = i
                     };
                     result.Add(copy);

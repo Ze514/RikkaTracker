@@ -7,6 +7,7 @@ namespace RikkaTracker.Core.Models
     {
         public int Id { get; set; }
         public string ProcessName { get; set; } = string.Empty;
+        public string ProcessPath { get; set; } = string.Empty;
         public string WindowTitle { get; set; } = string.Empty;
         public ActivityStatus Status { get; set; }
         public DateTime StartTime { get; set; }

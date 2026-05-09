@@ -31,8 +31,13 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- 图标占位 -->
-                                <ui:SymbolIcon Symbol="Apps24" FontSize="24" Margin="0,0,15,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <!-- 图标 -->
+                                <Grid Width="24" Height="24" Margin="0,0,15,0">
+                                    <Image Source="{Binding Icon}" Visibility="{Binding Icon, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                    <ui:SymbolIcon Symbol="Apps24" FontSize="24" 
+                                                   Visibility="{Binding Icon, Converter={StaticResource InverseNullToVisibilityConverter}}"
+                                                   Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                </Grid>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <ui:TextBlock Text="{Binding ProcessName}" FontSize="14" FontWeight="SemiBold"/>

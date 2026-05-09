@@ -33,7 +33,7 @@ namespace RikkaTracker.Services
             using var connection = _dbContext.CreateConnection();
             using var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT Id, ProcessName, WindowTitle, Status, StartTime, EndTime 
+                SELECT Id, ProcessName, WindowTitle, Status, StartTime, EndTime, ProcessPath 
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to
                 ORDER BY StartTime ASC
@@ -51,21 +51,22 @@ namespace RikkaTracker.Services
                     WindowTitle = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
                     Status = (ActivityStatus)reader.GetInt32(3),
                     StartTime = DateTime.Parse(reader.GetString(4), null, DateTimeStyles.RoundtripKind),
-                    EndTime = DateTime.Parse(reader.GetString(5), null, DateTimeStyles.RoundtripKind)
+                    EndTime = DateTime.Parse(reader.GetString(5), null, DateTimeStyles.RoundtripKind),
+                    ProcessPath = reader.IsDBNull(6) ? string.Empty : reader.GetString(6)
                 });
             }
             return segments;
         }
 
-        public async Task<IEnumerable<(string ProcessName, TimeSpan TotalTime)>> GetTotalTimeByProcessAsync(DateTime start, DateTime end)
+        public async Task<IEnumerable<(string ProcessName, string ProcessPath, TimeSpan TotalTime)>> GetTotalTimeByProcessAsync(DateTime start, DateTime end)
         {
-            var result = new Dictionary<string, double>();
+            var result = new List<(string Name, string Path, double Seconds)>();
             using var connection = _dbContext.CreateConnection();
             using var command = connection.CreateCommand();
             
             // 使用 SQL 聚合计算秒数，以获得更高性能
             command.CommandText = @"
-                SELECT ProcessName, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TotalSeconds
+                SELECT ProcessName, ProcessPath, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TotalSeconds
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status
                 GROUP BY ProcessName
@@ -78,9 +79,9 @@ namespace RikkaTracker.Services
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                result[reader.GetString(0)] = reader.GetDouble(1);
+                result.Add((reader.GetString(0), reader.IsDBNull(1) ? string.Empty : reader.GetString(1), reader.GetDouble(2)));
             }
-            return result.Select(kvp => (kvp.Key, TimeSpan.FromSeconds(kvp.Value)));
+            return result.Select(r => (r.Name, r.Path, TimeSpan.FromSeconds(r.Seconds)));
         }
 
         public async Task<IEnumerable<(int Hour, TimeSpan TotalTime)>> GetHourlyUsageAsync(DateTime date)

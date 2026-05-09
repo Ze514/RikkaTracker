@@ -46,6 +46,7 @@ namespace RikkaTracker.Core.Data
                     CREATE TABLE IF NOT EXISTS ActivityLog (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         ProcessName TEXT NOT NULL,
+                        ProcessPath TEXT,
                         WindowTitle TEXT,
                         Status INTEGER NOT NULL,
                         StartTime TEXT NOT NULL,
@@ -53,6 +54,7 @@ namespace RikkaTracker.Core.Data
                     );
                     CREATE INDEX IF NOT EXISTS IX_Log_Start ON ActivityLog(StartTime);
                     CREATE INDEX IF NOT EXISTS IX_Log_Process_Start ON ActivityLog(ProcessName, StartTime);
+                    CREATE INDEX IF NOT EXISTS IX_Log_Process_Path_Start ON ActivityLog(ProcessPath, StartTime);
                 ";
                 command.ExecuteNonQuery();
             }

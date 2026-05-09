@@ -20,7 +20,7 @@ namespace RikkaTracker.Services
         /// <summary>
         /// 获取按应用统计的总时长排行
         /// </summary>
-        Task<IEnumerable<(string ProcessName, TimeSpan TotalTime)>> GetTotalTimeByProcessAsync(DateTime start, DateTime end);
+        Task<IEnumerable<(string ProcessName, string ProcessPath, TimeSpan TotalTime)>> GetTotalTimeByProcessAsync(DateTime start, DateTime end);
 
         /// <summary>
         /// 获取指定日期 24 小时的每小时用时汇总

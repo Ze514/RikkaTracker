@@ -10,6 +10,7 @@ namespace RikkaTracker.ViewModels
     public partial class ActivityListViewModel : ObservableObject
     {
         private readonly IDataService _dataService;
+        private readonly IIconService _iconService;
 
         [ObservableProperty]
         private DateTime _selectedDate = DateTime.Today;
@@ -20,9 +21,10 @@ namespace RikkaTracker.ViewModels
         [ObservableProperty]
         private bool _isLoading;
 
-        public ActivityListViewModel(IDataService dataService)
+        public ActivityListViewModel(IDataService dataService, IIconService iconService)
         {
             _dataService = dataService;
+            _iconService = iconService;
             LoadDataAsync();
         }
 
@@ -51,7 +53,8 @@ namespace RikkaTracker.ViewModels
                         ProcessName = item.ProcessName,
                         TotalTime = item.TotalTime,
                         Percentage = totalTicks > 0 ? (double)item.TotalTime.Ticks / totalTicks : 0,
-                        TimeDisplay = FormatTimeSpan(item.TotalTime)
+                        TimeDisplay = FormatTimeSpan(item.TotalTime),
+                        Icon = _iconService.GetIcon(item.ProcessName, item.ProcessPath)
                     });
                 }
             }
@@ -75,6 +78,6 @@ namespace RikkaTracker.ViewModels
         public TimeSpan TotalTime { get; set; }
         public double Percentage { get; set; }
         public string TimeDisplay { get; set; } = string.Empty;
-        // 以后可以加入 Icon 路径
+        public System.Windows.Media.ImageSource? Icon { get; set; }
     }
 }

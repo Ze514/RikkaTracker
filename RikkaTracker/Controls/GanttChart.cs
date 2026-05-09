@@ -102,7 +102,7 @@ namespace RikkaTracker.Controls
             new SolidColorBrush(Color.FromRgb(241, 250, 140))  // Yellow
         };
 
-        private double _rowHeaderWidth = 120;
+        private double _rowHeaderWidth = 160;
 
         protected override int VisualChildrenCount => _children.Count;
         protected override Visual GetVisualChild(int index) => _children[index];
@@ -230,6 +230,17 @@ namespace RikkaTracker.Controls
                     // 应用名称 (仅在 Header 模式)
                     if (DisplayMode != GanttDisplayMode.Timeline)
                     {
+                        double iconSize = 20;
+                        double iconPadding = 8;
+                        double textX = 10;
+
+                        // 绘制图标
+                        if (group.Icon != null)
+                        {
+                            dc.DrawImage(group.Icon, new Rect(10, y + (rowHeight - iconSize) / 2, iconSize, iconSize));
+                            textX += iconSize + iconPadding;
+                        }
+
                         var text = new FormattedText(
                             group.ProcessName,
                             CultureInfo.CurrentUICulture,
@@ -238,11 +249,11 @@ namespace RikkaTracker.Controls
                             12,
                             (Brush)FindResource("TextFillColorPrimaryBrush") ?? Brushes.White,
                             VisualTreeHelper.GetDpi(this).PixelsPerDip);
-                        text.MaxTextWidth = _rowHeaderWidth - 10;
+                        text.MaxTextWidth = _rowHeaderWidth - textX - 5;
                         text.MaxTextHeight = rowHeight;
                         text.Trimming = TextTrimming.CharacterEllipsis;
 
-                        dc.DrawText(text, new Point(10, y + (rowHeight - text.Height) / 2));
+                        dc.DrawText(text, new Point(textX, y + (rowHeight - text.Height) / 2));
                     }
                 }
             }

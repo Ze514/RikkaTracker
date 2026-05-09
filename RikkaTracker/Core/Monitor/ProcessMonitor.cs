@@ -23,7 +23,8 @@ namespace RikkaTracker.Core.Monitor
     public class ProcessMonitor : IProcessMonitor
     {
         private readonly DispatcherTimer _scanTimer;
-        private HashSet<int> _lastPids = new();
+        // 维护 PID→进程名 映射，确保进程退出时能提供正确名称
+        private Dictionary<int, string> _pidNames = new();
 
         public event EventHandler<ProcessEventArgs> ProcessStarted;
         public event EventHandler<ProcessEventArgs> ProcessExited;
@@ -39,7 +40,7 @@ namespace RikkaTracker.Core.Monitor
 
         public void Start()
         {
-            _lastPids = GetCurrentPids();
+            _pidNames = GetCurrentPidNames();
             _scanTimer.Start();
         }
 
@@ -50,37 +51,61 @@ namespace RikkaTracker.Core.Monitor
 
         private void OnScanTimerTick(object? sender, EventArgs e)
         {
-            var currentPids = GetCurrentPids();
+            var currentPidNames = GetCurrentPidNames();
 
-            // Detected started processes
-            var started = currentPids.Except(_lastPids);
-            foreach (var pid in started)
+            // 检测新启动的进程
+            foreach (var kvp in currentPidNames)
             {
-                try
+                if (!_pidNames.ContainsKey(kvp.Key))
                 {
-                    using var proc = Process.GetProcessById(pid);
-                    ProcessStarted?.Invoke(this, new ProcessEventArgs { ProcessId = pid, ProcessName = proc.ProcessName });
+                    ProcessStarted?.Invoke(this, new ProcessEventArgs
+                    {
+                        ProcessId = kvp.Key,
+                        ProcessName = kvp.Value
+                    });
                 }
-                catch { }
             }
 
-            // Detected exited processes
-            var exited = _lastPids.Except(currentPids);
-            foreach (var pid in exited)
+            // 检测已退出的进程（使用之前缓存的名称）
+            foreach (var kvp in _pidNames)
             {
-                ProcessExited?.Invoke(this, new ProcessEventArgs { ProcessId = pid, ProcessName = "Unknown" });
+                if (!currentPidNames.ContainsKey(kvp.Key))
+                {
+                    ProcessExited?.Invoke(this, new ProcessEventArgs
+                    {
+                        ProcessId = kvp.Key,
+                        ProcessName = kvp.Value
+                    });
+                }
             }
 
-            _lastPids = currentPids;
+            _pidNames = currentPidNames;
         }
 
-        private HashSet<int> GetCurrentPids()
+        private Dictionary<int, string> GetCurrentPidNames()
         {
-            // Lightweight PID snapshot
-            return Process.GetProcesses()
-                .Where(p => p.SessionId != 0) // Exclude system/background sessions if possible
-                .Select(p => p.Id)
-                .ToHashSet();
+            var result = new Dictionary<int, string>();
+            try
+            {
+                foreach (var p in Process.GetProcesses())
+                {
+                    try
+                    {
+                        // 排除系统会话进程
+                        if (p.SessionId != 0)
+                        {
+                            result[p.Id] = p.ProcessName;
+                        }
+                    }
+                    catch { }
+                    finally
+                    {
+                        p.Dispose();
+                    }
+                }
+            }
+            catch { }
+            return result;
         }
     }
 }
