@@ -52,6 +52,9 @@ namespace RikkaTracker.ViewModels
         [ObservableProperty]
         private bool _isLoading;
 
+        [ObservableProperty]
+        private int _refreshTrigger;
+
         private List<GanttSegment> _allSegments = new();
 
         public async Task LoadGanttDataAsync()
@@ -124,6 +127,7 @@ namespace RikkaTracker.ViewModels
             finally
             {
                 IsLoading = false;
+                RefreshTrigger++; // 触发 View 层滚动
             }
         }
 
@@ -184,6 +188,26 @@ namespace RikkaTracker.ViewModels
             
             // TODO: 后续替换为导航到应用详情页的逻辑
             System.Diagnostics.Debug.WriteLine($"选中了应用: {segment.ProcessName}");
+        }
+
+        [RelayCommand]
+        private async Task Refresh()
+        {
+            await LoadGanttDataAsync();
+        }
+
+        [ObservableProperty]
+        private bool _requestFocusLatest;
+
+        [RelayCommand]
+        private void FocusLatest()
+        {
+            // 1. 通知控件内部进行精确滚动
+            RequestFocusLatest = true;
+            RequestFocusLatest = false;
+
+            // 2. 通知 View 层容器（可能需要同步滚动条）
+            RefreshTrigger++;
         }
     }
 }

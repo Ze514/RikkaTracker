@@ -109,6 +109,49 @@ namespace RikkaTracker.Controls
             set => SetValue(ZoomModeProperty, value);
         }
 
+        public static readonly DependencyProperty RequestFocusLatestProperty =
+            DependencyProperty.Register("RequestFocusLatest", typeof(bool), typeof(GanttChart),
+                new PropertyMetadata(false, OnRequestFocusLatestChanged));
+
+        public bool RequestFocusLatest
+        {
+            get => (bool)GetValue(RequestFocusLatestProperty);
+            set => SetValue(RequestFocusLatestProperty, value);
+        }
+
+        private static void OnRequestFocusLatestChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is GanttChart control && (bool)e.NewValue)
+            {
+                control.FocusLatest();
+            }
+        }
+
+        public void FocusLatest()
+        {
+            if (_parentScrollViewer == null || ItemsSource == null || !ItemsSource.Any()) return;
+
+            // 获取最新记录的时间点（小时）
+            DateTime baseTime = ItemsSource.First().Start.Date;
+            DateTime latestEnd = ItemsSource.Max(s => s.End);
+            double latestTimeInHours = (latestEnd - baseTime).TotalHours;
+            double latestX = latestTimeInHours * PixelsPerHour;
+
+            double viewportWidth = _parentScrollViewer.ViewportWidth;
+            double targetOffset = latestX - viewportWidth / 2;
+
+            _isInternalScrolling = true;
+            _parentScrollViewer.ScrollToHorizontalOffset(Math.Max(0, targetOffset));
+
+            // 聚焦后立即更新稳定中心点，防止用户接下来缩放时跳回原来的锚点
+            UpdateStableCenter();
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _isInternalScrolling = false;
+            }), System.Windows.Threading.DispatcherPriority.DataBind);
+        }
+
         private System.Windows.Controls.ScrollViewer _parentScrollViewer;
         private double _lastStableCenterInHours = -1;
         private bool _isInternalScrolling = false;

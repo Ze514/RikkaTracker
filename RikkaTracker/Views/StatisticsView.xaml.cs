@@ -29,9 +29,9 @@ namespace RikkaTracker.Views
 
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModels.StatisticsViewModel.GanttSegments))
+            if (e.PropertyName == nameof(ViewModels.StatisticsViewModel.RefreshTrigger))
             {
-                // 当数据加载完成并更新到 UI 时，滚动到最新记录
+                // 只有当显式触发刷新（加载数据或点击追踪）时，才滚动到最新记录
                 Dispatcher.BeginInvoke(new Action(() => 
                 {
                     ScrollToLatest();
