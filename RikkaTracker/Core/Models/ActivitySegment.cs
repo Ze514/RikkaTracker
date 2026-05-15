@@ -9,10 +9,12 @@ namespace RikkaTracker.Core.Models
         public string ProcessName { get; set; } = string.Empty;
         public string ProcessPath { get; set; } = string.Empty;
         public string WindowTitle { get; set; } = string.Empty;
+        public string Alias { get; set; } = string.Empty;
         public ActivityStatus Status { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
         public TimeSpan Duration => EndTime - StartTime;
+        public string DisplayName => !string.IsNullOrEmpty(Alias) ? Alias : ProcessName;
     }
 }

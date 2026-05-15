@@ -33,7 +33,7 @@ namespace RikkaTracker.Services
             using var connection = _dbContext.CreateConnection();
             using var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT Id, ProcessName, WindowTitle, Status, StartTime, EndTime, ProcessPath 
+                SELECT Id, ProcessName, WindowTitle, Status, StartTime, EndTime, ProcessPath, Alias
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to
                 ORDER BY StartTime ASC
@@ -52,7 +52,8 @@ namespace RikkaTracker.Services
                     Status = (ActivityStatus)reader.GetInt32(3),
                     StartTime = DateTime.Parse(reader.GetString(4), null, DateTimeStyles.RoundtripKind),
                     EndTime = DateTime.Parse(reader.GetString(5), null, DateTimeStyles.RoundtripKind),
-                    ProcessPath = reader.IsDBNull(6) ? string.Empty : reader.GetString(6)
+                    ProcessPath = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                    Alias = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)
                 });
             }
             return segments;
@@ -64,9 +65,9 @@ namespace RikkaTracker.Services
             using var connection = _dbContext.CreateConnection();
             using var command = connection.CreateCommand();
             
-            // 使用 SQL 聚合计算秒数，以获得更高性能
+            // 使用 SQL 聚合计算秒数，同时通过 MAX(Alias) 获取最新的友好名称
             command.CommandText = @"
-                SELECT ProcessName, ProcessPath, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TotalSeconds
+                SELECT ProcessName, ProcessPath, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TotalSeconds, MAX(Alias) as Alias
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status
                 GROUP BY ProcessName, ProcessPath
@@ -79,7 +80,12 @@ namespace RikkaTracker.Services
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                result.Add((reader.GetString(0), reader.IsDBNull(1) ? string.Empty : reader.GetString(1), reader.GetDouble(2)));
+                string procName = reader.GetString(0);
+                double seconds = reader.GetDouble(2);
+                string alias = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
+                
+                string displayName = !string.IsNullOrEmpty(alias) ? alias : procName;
+                result.Add((displayName, reader.IsDBNull(1) ? string.Empty : reader.GetString(1), seconds));
             }
             return result.Select(r => (r.Name, r.Path, TimeSpan.FromSeconds(r.Seconds)));
         }
@@ -139,7 +145,7 @@ namespace RikkaTracker.Services
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status;
 
-                SELECT ProcessName, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TopSeconds
+                SELECT ProcessName, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TopSeconds, MAX(Alias) as TopAlias
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status
                 GROUP BY ProcessName
@@ -164,8 +170,12 @@ namespace RikkaTracker.Services
 
             if (await reader.NextResultAsync() && await reader.ReadAsync())
             {
-                topAppName = reader.GetString(0);
-                topAppTime = TimeSpan.FromSeconds(reader.GetDouble(1));
+                string procName = reader.GetString(0);
+                double seconds = reader.GetDouble(1);
+                string alias = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                
+                topAppName = !string.IsNullOrEmpty(alias) ? alias : procName;
+                topAppTime = TimeSpan.FromSeconds(seconds);
             }
 
             return (totalTime, appCount, topAppName, topAppTime);

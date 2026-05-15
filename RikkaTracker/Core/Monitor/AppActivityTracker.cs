@@ -18,6 +18,7 @@ namespace RikkaTracker.Core.Monitor
     public class AppActivityChangedEventArgs : EventArgs
     {
         public string ProcessName { get; set; } = string.Empty;
+        public string Alias { get; set; } = string.Empty;
         public string ProcessPath { get; set; } = string.Empty;
         public string WindowTitle { get; set; } = string.Empty;
         public int ProcessId { get; set; }
@@ -28,7 +29,7 @@ namespace RikkaTracker.Core.Monitor
 
     public interface IAppActivityTracker
     {
-        event EventHandler<AppActivityChangedEventArgs> AppActivityChanged;
+        event EventHandler<AppActivityChangedEventArgs>? AppActivityChanged;
         void Start();
         void Stop();
     }
@@ -37,6 +38,7 @@ namespace RikkaTracker.Core.Monitor
     {
         private readonly IConfigService _configService;
         private readonly Strategies.IFilterEngine _filterEngine;
+        private readonly Data.IActivityLogStore _logStore;
         private readonly DispatcherTimer _idleTimer;
         private Win32Api.WinEventDelegate? _winEventDelegate;
         private IntPtr _hHook;
@@ -45,6 +47,7 @@ namespace RikkaTracker.Core.Monitor
         private class ProcessState
         {
             public string ProcessName { get; set; } = string.Empty;
+            public string Alias { get; set; } = string.Empty;
             public string LastTitle { get; set; } = string.Empty;
             public ActivityStatus LastStatus { get; set; } = ActivityStatus.Background;
             public IntPtr LastHwnd { get; set; } = IntPtr.Zero;
@@ -56,12 +59,13 @@ namespace RikkaTracker.Core.Monitor
         // 标记当前焦点进程是否因空闲而被降级
         private bool _isIdleDemoted;
 
-        public event EventHandler<AppActivityChangedEventArgs> AppActivityChanged;
+        public event EventHandler<AppActivityChangedEventArgs>? AppActivityChanged;
 
-        public AppActivityTracker(IConfigService configService, Strategies.IFilterEngine filterEngine)
+        public AppActivityTracker(IConfigService configService, Strategies.IFilterEngine filterEngine, Data.IActivityLogStore logStore)
         {
             _configService = configService;
             _filterEngine = filterEngine;
+            _logStore = logStore;
             _idleTimer = new DispatcherTimer(DispatcherPriority.Background)
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -285,7 +289,11 @@ namespace RikkaTracker.Core.Monitor
         {
             if (!_processStates.TryGetValue(pid, out var state))
             {
-                state = new ProcessState { ProcessName = GetProcessName(pid) };
+                state = new ProcessState 
+                { 
+                    ProcessName = GetProcessName(pid),
+                    Alias = Win32Api.GetProcessAlias(pid)
+                };
                 _processStates[pid] = state;
             }
 
@@ -302,10 +310,13 @@ namespace RikkaTracker.Core.Monitor
 
                 string processPath = Win32Api.GetProcessPath(pid);
 
+                _logStore.RecordTransition(state.ProcessName, processPath, state.LastTitle, newStatus, DateTime.Now, state.Alias);
+
                 AppActivityChanged?.Invoke(this, new AppActivityChangedEventArgs
                 {
                     ProcessId = pid,
                     ProcessName = state.ProcessName,
+                    Alias = state.Alias,
                     ProcessPath = processPath,
                     WindowTitle = state.LastTitle,
                     OldStatus = oldStatus,
@@ -360,12 +371,7 @@ namespace RikkaTracker.Core.Monitor
 
         private string GetProcessName(int pid)
         {
-            try
-            {
-                using var proc = Process.GetProcessById(pid);
-                return proc.ProcessName;
-            }
-            catch { return "Unknown"; }
+            return Win32Api.GetInternalProcessName(pid);
         }
     }
 }

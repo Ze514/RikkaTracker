@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -148,6 +151,45 @@ namespace RikkaTracker.Core.Monitor
                 }
             }
             return string.Empty;
+        }
+
+        public static string GetInternalProcessName(int pid)
+        {
+            try
+            {
+                using var proc = Process.GetProcessById(pid);
+                return proc.ProcessName;
+            }
+            catch { return "Unknown"; }
+        }
+
+        public static string GetProcessAlias(int pid)
+        {
+            try
+            {
+                string path = GetProcessPath(pid);
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                {
+                    var info = FileVersionInfo.GetVersionInfo(path);
+                    
+                    // 优先获取文件描述
+                    if (!string.IsNullOrEmpty(info.FileDescription))
+                    {
+                        return info.FileDescription;
+                    }
+                    
+                    // 其次获取产品名称
+                    if (!string.IsNullOrEmpty(info.ProductName))
+                    {
+                        return info.ProductName;
+                    }
+                }
+                return string.Empty; // 如果没有友好描述，返回空
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         public static int ResolveUwpProcessId(IntPtr hWnd, int currentPid)

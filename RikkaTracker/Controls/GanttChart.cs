@@ -258,7 +258,7 @@ namespace RikkaTracker.Controls
                         }
 
                         var text = new FormattedText(
-                            group.ProcessName,
+                            group.DisplayName,
                             CultureInfo.CurrentUICulture,
                             FlowDirection.LeftToRight,
                             new Typeface("Segoe UI SemiBold"),
@@ -309,7 +309,7 @@ namespace RikkaTracker.Controls
                 };
 
                 string tooltipContent = $"【应用详情】\n" +
-                                       $"名称: {hit.ProcessName}\n" +
+                                       $"名称: {hit.DisplayName}\n" +
                                        $"标题: {hit.WindowTitle}\n" +
                                        $"时间: {hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n" +
                                        $"持续: {hit.Duration:hh\\:mm\\:ss}\n" +
@@ -370,7 +370,7 @@ namespace RikkaTracker.Controls
             if (hit != null)
             {
                 // TODO: 占位操作 - 查看该应用的使用统计
-                System.Diagnostics.Debug.WriteLine($"点击了片段: {hit.ProcessName}, 将跳转到应用统计详情...");
+                System.Diagnostics.Debug.WriteLine($"点击了片段: {hit.DisplayName}, 将跳转到应用统计详情...");
                 
                 if (SegmentClickedCommand != null && SegmentClickedCommand.CanExecute(hit))
                 {

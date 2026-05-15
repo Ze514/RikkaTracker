@@ -11,7 +11,7 @@ namespace RikkaTracker.Core.Data
 {
     public interface IActivityLogStore
     {
-        void RecordTransition(string processName, string processPath, string windowTitle, ActivityStatus newStatus, DateTime timestamp);
+        void RecordTransition(string processName, string processPath, string windowTitle, ActivityStatus newStatus, DateTime timestamp, string alias = "");
         /// <summary>
         /// 进程退出时调用，闭合该进程的开放segment并停止记录
         /// </summary>
@@ -33,7 +33,7 @@ namespace RikkaTracker.Core.Data
             _flushTimer = new System.Threading.Timer(async _ => await FlushQueueAsync(), null, 1000, 1000);
         }
 
-        public void RecordTransition(string processName, string processPath, string windowTitle, ActivityStatus newStatus, DateTime timestamp)
+        public void RecordTransition(string processName, string processPath, string windowTitle, ActivityStatus newStatus, DateTime timestamp, string alias = "")
         {
             lock (_syncLock)
             {
@@ -43,7 +43,7 @@ namespace RikkaTracker.Core.Data
                     // 如果新状态与旧状态相同，无需操作（去重）
                     if (oldSeg.Status == newStatus)
                     {
-                        // 仅更新窗口标题和路径（路径可能从空变为有）
+                        // 仅更新窗口标题、路径和别名
                         if (!string.IsNullOrEmpty(windowTitle))
                         {
                             oldSeg.WindowTitle = windowTitle;
@@ -51,6 +51,10 @@ namespace RikkaTracker.Core.Data
                         if (!string.IsNullOrEmpty(processPath))
                         {
                             oldSeg.ProcessPath = processPath;
+                        }
+                        if (!string.IsNullOrEmpty(alias))
+                        {
+                            oldSeg.Alias = alias;
                         }
                         return;
                     }
@@ -66,6 +70,7 @@ namespace RikkaTracker.Core.Data
                     ProcessName = processName,
                     ProcessPath = !string.IsNullOrEmpty(processPath) ? processPath : oldSeg?.ProcessPath ?? string.Empty,
                     WindowTitle = !string.IsNullOrEmpty(windowTitle) ? windowTitle : oldSeg?.WindowTitle ?? string.Empty,
+                    Alias = !string.IsNullOrEmpty(alias) ? alias : oldSeg?.Alias ?? string.Empty,
                     Status = newStatus,
                     StartTime = timestamp
                 };
@@ -97,6 +102,7 @@ namespace RikkaTracker.Core.Data
                     ProcessName = segment.ProcessName,
                     ProcessPath = segment.ProcessPath,
                     WindowTitle = segment.WindowTitle,
+                    Alias = segment.Alias,
                     Status = segment.Status,
                     StartTime = segment.StartTime,
                     EndTime = endOfDay
@@ -108,6 +114,7 @@ namespace RikkaTracker.Core.Data
                     ProcessName = segment.ProcessName,
                     ProcessPath = segment.ProcessPath,
                     WindowTitle = segment.WindowTitle,
+                    Alias = segment.Alias,
                     Status = segment.Status,
                     StartTime = segment.StartTime.Date.AddDays(1),
                     EndTime = segment.EndTime
@@ -146,12 +153,13 @@ namespace RikkaTracker.Core.Data
                     using var command = connection.CreateCommand();
                     command.Transaction = transaction;
                     command.CommandText = @"
-                        INSERT INTO ActivityLog (ProcessName, ProcessPath, WindowTitle, Status, StartTime, EndTime)
-                        VALUES ($proc, $path, $title, $status, $start, $end)
+                        INSERT INTO ActivityLog (ProcessName, ProcessPath, WindowTitle, Alias, Status, StartTime, EndTime)
+                        VALUES ($proc, $path, $title, $alias, $status, $start, $end)
                     ";
                     command.Parameters.AddWithValue("$proc", seg.ProcessName);
                     command.Parameters.AddWithValue("$path", seg.ProcessPath ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("$title", seg.WindowTitle ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$alias", seg.Alias ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("$status", (int)seg.Status);
                     command.Parameters.AddWithValue("$start", seg.StartTime.ToString("o"));
                     command.Parameters.AddWithValue("$end", seg.EndTime.ToString("o"));

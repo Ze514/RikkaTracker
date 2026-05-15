@@ -48,6 +48,7 @@ namespace RikkaTracker.Core.Data
                         ProcessName TEXT NOT NULL,
                         ProcessPath TEXT,
                         WindowTitle TEXT,
+                        Alias TEXT,
                         Status INTEGER NOT NULL,
                         StartTime TEXT NOT NULL,
                         EndTime TEXT NOT NULL

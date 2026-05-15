@@ -80,6 +80,7 @@ namespace RikkaTracker.ViewModels
                                 Status = s.Status,
                                 Start = s.StartTime,
                                 End = s.EndTime,
+                                Alias = s.Alias,
                                 Icon = _iconService.GetIcon(s.ProcessName, s.ProcessPath)
                             };
                         }
@@ -101,6 +102,7 @@ namespace RikkaTracker.ViewModels
                                     Status = s.Status,
                                     Start = s.StartTime,
                                     End = s.EndTime,
+                                    Alias = s.Alias,
                                     Icon = _iconService.GetIcon(s.ProcessName, s.ProcessPath)
                                 };
                             }
@@ -127,7 +129,8 @@ namespace RikkaTracker.ViewModels
 
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
-                filtered = filtered.Where(s => s.ProcessName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+                filtered = filtered.Where(s => s.ProcessName.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || 
+                                              s.DisplayName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!ShowInactive)
@@ -159,6 +162,7 @@ namespace RikkaTracker.ViewModels
                         Status = s.Status,
                         Start = s.Start,
                         End = s.End,
+                        Alias = s.Alias,
                         Icon = s.Icon,
                         RowIndex = i
                     };

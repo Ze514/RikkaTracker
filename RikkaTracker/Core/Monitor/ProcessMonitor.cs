@@ -94,7 +94,7 @@ namespace RikkaTracker.Core.Monitor
                         // 排除系统会话进程
                         if (p.SessionId != 0)
                         {
-                            result[p.Id] = p.ProcessName;
+                            result[p.Id] = Win32Api.GetInternalProcessName(p.Id);
                         }
                     }
                     catch { }

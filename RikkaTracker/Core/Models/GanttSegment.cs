@@ -8,6 +8,7 @@ namespace RikkaTracker.Core.Models
         public string ProcessName { get; set; } = string.Empty;
         public string ProcessPath { get; set; } = string.Empty;
         public string WindowTitle { get; set; } = string.Empty;
+        public string Alias { get; set; } = string.Empty;
         public ActivityStatus Status { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
@@ -17,5 +18,6 @@ namespace RikkaTracker.Core.Models
         public System.Windows.Media.ImageSource? Icon { get; set; }
 
         public TimeSpan Duration => End - Start;
+        public string DisplayName => !string.IsNullOrEmpty(Alias) ? Alias : ProcessName;
     }
 }

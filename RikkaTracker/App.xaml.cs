@@ -61,8 +61,7 @@ namespace RikkaTracker
 
             activityTracker.AppActivityChanged += (s, args) =>
             {
-                System.Diagnostics.Debug.WriteLine($"[Activity] {args.ProcessName} ({args.ProcessId}) -> {args.NewStatus} | {args.WindowTitle}");
-                logStore.RecordTransition(args.ProcessName, args.ProcessPath, args.WindowTitle, args.NewStatus, args.Timestamp);
+                System.Diagnostics.Debug.WriteLine($"[Activity] {args.ProcessName} ({args.Alias}) ({args.ProcessId}) -> {args.NewStatus} | {args.WindowTitle}");
             };
             activityTracker.Start();
 
