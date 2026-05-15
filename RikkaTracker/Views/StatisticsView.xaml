@@ -57,6 +57,7 @@
                                          VerticalAlignment="Top"
                                          HorizontalAlignment="Left"
                                          PixelsPerHour="{Binding Value, ElementName=ZoomSlider}"
+                                         ZoomMode="{Binding ZoomMode}"
                                          SegmentClickedCommand="{Binding SegmentClickedCommand}" />
                 </ScrollViewer>
 

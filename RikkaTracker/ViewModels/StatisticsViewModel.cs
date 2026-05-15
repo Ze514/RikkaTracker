@@ -14,13 +14,17 @@ namespace RikkaTracker.ViewModels
     {
         private readonly IDataService _dataService;
         private readonly IIconService _iconService;
+        private readonly IConfigService _configService;
 
-        public StatisticsViewModel(IDataService dataService, IIconService iconService)
+        public StatisticsViewModel(IDataService dataService, IIconService iconService, IConfigService configService)
         {
             _dataService = dataService;
             _iconService = iconService;
+            _configService = configService;
             SelectedDate = DateTime.Today;
         }
+
+        public string ZoomMode => _configService.Config.TimelineZoomMode;
 
         [ObservableProperty]
         private DateTime _selectedDate;

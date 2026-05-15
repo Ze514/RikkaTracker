@@ -11,6 +11,7 @@ namespace RikkaTracker.Models
         public bool GitSyncEnabled { get; set; } = false;
         public string GitRepositoryPath { get; set; } = string.Empty;
         public string Theme { get; set; } = "Dark"; // "Light" or "Dark"
+        public string TimelineZoomMode { get; set; } = "Center"; // "Center" or "Latest"
         public List<FilterRule> FilterRules { get; set; } = new List<FilterRule>();
     }
 

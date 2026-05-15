@@ -23,6 +23,7 @@ namespace RikkaTracker.ViewModels
             _isDarkMode = _themeService.GetCurrentTheme() == "Dark";
             _idleTimeoutMinutes = _configService.Config.IdleTimeoutMinutes;
             _storagePath = _configService.Config.DataStoragePath;
+            _timelineZoomMode = _configService.Config.TimelineZoomMode;
             
             FilterRules = new ObservableCollection<FilterRule>(_configService.Config.FilterRules);
         }
@@ -130,6 +131,15 @@ namespace RikkaTracker.ViewModels
 
         [ObservableProperty]
         private string _storagePath;
+
+        [ObservableProperty]
+        private string _timelineZoomMode;
+
+        partial void OnTimelineZoomModeChanged(string value)
+        {
+            _configService.Config.TimelineZoomMode = value;
+            _configService.Save();
+        }
 
         private bool _isDarkMode;
         public bool IsDarkMode

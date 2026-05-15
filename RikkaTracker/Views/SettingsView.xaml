@@ -51,6 +51,20 @@
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center"/>
                     </Grid>
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="时间轴缩放模式" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="缩放时以屏幕中线为准，或保持最新记录点不动" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineZoomMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
+                            <ComboBoxItem Content="视口中心" Tag="Center"/>
+                            <ComboBoxItem Content="最新点 (吸附)" Tag="Latest"/>
+                        </ComboBox>
+                    </Grid>
                 </StackPanel>
             </ui:Card>
 

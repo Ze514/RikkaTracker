@@ -34,12 +34,42 @@ namespace RikkaTracker.Controls
 
         public static readonly DependencyProperty PixelsPerHourProperty =
             DependencyProperty.Register("PixelsPerHour", typeof(double), typeof(GanttChart),
-                new FrameworkPropertyMetadata(200.0, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+                new FrameworkPropertyMetadata(200.0, 
+                    FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender,
+                    OnPixelsPerHourChanged));
 
         public double PixelsPerHour
         {
             get => (double)GetValue(PixelsPerHourProperty);
             set => SetValue(PixelsPerHourProperty, value);
+        }
+
+        private static void OnPixelsPerHourChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not GanttChart control) return;
+            double newVal = (double)e.NewValue;
+
+            if (control._parentScrollViewer == null || newVal <= 0) return;
+
+            // 如果还没有稳定中心点（比如刚加载），先初始化一个
+            if (control._lastStableCenterInHours < 0)
+            {
+                control.UpdateStableCenter();
+            }
+
+            // 使用锁定的中心点计算新的偏移量
+            double viewportWidth = control._parentScrollViewer.ViewportWidth;
+            double newOffset = control._lastStableCenterInHours * newVal - control._stableCenterViewportRelativeX;
+
+            // 标记当前为内部滚动，防止 OnParentScrollChanged 修改我们的锚点
+            control._isInternalScrolling = true;
+            control._parentScrollViewer.ScrollToHorizontalOffset(Math.Max(0, newOffset));
+
+            // 在布局刷新后解除锁定
+            control.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                control._isInternalScrolling = false;
+            }), System.Windows.Threading.DispatcherPriority.DataBind);
         }
 
         public static readonly DependencyProperty DisplayModeProperty =
@@ -61,7 +91,27 @@ namespace RikkaTracker.Controls
             set => SetValue(SegmentClickedCommandProperty, value);
         }
 
+        public static readonly DependencyProperty ZoomModeProperty =
+            DependencyProperty.Register("ZoomMode", typeof(string), typeof(GanttChart),
+                new PropertyMetadata("Center", OnZoomModeChanged));
+
+        private static void OnZoomModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is GanttChart control)
+            {
+                control.UpdateStableCenter();
+            }
+        }
+
+        public string ZoomMode
+        {
+            get => (string)GetValue(ZoomModeProperty);
+            set => SetValue(ZoomModeProperty, value);
+        }
+
         private System.Windows.Controls.ScrollViewer _parentScrollViewer;
+        private double _lastStableCenterInHours = -1;
+        private bool _isInternalScrolling = false;
 
         public GanttChart()
         {
@@ -88,9 +138,55 @@ namespace RikkaTracker.Controls
             _parentScrollViewer = parent as System.Windows.Controls.ScrollViewer;
             if (_parentScrollViewer != null)
             {
-                _parentScrollViewer.ScrollChanged += (s, args) => this.InvalidateVisual();
+                _parentScrollViewer.ScrollChanged += OnParentScrollChanged;
             }
         }
+
+        private void OnParentScrollChanged(object sender, System.Windows.Controls.ScrollChangedEventArgs e)
+        {
+            // 只有当不是因为我们内部缩放导致的滚动时，才更新“稳定中心点”
+            // 这样在连续拖动滑块缩放时，中心点会锁定在缩放开始时的那个位置
+            if (!_isInternalScrolling && e.HorizontalChange != 0)
+            {
+                UpdateStableCenter();
+            }
+
+            if (DisplayMode != GanttDisplayMode.Header)
+            {
+                this.InvalidateVisual();
+            }
+        }
+
+        private void UpdateStableCenter()
+        {
+            if (_parentScrollViewer == null || PixelsPerHour <= 0) return;
+
+            if (ZoomMode == "Latest" && ItemsSource != null && ItemsSource.Any())
+            {
+                // 锚定到最新的一条线段的右端点
+                DateTime baseTime = ItemsSource.First().Start.Date;
+                DateTime latestEnd = ItemsSource.Max(s => s.End);
+                
+                double latestTimeInHours = (latestEnd - baseTime).TotalHours;
+                double latestX = latestTimeInHours * PixelsPerHour;
+                
+                // 记录该点相对于视口左侧的像素偏移
+                double relativeX = latestX - _parentScrollViewer.HorizontalOffset;
+                
+                // 将相对位置存入 _lastStableCenterInHours (这里复用变量名，但含义变为 [逻辑时间, 像素相对偏移])
+                // 为了简单起见，我们用两个变量分开存储，或者这里做一个约定
+                _lastStableCenterInHours = latestTimeInHours;
+                _stableCenterViewportRelativeX = relativeX;
+            }
+            else
+            {
+                // 默认：锚定到视口中心
+                _lastStableCenterInHours = (_parentScrollViewer.HorizontalOffset + _parentScrollViewer.ViewportWidth / 2) / PixelsPerHour;
+                _stableCenterViewportRelativeX = _parentScrollViewer.ViewportWidth / 2;
+            }
+        }
+
+        private double _stableCenterViewportRelativeX = 0;
 
         private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
