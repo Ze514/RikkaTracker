@@ -302,6 +302,21 @@ namespace RikkaTracker.Core.Monitor
                 state.LastTitle = title;
             }
 
+            // 核心竞争逻辑：确保全局唯一活跃焦点 (Mutual Exclusion)
+            // 如果新状态是 Active，则强制将其他所有进程降级
+            if (newStatus == ActivityStatus.ForegroundActive)
+            {
+                var otherActiveProcesses = _processStates
+                    .Where(p => p.Key != pid && p.Value.LastStatus == ActivityStatus.ForegroundActive)
+                    .ToList();
+
+                foreach (var other in otherActiveProcesses)
+                {
+                    // 只有持有焦点的窗口才能 Active，失去焦点的窗口必然至少降级为 Inactive
+                    UpdateProcessStatus(other.Key, string.Empty, ActivityStatus.ForegroundInactive);
+                }
+            }
+
             // 严格去重：同状态不重复下发
             if (state.LastStatus != newStatus)
             {

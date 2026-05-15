@@ -12,18 +12,21 @@ namespace RikkaTracker.ViewModels
     {
         private readonly IThemeService _themeService;
         private readonly IConfigService _configService;
+        private readonly ILocalizationService _localizationService;
         private readonly IFilterEngine _filterEngine;
 
-        public SettingsViewModel(IThemeService themeService, IConfigService configService, IFilterEngine filterEngine)
+        public SettingsViewModel(IThemeService themeService, IConfigService configService, IFilterEngine filterEngine, ILocalizationService localizationService)
         {
             _themeService = themeService;
             _configService = configService;
             _filterEngine = filterEngine;
+            _localizationService = localizationService;
             
             _isDarkMode = _themeService.GetCurrentTheme() == "Dark";
             _idleTimeoutMinutes = _configService.Config.IdleTimeoutMinutes;
             _storagePath = _configService.Config.DataStoragePath;
             _timelineZoomMode = _configService.Config.TimelineZoomMode;
+            _language = _configService.Config.Language;
             
             FilterRules = new ObservableCollection<FilterRule>(_configService.Config.FilterRules);
         }
@@ -139,6 +142,24 @@ namespace RikkaTracker.ViewModels
         {
             _configService.Config.TimelineZoomMode = value;
             _configService.Save();
+        }
+
+        [ObservableProperty]
+        private string _language;
+
+        partial void OnLanguageChanged(string value)
+        {
+            _configService.Config.Language = value;
+            _configService.Save();
+            
+            if (value == "Auto")
+            {
+                _localizationService.Initialize("Auto");
+            }
+            else
+            {
+                _localizationService.SetLanguage(value);
+            }
         }
 
         private bool _isDarkMode;

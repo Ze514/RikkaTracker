@@ -23,7 +23,29 @@
 ```mermaid
 stateDiagram-v2
     [*] --> Background : 进程启动 (ProcessStarted)
-    
+    Background --> ForegroundInactive : 窗口显示 (MinimizeEnd/Show)
+    ForegroundInactive --> ForegroundActive : 获得焦点 (EVENT_SYSTEM_FOREGROUND)
+    ForegroundActive --> ForegroundInactive : 失去焦点 (由于其他窗口抢占) 或 触发空闲降级
+    ForegroundActive --> Background : 窗口最小化 (EVENT_SYSTEM_MINIMIZESTART)
+    ForegroundInactive --> Background : 窗口最小化 (EVENT_SYSTEM_MINIMIZESTART)
+```
+
+---
+
+## 三、 焦点竞争与抢占机制 (Focus Preemption)
+
+基于 Windows 内核窗口管理器的设计规则——**系统级输入焦点（Keyboard/Mouse Focus）在同一时间只能被唯一一个窗口持有**。
+
+RikkaTracker 在 `AppActivityTracker` 中实现了严格的**焦点抢占逻辑**：
+
+1.  **唯一性约束**：在任何时刻，系统中处于 `ForegroundActive (2)` 状态的进程数量必然为 `0` 或 `1`。
+2.  **抢占流程**：
+    *   当进程 A 获得系统焦点（触发 `EVENT_SYSTEM_FOREGROUND`）时，系统会首先检查当前是否存在状态为 `ForegroundActive` 的进程 B。
+    *   若存在进程 B，系统会强制将其状态降级为 `ForegroundInactive`（如果其窗口仍可见）或 `Background`（如果已不可见）。
+    *   随后，进程 A 才会从 `ForegroundInactive` 或 `Background` 提升为 `ForegroundActive`。
+3.  **空闲降级与竞争**：当进程 A 因为空闲而降级为 `ForegroundInactive` 时，系统当前处于“无活跃焦点”状态（Active 进程数为 0）。此时，只要用户在该窗口内产生任何输入，进程 A 会立即抢回 Active 状态。
+
+这种机制确保了统计数据的绝对准确，防止了因为状态切换不完整导致的“多应用同时活跃”的数据逻辑错误。
     Background --> ForegroundInactive : 窗口恢复显示\n(MINIMIZEEND/未获焦点)
     Background --> ForegroundActive : 窗口恢复并获焦点\n(FOREGROUND)
     

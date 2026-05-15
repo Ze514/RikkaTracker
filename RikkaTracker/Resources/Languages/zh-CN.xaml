@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    
+    <!-- Dashboard -->
+    <sys:String x:Key="StrDashboard">概览</sys:String>
+    <sys:String x:Key="StrTodayOverview">今日概览</sys:String>
+    <sys:String x:Key="StrTotalTime">今日总计</sys:String>
+    <sys:String x:Key="StrActiveApps">活跃应用</sys:String>
+    <sys:String x:Key="StrTopApp">最长使用</sys:String>
+    <sys:String x:Key="StrHourlyTrend">24小时活跃趋势</sys:String>
+
+    <!-- Statistics/Timeline -->
+    <sys:String x:Key="StrTimeline">时间轴</sys:String>
+    <sys:String x:Key="StrScale">比例</sys:String>
+    <sys:String x:Key="StrRefresh">刷新</sys:String>
+    <sys:String x:Key="StrTrackLatest">追踪最新</sys:String>
+    <sys:String x:Key="StrSearchApp">搜索应用...</sys:String>
+    <sys:String x:Key="StrInactive">非活动</sys:String>
+    <sys:String x:Key="StrBackground">后台</sys:String>
+
+    <!-- Settings -->
+    <sys:String x:Key="StrSettings">设置</sys:String>
+    <sys:String x:Key="StrIdleTimeout">空闲超时 (分钟)</sys:String>
+    <sys:String x:Key="StrIdleTimeoutDesc">在此时间后无操作，活跃应用将标记为非活动状态</sys:String>
+    <sys:String x:Key="StrAutoStart">开机自启动</sys:String>
+    <sys:String x:Key="StrAutoStartDesc">随系统启动自动进入监控状态</sys:String>
+    <sys:String x:Key="StrDarkMode">深色模式</sys:String>
+    <sys:String x:Key="StrDarkModeDesc">切换应用的主题风格</sys:String>
+    <sys:String x:Key="StrZoomMode">时间轴缩放模式</sys:String>
+    <sys:String x:Key="StrZoomModeDesc">缩放时以屏幕中线为准，或保持最新记录点不动</sys:String>
+    <sys:String x:Key="StrZoomModeCenter">视口中心</sys:String>
+    <sys:String x:Key="StrZoomModeLatest">最新点 (吸附)</sys:String>
+    <sys:String x:Key="StrLanguage">语言 (Language)</sys:String>
+    <sys:String x:Key="StrLanguageDesc">设置界面的显示语言</sys:String>
+    <sys:String x:Key="StrLanguageAuto">自动识别 (系统)</sys:String>
+    
+    <sys:String x:Key="StrFilterRules">应用策略规则</sys:String>
+    <sys:String x:Key="StrAddRule">新增规则</sys:String>
+    <sys:String x:Key="StrSaveAndApply">保存并生效</sys:String>
+    <sys:String x:Key="StrIgnoreRecord">忽略记录</sys:String>
+    <sys:String x:Key="StrDisableIdle">免空闲检测</sys:String>
+    
+    <sys:String x:Key="StrDataStorage">数据存储路径</sys:String>
+    <sys:String x:Key="StrChange">更改</sys:String>
+    <sys:String x:Key="StrExportData">导出全部数据</sys:String>
+</ResourceDictionary>

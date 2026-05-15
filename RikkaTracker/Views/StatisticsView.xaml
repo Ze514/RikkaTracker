@@ -20,15 +20,15 @@
 
         <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
             <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
-            <ui:TextBlock Text="比例" VerticalAlignment="Center" Margin="20,0,10,0"/>
+            <ui:TextBlock Text="{DynamicResource StrScale}" VerticalAlignment="Center" Margin="20,0,10,0"/>
             <Slider x:Name="ZoomSlider" Minimum="100" Maximum="2000" Value="1050" Width="100" VerticalAlignment="Center"/>
             
-            <ui:Button Content="刷新" Icon="{ui:SymbolIcon ArrowSync24}" Command="{Binding RefreshCommand}" Margin="20,0,5,0" VerticalAlignment="Center"/>
-            <ui:Button Content="追踪最新" Icon="{ui:SymbolIcon MyLocation24}" Command="{Binding FocusLatestCommand}" Margin="5,0,5,0" VerticalAlignment="Center"/>
+            <ui:Button Content="{DynamicResource StrRefresh}" Icon="{ui:SymbolIcon ArrowSync24}" Command="{Binding RefreshCommand}" Margin="20,0,5,0" VerticalAlignment="Center"/>
+            <ui:Button Content="{DynamicResource StrTrackLatest}" Icon="{ui:SymbolIcon MyLocation24}" Command="{Binding FocusLatestCommand}" Margin="5,0,5,0" VerticalAlignment="Center"/>
 
-            <ui:TextBox PlaceholderText="搜索应用..." Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="15,0,10,0" VerticalAlignment="Center"/>
-            <ui:ToggleSwitch IsChecked="{Binding ShowInactive}" Content="非活动" Margin="10,0,0,0" VerticalAlignment="Center"/>
-            <ui:ToggleSwitch IsChecked="{Binding ShowBackground}" Content="后台" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            <ui:TextBox PlaceholderText="{DynamicResource StrSearchApp}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="15,0,10,0" VerticalAlignment="Center"/>
+            <ui:ToggleSwitch IsChecked="{Binding ShowInactive}" Content="{DynamicResource StrInactive}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            <ui:ToggleSwitch IsChecked="{Binding ShowBackground}" Content="{DynamicResource StrBackground}" Margin="10,0,0,0" VerticalAlignment="Center"/>
         </StackPanel>
 
         <ui:Card Grid.Row="1" Padding="0" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">

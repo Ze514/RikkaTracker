@@ -50,7 +50,7 @@
             
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem
-                    Content="概览"
+                    Content="{DynamicResource StrDashboard}"
                     Command="{Binding NavigateToDashboardCommand}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Home24"/>
@@ -58,7 +58,7 @@
                 </ui:NavigationViewItem>
                 
                 <ui:NavigationViewItem
-                    Content="应用统计"
+                    Content="{DynamicResource StrActiveApps}"
                     Command="{Binding NavigateToActivityListCommand}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Apps24"/>
@@ -66,7 +66,7 @@
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem
-                    Content="时间轴"
+                    Content="{DynamicResource StrTimeline}"
                     Command="{Binding NavigateToStatisticsCommand}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Clock24"/>
@@ -76,7 +76,7 @@
 
             <ui:NavigationView.FooterMenuItems>
                 <ui:NavigationViewItem
-                    Content="设置"
+                    Content="{DynamicResource StrSettings}"
                     Command="{Binding NavigateToSettingsCommand}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Settings24"/>

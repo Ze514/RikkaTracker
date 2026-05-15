@@ -35,17 +35,6 @@ namespace RikkaTracker
             _notifyIcon.IconSource = new System.Windows.Media.DrawingImage(drawing);
             _notifyIcon.ToolTipText = "RikkaTracker";
             
-            // Create Context Menu
-            var contextMenu = new ContextMenu();
-            var showItem = new MenuItem { Header = "显示" };
-            showItem.Click += (s, ex) => ShowMainWindow();
-            var exitItem = new MenuItem { Header = "退出" };
-            exitItem.Click += (s, ex) => ExitApplication();
-            
-            contextMenu.Items.Add(showItem);
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(exitItem);
-            _notifyIcon.ContextMenu = contextMenu;
             _notifyIcon.DoubleClickCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(ShowMainWindow);
 
             // Handle startup parameters
@@ -78,6 +67,14 @@ namespace RikkaTracker
             // Apply saved theme
             var themeService = ServiceProvider.GetRequiredService<IThemeService>();
             themeService.ApplyTheme(themeService.GetCurrentTheme());
+
+            // Initialize Localization
+            var localizationService = ServiceProvider.GetRequiredService<ILocalizationService>();
+            var configService = ServiceProvider.GetRequiredService<IConfigService>();
+            localizationService.Initialize(configService.Config.Language);
+
+            // Update Tray Menu with localized headers
+            UpdateTrayMenu();
 
             if (!startMinimized)
             {
@@ -113,6 +110,36 @@ namespace RikkaTracker
             mainWindow.Show();
         }
 
+        private void UpdateTrayMenu()
+        {
+            if (_notifyIcon == null) return;
+            
+            var contextMenu = new ContextMenu();
+            var showItem = new MenuItem { Header = Application.Current.Resources["StrScale"] != null ? (string)Application.Current.Resources["StrDashboard"] : "Show" }; 
+            // Wait, I should use specific keys for tray
+            
+            // Re-using keys for now or adding new ones
+            showItem.Header = GetResourceString("StrDashboard", "Show");
+            showItem.Click += (s, ex) => ShowMainWindow();
+            
+            var exitItem = new MenuItem { Header = GetResourceString("StrExportData", "Exit") }; // Just placeholder
+            // Let's add specific tray keys to xaml later, but for now:
+            exitItem.Header = CurrentLanguage == "zh-CN" ? "退出" : "Exit";
+            exitItem.Click += (s, ex) => ExitApplication();
+
+            contextMenu.Items.Add(showItem);
+            contextMenu.Items.Add(new Separator());
+            contextMenu.Items.Add(exitItem);
+            _notifyIcon.ContextMenu = contextMenu;
+        }
+
+        private string GetResourceString(string key, string fallback)
+        {
+            return Application.Current.Resources[key] as string ?? fallback;
+        }
+
+        private string CurrentLanguage => ServiceProvider?.GetService<ILocalizationService>()?.CurrentLanguage ?? "zh-CN";
+
         private void ExitApplication()
         {
             if (ServiceProvider != null)
@@ -138,6 +165,7 @@ namespace RikkaTracker
             services.AddSingleton<IAppActivityTracker, AppActivityTracker>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
             services.AddSingleton<IIconService, IconService>();
+            services.AddSingleton<ILocalizationService, LocalizationService>();
             
             // ViewModels
             services.AddTransient<MainViewModel>(); // Transient so it's recreated

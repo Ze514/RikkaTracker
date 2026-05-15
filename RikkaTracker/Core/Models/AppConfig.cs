@@ -12,6 +12,7 @@ namespace RikkaTracker.Models
         public string GitRepositoryPath { get; set; } = string.Empty;
         public string Theme { get; set; } = "Dark"; // "Light" or "Dark"
         public string TimelineZoomMode { get; set; } = "Center"; // "Center" or "Latest"
+        public string Language { get; set; } = "Auto"; // "Auto", "zh-CN", "en-US"
         public List<FilterRule> FilterRules { get; set; } = new List<FilterRule>();
     }
 

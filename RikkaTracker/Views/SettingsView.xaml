@@ -9,7 +9,7 @@
     <Grid Margin="20">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>
-            <ui:TextBlock Text="设置" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+            <ui:TextBlock Text="{DynamicResource StrSettings}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
             <ui:Card Padding="20" Margin="0,0,0,10">
                 <StackPanel>
@@ -19,8 +19,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="空闲超时 (分钟)" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="在此时间后无操作，活跃应用将标记为非活动状态" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrIdleTimeout}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrIdleTimeoutDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:TextBlock Text="{Binding IdleTimeoutMinutes}" Margin="0,0,10,0" VerticalAlignment="Center"/>
@@ -34,8 +34,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="开机自启动" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="随系统启动自动进入监控状态" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrAutoStart}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrAutoStartDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAutoStart}" VerticalAlignment="Center"/>
                     </Grid>
@@ -46,8 +46,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="深色模式" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="切换应用的主题风格" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrDarkMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrDarkModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center"/>
                     </Grid>
@@ -57,18 +57,34 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="时间轴缩放模式" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="缩放时以屏幕中线为准，或保持最新记录点不动" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrZoomMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrZoomModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineZoomMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
-                            <ComboBoxItem Content="视口中心" Tag="Center"/>
-                            <ComboBoxItem Content="最新点 (吸附)" Tag="Latest"/>
+                            <ComboBoxItem Content="{DynamicResource StrZoomModeCenter}" Tag="Center"/>
+                            <ComboBoxItem Content="{DynamicResource StrZoomModeLatest}" Tag="Latest"/>
+                        </ComboBox>
+                    </Grid>
+                    
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="{DynamicResource StrLanguage}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrLanguageDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding Language}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
+                            <ComboBoxItem Content="{DynamicResource StrLanguageAuto}" Tag="Auto"/>
+                            <ComboBoxItem Content="简体中文" Tag="zh-CN"/>
+                            <ComboBoxItem Content="English" Tag="en-US"/>
                         </ComboBox>
                     </Grid>
                 </StackPanel>
             </ui:Card>
 
-            <ui:TextBlock Text="应用策略规则" FontSize="20" FontWeight="SemiBold" Margin="0,20,0,10"/>
+            <ui:TextBlock Text="{DynamicResource StrFilterRules}" FontSize="20" FontWeight="SemiBold" Margin="0,20,0,10"/>
             <ui:Card Padding="10">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -93,8 +109,8 @@
                                     
                                     <ui:TextBox Text="{Binding ProcessPattern, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="进程名 (支持 *)" Margin="0,0,10,0"/>
                                     
-                                    <CheckBox Grid.Column="1" Content="忽略记录" IsChecked="{Binding Ignore}" VerticalAlignment="Center"/>
-                                    <CheckBox Grid.Column="2" Content="免空闲检测" IsChecked="{Binding DisableIdleDetection}" VerticalAlignment="Center"/>
+                                    <CheckBox Grid.Column="1" Content="{DynamicResource StrIgnoreRecord}" IsChecked="{Binding Ignore}" VerticalAlignment="Center"/>
+                                    <CheckBox Grid.Column="2" Content="{DynamicResource StrDisableIdle}" IsChecked="{Binding DisableIdleDetection}" VerticalAlignment="Center"/>
                                     
                                     <ui:Button Grid.Column="3" 
                                                Icon="{ui:SymbolIcon Delete24}" 
@@ -107,8 +123,8 @@
                     </ItemsControl>
                     
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
-                        <ui:Button Content="新增规则" Icon="{ui:SymbolIcon Add24}" Command="{Binding AddRuleCommand}"/>
-                        <ui:Button Content="保存并生效" Appearance="Primary" Margin="10,0,0,0" Command="{Binding SaveRulesCommand}"/>
+                        <ui:Button Content="{DynamicResource StrAddRule}" Icon="{ui:SymbolIcon Add24}" Command="{Binding AddRuleCommand}"/>
+                        <ui:Button Content="{DynamicResource StrSaveAndApply}" Appearance="Primary" Margin="10,0,0,0" Command="{Binding SaveRulesCommand}"/>
                     </StackPanel>
                 </Grid>
             </ui:Card>
@@ -120,18 +136,18 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <ui:TextBlock Text="数据存储路径" VerticalAlignment="Center"/>
+                        <ui:TextBlock Text="{DynamicResource StrDataStorage}" VerticalAlignment="Center"/>
                         <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                     <ui:Button Grid.Column="1" 
-                               Content="更改" 
+                               Content="{DynamicResource StrChange}" 
                                Icon="{ui:SymbolIcon Folder24}" 
                                Command="{Binding ChangeStoragePathCommand}"
                                VerticalAlignment="Center"/>
                 </Grid>
             </ui:Card>
             
-            <ui:Button Content="导出全部数据" 
+            <ui:Button Content="{DynamicResource StrExportData}" 
                        Appearance="Primary" 
                        Margin="0,20,0,0" 
                        Padding="20,10"

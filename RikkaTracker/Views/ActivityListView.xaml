@@ -19,7 +19,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-            <ui:TextBlock Text="应用统计" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
+            <ui:TextBlock Text="{DynamicResource StrActiveApps}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
             <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
         </StackPanel>
 
