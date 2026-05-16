@@ -5,13 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <Version>0.2.1</Version>
-    
-    <!-- 默认开启单文件发布 -->
+    <Version>0.2.2</Version>
+    <!-- 榛樿寮€鍚崟鏂囦欢鍙戝竷 -->
     <PublishSingleFile>true</PublishSingleFile>
     <DebugType>embedded</DebugType>
-
-    <!-- 仅在 Portable 模式下开启的重型优化 -->
+    <!-- 浠呭湪 Portable 妯″紡涓嬪紑鍚殑閲嶅瀷浼樺寲 -->
     <PropertyGroup Condition="'$(IsPortable)' == 'true'">
       <RuntimeIdentifier>win-x64</RuntimeIdentifier>
       <SelfContained>true</SelfContained>
