@@ -1,9 +1,10 @@
-name: Release
+name: 'Publish and Release'
 
 on:
+  workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - release
 
 jobs:
   build:
@@ -23,6 +24,15 @@ jobs:
       - name: Restore
         run: dotnet restore RikkaTracker/RikkaTracker.csproj
 
+      - name: Get Version
+        id: get_version
+        shell: pwsh
+        run: |
+          [xml]$xml = Get-Content RikkaTracker/RikkaTracker.csproj
+          $version = $xml.Project.PropertyGroup.Version
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+          echo "Version found: $version"
+
       - name: Publish Portable (Self-contained)
         run: |
           dotnet publish RikkaTracker/RikkaTracker.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/portable
@@ -33,15 +43,15 @@ jobs:
 
       - name: Build MSI (WiX)
         run: |
-          # Get version from tag
-          $version = "${{ github.ref_name }}".TrimStart('v')
+          # Use version from env
+          $version = "${{ env.VERSION }}"
           # Build MSI using WiX
           candle -dBuildVersion="$version" -dOutputPath="./publish/portable" RikkaTracker.wxs -o RikkaTracker.wixobj
           light -ext WixUIExtension RikkaTracker.wixobj -o RikkaTracker-Setup-$version.msi
 
       - name: Create Artifacts
         run: |
-          $version = "${{ github.ref_name }}".TrimStart('v')
+          $version = "${{ env.VERSION }}"
           # Zip Portable
           Compress-Archive -Path ./publish/portable/* -DestinationPath RikkaTracker-$version-win-x64-portable.zip
           # Zip Light
@@ -51,11 +61,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           draft: true
+          tag_name: v${{ env.VERSION }}
+          name: 'RikkaTracker v${{ env.VERSION }}'
           files: |
             RikkaTracker-*.zip
             RikkaTracker-Setup-*.msi
           body: |
-            ## RikkaTracker ${{ github.ref_name }}
+            ## RikkaTracker v${{ env.VERSION }}
             
             ### 下载说明
             - **Setup.msi**: 推荐安装版（包含桌面快捷方式）。
