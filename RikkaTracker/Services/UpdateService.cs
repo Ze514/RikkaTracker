@@ -18,6 +18,13 @@ namespace RikkaTracker.Services
         public string DownloadUrl { get; set; } = string.Empty;
     }
 
+    public interface IUpdateService
+    {
+        string GetCurrentVersion();
+        Task<UpdateCheckResult> CheckForUpdatesAsync();
+        Task DownloadAndInstallAsync(UpdateCheckResult updateInfo, Action<double> progressCallback = null);
+    }
+
     public class UpdateService : IUpdateService
     {
         private const string Owner = "remnant-song";
