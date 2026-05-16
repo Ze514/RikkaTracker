@@ -31,7 +31,6 @@ jobs:
           dotnet publish RikkaTracker/RikkaTracker.csproj `
             -c Release `
             -r win-x64 `
-            --self-contained false `
             --no-self-contained `
             -o ./publish/light
 
