@@ -166,6 +166,7 @@ namespace RikkaTracker
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
             services.AddSingleton<IIconService, IconService>();
             services.AddSingleton<ILocalizationService, LocalizationService>();
+            services.AddSingleton<IUpdateService, UpdateService>();
             
             // ViewModels
             services.AddTransient<MainViewModel>(); // Transient so it's recreated

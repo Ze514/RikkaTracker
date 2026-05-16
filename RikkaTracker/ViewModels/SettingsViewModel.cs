@@ -13,18 +13,75 @@ namespace RikkaTracker.ViewModels
         private readonly IThemeService _themeService;
         private readonly IConfigService _configService;
         private readonly ILocalizationService _localizationService;
+        private readonly IUpdateService _updateService;
 
-        public SettingsViewModel(IThemeService themeService, IConfigService configService, ILocalizationService localizationService)
+        public SettingsViewModel(IThemeService themeService, IConfigService configService, ILocalizationService localizationService, IUpdateService updateService)
         {
             _themeService = themeService;
             _configService = configService;
             _localizationService = localizationService;
+            _updateService = updateService;
             
             _isDarkMode = _themeService.GetCurrentTheme() == "Dark";
             _idleTimeoutMinutes = _configService.Config.IdleTimeoutMinutes;
             _storagePath = _configService.Config.DataStoragePath;
             _timelineZoomMode = _configService.Config.TimelineZoomMode;
             _language = _configService.Config.Language;
+            _currentVersion = _updateService.GetCurrentVersion();
+        }
+
+        [ObservableProperty]
+        private string _currentVersion;
+
+        [ObservableProperty]
+        private string _updateStatus = string.Empty;
+
+        [ObservableProperty]
+        private bool _isUpdating;
+
+        [RelayCommand]
+        private async Task CheckForUpdate()
+        {
+            UpdateStatus = (string)System.Windows.Application.Current.Resources["StrCheckUpdate"] + "...";
+            var result = await _updateService.CheckForUpdatesAsync();
+
+            if (result.HasUpdate)
+            {
+                var msg = (string)System.Windows.Application.Current.Resources["StrUpdateAvailable"];
+                var choice = System.Windows.MessageBox.Show(
+                    $"{msg}\n\n{_localizationService.CurrentLanguage == "zh-CN" ? "版本" : "Version"}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
+                    (string)System.Windows.Application.Current.Resources["StrUpdate"],
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Information);
+
+                if (choice == System.Windows.MessageBoxResult.Yes)
+                {
+                    IsUpdating = true;
+                    UpdateStatus = (string)System.Windows.Application.Current.Resources["StrUpdating"];
+                    try
+                    {
+                        await _updateService.DownloadAndInstallAsync(result, p =>
+                        {
+                            UpdateStatus = $"{(string)System.Windows.Application.Current.Resources["StrUpdating"]} ({p:P0})";
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show($"Update failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        IsUpdating = false;
+                        UpdateStatus = string.Empty;
+                    }
+                }
+                else
+                {
+                    UpdateStatus = string.Empty;
+                }
+            }
+            else
+            {
+                System.Windows.MessageBox.Show((string)System.Windows.Application.Current.Resources["StrAlreadyLatest"], (string)System.Windows.Application.Current.Resources["StrUpdate"]);
+                UpdateStatus = string.Empty;
+            }
         }
 
         [ObservableProperty]

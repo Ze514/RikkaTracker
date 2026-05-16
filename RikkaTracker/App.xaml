@@ -17,6 +17,8 @@
             <conv:MultiplyConverter x:Key="MultiplyConverter"/>
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter"/>
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <conv:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

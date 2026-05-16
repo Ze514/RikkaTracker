@@ -47,4 +47,13 @@
     <sys:String x:Key="StrDataStorage">数据存储路径</sys:String>
     <sys:String x:Key="StrChange">更改</sys:String>
     <sys:String x:Key="StrExportData">导出全部数据</sys:String>
+
+    <!-- Update -->
+    <sys:String x:Key="StrUpdate">软件更新</sys:String>
+    <sys:String x:Key="StrCheckUpdate">检查更新</sys:String>
+    <sys:String x:Key="StrCurrentVersion">当前版本</sys:String>
+    <sys:String x:Key="StrLatestVersion">最新版本</sys:String>
+    <sys:String x:Key="StrUpdateAvailable">发现新版本！是否立即下载并安装？</sys:String>
+    <sys:String x:Key="StrUpdating">正在下载更新...</sys:String>
+    <sys:String x:Key="StrAlreadyLatest">当前已是最新版本</sys:String>
 </ResourceDictionary>

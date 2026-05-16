@@ -91,6 +91,26 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
+                        <ui:TextBlock Text="{DynamicResource StrUpdate}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <ui:TextBlock Text="{Binding CurrentVersion, StringFormat={StaticResource StrCurrentVersion}: {0}}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        <ui:TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{ui:ThemeResource SystemFillColorSuccessBrush}" Margin="0,5,0,0" Visibility="{Binding UpdateStatus, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    </StackPanel>
+                    <ui:Button Grid.Column="1" 
+                               Content="{DynamicResource StrCheckUpdate}" 
+                               Icon="{ui:SymbolIcon CloudArrowDown24}" 
+                               Command="{Binding CheckForUpdateCommand}"
+                               IsEnabled="{Binding IsUpdating, Converter={StaticResource InverseBooleanConverter}}"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </ui:Card>
+            
+            <ui:Card Padding="20" Margin="0,20,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
                         <ui:TextBlock Text="{DynamicResource StrDataStorage}" VerticalAlignment="Center"/>
                         <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>

@@ -47,4 +47,13 @@
     <sys:String x:Key="StrDataStorage">Data Storage Path</sys:String>
     <sys:String x:Key="StrChange">Change</sys:String>
     <sys:String x:Key="StrExportData">Export All Data</sys:String>
+
+    <!-- Update -->
+    <sys:String x:Key="StrUpdate">Update</sys:String>
+    <sys:String x:Key="StrCheckUpdate">Check for Updates</sys:String>
+    <sys:String x:Key="StrCurrentVersion">Current Version</sys:String>
+    <sys:String x:Key="StrLatestVersion">Latest Version</sys:String>
+    <sys:String x:Key="StrUpdateAvailable">New version available! Download and install now?</sys:String>
+    <sys:String x:Key="StrUpdating">Downloading update...</sys:String>
+    <sys:String x:Key="StrAlreadyLatest">You are using the latest version</sys:String>
 </ResourceDictionary>
