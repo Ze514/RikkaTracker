@@ -39,11 +39,11 @@ namespace RikkaTracker.Core.Monitor
         private readonly IConfigService _configService;
         private readonly Strategies.IFilterEngine _filterEngine;
         private readonly Data.IActivityLogStore _logStore;
+        private readonly ILoggerService _logger;
         private readonly DispatcherTimer _idleTimer;
         private Win32Api.WinEventDelegate? _winEventDelegate;
         private IntPtr _hHook;
 
-        // 按进程ID跟踪状态
         private class ProcessState
         {
             public string ProcessName { get; set; } = string.Empty;
@@ -56,16 +56,20 @@ namespace RikkaTracker.Core.Monitor
         private readonly Dictionary<int, ProcessState> _processStates = new();
         private int _currentForegroundPid;
         private IntPtr _currentForegroundHwnd;
-        // 标记当前焦点进程是否因空闲而被降级
         private bool _isIdleDemoted;
 
         public event EventHandler<AppActivityChangedEventArgs>? AppActivityChanged;
 
-        public AppActivityTracker(IConfigService configService, Strategies.IFilterEngine filterEngine, Data.IActivityLogStore logStore)
+        public AppActivityTracker(
+            IConfigService configService, 
+            Strategies.IFilterEngine filterEngine, 
+            Data.IActivityLogStore logStore,
+            ILoggerService logger)
         {
             _configService = configService;
             _filterEngine = filterEngine;
             _logStore = logStore;
+            _logger = logger;
             _idleTimer = new DispatcherTimer(DispatcherPriority.Background)
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -75,20 +79,36 @@ namespace RikkaTracker.Core.Monitor
 
         public void Start()
         {
-            _winEventDelegate = new Win32Api.WinEventDelegate(WinEventProc);
-            _hHook = Win32Api.SetWinEventHook(
-                Win32Api.EVENT_SYSTEM_FOREGROUND,
-                Win32Api.EVENT_SYSTEM_MINIMIZEEND,
-                IntPtr.Zero,
-                _winEventDelegate,
-                0, 0,
-                Win32Api.WINEVENT_OUTOFCONTEXT | Win32Api.WINEVENT_SKIPOWNPROCESS);
+            try 
+            {
+                _logger.Info("Initializing AppActivityTracker...");
+                _winEventDelegate = new Win32Api.WinEventDelegate(WinEventProc);
+                _hHook = Win32Api.SetWinEventHook(
+                    Win32Api.EVENT_SYSTEM_FOREGROUND,
+                    Win32Api.EVENT_SYSTEM_MINIMIZEEND,
+                    IntPtr.Zero,
+                    _winEventDelegate,
+                    0, 0,
+                    Win32Api.WINEVENT_OUTOFCONTEXT | Win32Api.WINEVENT_SKIPOWNPROCESS);
 
-            UpdateForegroundStatus();
+                if (_hHook == IntPtr.Zero)
+                {
+                    _logger.Error("Failed to set WinEventHook. Monitoring will not work.");
+                    return;
+                }
+
+                _logger.Info("WinEventHook successfully established.");
+                UpdateForegroundStatus();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Critical error during AppActivityTracker startup.", ex);
+            }
         }
 
         public void Stop()
         {
+            _logger.Info("Stopping AppActivityTracker...");
             if (_hHook != IntPtr.Zero)
             {
                 Win32Api.UnhookWinEvent(_hHook);
@@ -99,51 +119,63 @@ namespace RikkaTracker.Core.Monitor
 
         private void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
-            // 仅处理我们关心的三种事件类型，忽略菜单、拖拽、对话框等
-            if (eventType != Win32Api.EVENT_SYSTEM_FOREGROUND &&
-                eventType != Win32Api.EVENT_SYSTEM_MINIMIZESTART &&
-                eventType != Win32Api.EVENT_SYSTEM_MINIMIZEEND)
+            try 
             {
-                return;
-            }
-
-            // 在系统线程提取非托管信息
-            uint pid;
-            Win32Api.GetWindowThreadProcessId(hwnd, out pid);
-            int actualPid = (int)pid;
-
-            // 处理 UWP 应用
-            string processName = GetProcessName(actualPid);
-            if (processName == "ApplicationFrameHost")
-            {
-                actualPid = Win32Api.ResolveUwpProcessId(hwnd, actualPid);
-            }
-
-            string title = Win32Api.GetWindowTitle(hwnd);
-            bool isIconic = Win32Api.IsIconic(hwnd);
-            bool isVisible = Win32Api.IsWindowVisible(hwnd);
-
-            // 调度到UI线程执行状态机更新
-            System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
-            {
-                switch (eventType)
+                // 仅处理关键事件
+                if (eventType != Win32Api.EVENT_SYSTEM_FOREGROUND &&
+                    eventType != Win32Api.EVENT_SYSTEM_MINIMIZESTART &&
+                    eventType != Win32Api.EVENT_SYSTEM_MINIMIZEEND)
                 {
-                    case Win32Api.EVENT_SYSTEM_FOREGROUND:
-                        HandleForegroundChange(hwnd, actualPid, title, isIconic, isVisible);
-                        break;
-                    case Win32Api.EVENT_SYSTEM_MINIMIZESTART:
-                        HandleMinimize(hwnd, actualPid);
-                        break;
-                    case Win32Api.EVENT_SYSTEM_MINIMIZEEND:
-                        HandleRestore(hwnd, actualPid, title);
-                        break;
+                    return;
                 }
-            });
+
+                if (hwnd == IntPtr.Zero) return;
+
+                uint pid;
+                Win32Api.GetWindowThreadProcessId(hwnd, out pid);
+                int actualPid = (int)pid;
+                if (actualPid == 0) return;
+
+                string processName = GetProcessName(actualPid);
+                if (processName == "ApplicationFrameHost")
+                {
+                    actualPid = Win32Api.ResolveUwpProcessId(hwnd, actualPid);
+                }
+
+                string title = Win32Api.GetWindowTitle(hwnd);
+                bool isIconic = Win32Api.IsIconic(hwnd);
+                bool isVisible = Win32Api.IsWindowVisible(hwnd);
+
+                System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+                {
+                    try 
+                    {
+                        switch (eventType)
+                        {
+                            case Win32Api.EVENT_SYSTEM_FOREGROUND:
+                                HandleForegroundChange(hwnd, actualPid, title, isIconic, isVisible);
+                                break;
+                            case Win32Api.EVENT_SYSTEM_MINIMIZESTART:
+                                HandleMinimize(hwnd, actualPid);
+                                break;
+                            case Win32Api.EVENT_SYSTEM_MINIMIZEEND:
+                                HandleRestore(hwnd, actualPid, title);
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Error in UI dispatcher during WinEvent {eventType}.", ex);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                // 此处必须极度稳健，不能抛出任何异常
+                _logger.Error("Fatal error in WinEventProc callback.", ex);
+            }
         }
 
-        /// <summary>
-        /// 初始化时主动检查当前前台窗口
-        /// </summary>
         private void UpdateForegroundStatus()
         {
             IntPtr hwnd = Win32Api.GetForegroundWindow();
@@ -151,6 +183,8 @@ namespace RikkaTracker.Core.Monitor
 
             Win32Api.GetWindowThreadProcessId(hwnd, out uint pid);
             int actualPid = (int)pid;
+            if (actualPid == 0) return;
+
             if (GetProcessName(actualPid) == "ApplicationFrameHost")
             {
                 actualPid = Win32Api.ResolveUwpProcessId(hwnd, actualPid);
@@ -158,26 +192,25 @@ namespace RikkaTracker.Core.Monitor
             HandleForegroundChange(hwnd, actualPid, Win32Api.GetWindowTitle(hwnd), Win32Api.IsIconic(hwnd), Win32Api.IsWindowVisible(hwnd));
         }
 
-        /// <summary>
-        /// 处理焦点切换事件：降级旧焦点进程，提升新焦点进程
-        /// </summary>
         private void HandleForegroundChange(IntPtr hwnd, int newPid, string title, bool isIconic, bool isVisible)
         {
             string processName = GetProcessName(newPid);
+            
+            // 记录焦点切换日志
+            _logger.Info($"Focus changed to: {processName} (PID: {newPid}) | Title: {title}");
+
             if (IsSystemUI(newPid, title) || _filterEngine.ShouldIgnore(processName))
             {
+                _logger.Info($"Ignoring system UI or filtered process: {processName}");
                 return;
             }
 
-            // 新焦点的目标状态
             ActivityStatus newStatus = (isIconic || !isVisible)
                 ? ActivityStatus.Background
                 : ActivityStatus.ForegroundActive;
 
-            // 1. 降级旧焦点进程
             if (_currentForegroundPid != 0 && _currentForegroundPid != newPid)
             {
-                // 回查旧窗口的真实可见性来决定降级目标
                 ActivityStatus oldProcessNewStatus = ActivityStatus.ForegroundInactive;
                 if (_currentForegroundHwnd != IntPtr.Zero)
                 {
@@ -189,18 +222,15 @@ namespace RikkaTracker.Core.Monitor
                 UpdateProcessStatus(_currentForegroundPid, string.Empty, oldProcessNewStatus);
             }
 
-            // 2. 提升新焦点进程
             UpdateProcessStatus(newPid, title, newStatus);
             _currentForegroundPid = newPid;
             _currentForegroundHwnd = hwnd;
 
-            // 更新进程状态中的窗口句柄
             if (_processStates.TryGetValue(newPid, out var state))
             {
                 state.LastHwnd = hwnd;
             }
 
-            // 3. 管理空闲计时器
             _isIdleDemoted = false;
             if (newStatus == ActivityStatus.ForegroundActive)
             {
@@ -212,22 +242,9 @@ namespace RikkaTracker.Core.Monitor
             }
         }
 
-        /// <summary>
-        /// 处理窗口最小化事件：仅更新被最小化窗口所属进程的状态，不变更焦点跟踪
-        /// </summary>
         private void HandleMinimize(IntPtr hwnd, int pid)
         {
-            string processName = GetProcessName(pid);
-            if (IsSystemUI(pid, string.Empty) || _filterEngine.ShouldIgnore(processName))
-            {
-                return;
-            }
-
-            // 将该进程降为后台
             UpdateProcessStatus(pid, string.Empty, ActivityStatus.Background);
-
-            // 如果被最小化的是当前焦点进程，清除焦点跟踪
-            // （后续会有 FOREGROUND 事件为新的焦点窗口触发）
             if (pid == _currentForegroundPid)
             {
                 _currentForegroundPid = 0;
@@ -237,30 +254,16 @@ namespace RikkaTracker.Core.Monitor
             }
         }
 
-        /// <summary>
-        /// 处理窗口恢复事件：将进程从后台提升为前台非活动（除非它同时获得焦点）
-        /// </summary>
         private void HandleRestore(IntPtr hwnd, int pid, string title)
         {
-            string processName = GetProcessName(pid);
-            if (IsSystemUI(pid, title) || _filterEngine.ShouldIgnore(processName))
-            {
-                return;
-            }
-
-            // 检查恢复的窗口是否就是当前焦点窗口
             IntPtr fgHwnd = Win32Api.GetForegroundWindow();
             if (fgHwnd == hwnd)
             {
-                // 恢复并同时获得焦点 → ForegroundActive
                 HandleForegroundChange(hwnd, pid, title, false, true);
             }
             else
             {
-                // 仅恢复显示，未获焦点 → ForegroundInactive
                 UpdateProcessStatus(pid, title, ActivityStatus.ForegroundInactive);
-
-                // 更新进程的窗口句柄
                 if (_processStates.TryGetValue(pid, out var state))
                 {
                     state.LastHwnd = hwnd;
@@ -274,10 +277,8 @@ namespace RikkaTracker.Core.Monitor
             if (processName.Equals("explorer", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.IsNullOrEmpty(title) || 
-                    title.Contains("系统托盘") || 
-                    title.Contains("开始") || 
-                    title.Contains("任务栏") || 
-                    title.Contains("OverflowWindow"))
+                    title.Contains("系统托盘") || title.Contains("开始") || 
+                    title.Contains("任务栏") || title.Contains("OverflowWindow"))
                 {
                     return true;
                 }
@@ -302,8 +303,6 @@ namespace RikkaTracker.Core.Monitor
                 state.LastTitle = title;
             }
 
-            // 核心竞争逻辑：确保全局唯一活跃焦点 (Mutual Exclusion)
-            // 如果新状态是 Active，则强制将其他所有进程降级
             if (newStatus == ActivityStatus.ForegroundActive)
             {
                 var otherActiveProcesses = _processStates
@@ -312,20 +311,24 @@ namespace RikkaTracker.Core.Monitor
 
                 foreach (var other in otherActiveProcesses)
                 {
-                    // 只有持有焦点的窗口才能 Active，失去焦点的窗口必然至少降级为 Inactive
                     UpdateProcessStatus(other.Key, string.Empty, ActivityStatus.ForegroundInactive);
                 }
             }
 
-            // 严格去重：同状态不重复下发
             if (state.LastStatus != newStatus)
             {
                 var oldStatus = state.LastStatus;
                 state.LastStatus = newStatus;
-
                 string processPath = Win32Api.GetProcessPath(pid);
 
-                _logStore.RecordTransition(state.ProcessName, processPath, state.LastTitle, newStatus, DateTime.Now, state.Alias);
+                try 
+                {
+                    _logStore.RecordTransition(state.ProcessName, processPath, state.LastTitle, newStatus, DateTime.Now, state.Alias);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to record transition to database for {state.ProcessName}.", ex);
+                }
 
                 AppActivityChanged?.Invoke(this, new AppActivityChangedEventArgs
                 {
@@ -341,52 +344,45 @@ namespace RikkaTracker.Core.Monitor
             }
         }
 
-        /// <summary>
-        /// 空闲检测Tick：检测空闲超时降级和输入恢复提升
-        /// </summary>
         private void OnIdleTimerTick(object? sender, EventArgs e)
         {
-            if (_currentForegroundPid == 0) return;
-
-            var lii = new Win32Api.LASTINPUTINFO();
-            lii.cbSize = (uint)Marshal.SizeOf(lii);
-            if (!Win32Api.GetLastInputInfo(ref lii)) return;
-
-            uint idleTimeMs = (uint)Environment.TickCount - lii.dwTime;
-            double idleMinutes = idleTimeMs / 60000.0;
-
-            string processName = GetProcessName(_currentForegroundPid);
-
-            if (idleMinutes >= _configService.Config.IdleTimeoutMinutes)
+            try 
             {
-                // 超过空闲阈值 → 降级为 ForegroundInactive
-                if (!_isIdleDemoted)
+                if (_currentForegroundPid == 0) return;
+
+                var lii = new Win32Api.LASTINPUTINFO();
+                lii.cbSize = (uint)Marshal.SizeOf(lii);
+                if (!Win32Api.GetLastInputInfo(ref lii)) return;
+
+                uint idleTimeMs = (uint)Environment.TickCount - lii.dwTime;
+                double idleMinutes = idleTimeMs / 60000.0;
+
+                string processName = GetProcessName(_currentForegroundPid);
+
+                if (idleMinutes >= _configService.Config.IdleTimeoutMinutes)
                 {
-                    // 检查是否免除空闲检测
-                    if (_filterEngine.ShouldDisableIdleDetection(processName))
+                    if (!_isIdleDemoted)
                     {
-                        return; // 豁免，保持 Active
+                        if (_filterEngine.ShouldDisableIdleDetection(processName)) return;
+                        UpdateProcessStatus(_currentForegroundPid, string.Empty, ActivityStatus.ForegroundInactive);
+                        _isIdleDemoted = true;
                     }
-
-                    UpdateProcessStatus(_currentForegroundPid, string.Empty, ActivityStatus.ForegroundInactive);
-                    _isIdleDemoted = true;
-                    // 注意：Timer不停止，继续运行以检测输入恢复
                 }
-            }
-            else
-            {
-                // 未超过空闲阈值 → 如果之前因空闲降级了，恢复为 ForegroundActive
-                if (_isIdleDemoted)
+                else
                 {
-                    UpdateProcessStatus(_currentForegroundPid, string.Empty, ActivityStatus.ForegroundActive);
-                    _isIdleDemoted = false;
+                    if (_isIdleDemoted)
+                    {
+                        UpdateProcessStatus(_currentForegroundPid, string.Empty, ActivityStatus.ForegroundActive);
+                        _isIdleDemoted = false;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error in IdleTimerTick.", ex);
             }
         }
 
-        private string GetProcessName(int pid)
-        {
-            return Win32Api.GetInternalProcessName(pid);
-        }
+        private string GetProcessName(int pid) => Win32Api.GetInternalProcessName(pid);
     }
 }

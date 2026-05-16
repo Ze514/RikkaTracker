@@ -1,5 +1,7 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RikkaTracker.Models;
@@ -14,13 +16,20 @@ namespace RikkaTracker.ViewModels
         private readonly IConfigService _configService;
         private readonly ILocalizationService _localizationService;
         private readonly IUpdateService _updateService;
+        private readonly ILoggerService _logger;
 
-        public SettingsViewModel(IThemeService themeService, IConfigService configService, ILocalizationService localizationService, IUpdateService updateService)
+        public SettingsViewModel(
+            IThemeService themeService, 
+            IConfigService configService, 
+            ILocalizationService localizationService, 
+            IUpdateService updateService,
+            ILoggerService logger)
         {
             _themeService = themeService;
             _configService = configService;
             _localizationService = localizationService;
             _updateService = updateService;
+            _logger = logger;
             
             _isDarkMode = _themeService.GetCurrentTheme() == "Dark";
             _idleTimeoutMinutes = _configService.Config.IdleTimeoutMinutes;
@@ -39,48 +48,123 @@ namespace RikkaTracker.ViewModels
         [ObservableProperty]
         private bool _isUpdating;
 
+        [ObservableProperty]
+        private double _updateProgress;
+
         [RelayCommand]
         private async Task CheckForUpdate()
         {
+            _logger.Info("User clicked 'Check for Updates'.");
             UpdateStatus = (string)System.Windows.Application.Current.Resources["StrCheckUpdate"] + "...";
-            var result = await _updateService.CheckForUpdatesAsync();
-
-            if (result.HasUpdate)
+            
+            try
             {
-                var msg = (string)System.Windows.Application.Current.Resources["StrUpdateAvailable"];
-                var choice = System.Windows.MessageBox.Show(
-                    $"{msg}\n\n{(_localizationService.CurrentLanguage == "zh-CN" ? "版本" : "Version")}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
-                    (string)System.Windows.Application.Current.Resources["StrUpdate"],
-                    System.Windows.MessageBoxButton.YesNo,
-                    System.Windows.MessageBoxImage.Information);
+                var result = await _updateService.CheckForUpdatesAsync();
 
-                if (choice == System.Windows.MessageBoxResult.Yes)
+                switch (result.Status)
                 {
-                    IsUpdating = true;
-                    UpdateStatus = (string)System.Windows.Application.Current.Resources["StrUpdating"];
-                    try
-                    {
-                        await _updateService.DownloadAndInstallAsync(result, p =>
-                        {
-                            UpdateStatus = $"{(string)System.Windows.Application.Current.Resources["StrUpdating"]} ({p:P0})";
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Windows.MessageBox.Show($"Update failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                        IsUpdating = false;
+                    case UpdateCheckStatus.UpdateAvailable:
+                        _logger.Info($"Update found: {result.LatestVersion}");
+                        HandleUpdateFound(result);
+                        break;
+
+                    case UpdateCheckStatus.NoUpdate:
+                        _logger.Info("No update available.");
+                        System.Windows.MessageBox.Show(
+                            (string)System.Windows.Application.Current.Resources["StrAlreadyLatest"], 
+                            (string)System.Windows.Application.Current.Resources["StrUpdate"]);
                         UpdateStatus = string.Empty;
-                    }
+                        break;
+
+                    case UpdateCheckStatus.NetworkError:
+                        _logger.Warning($"Update check failed due to network error: {result.ErrorMessage}");
+                        System.Windows.MessageBox.Show(
+                            $"Network Error: {result.ErrorMessage}\n\nPlease check your internet connection or proxy settings.",
+                            "Update Check Failed",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
+                        UpdateStatus = string.Empty;
+                        break;
+
+                    case UpdateCheckStatus.AssetMissing:
+                        _logger.Warning($"New version {result.LatestVersion} found, but no matching asset for this installation type.");
+                        System.Windows.MessageBox.Show(
+                            $"New version {result.LatestVersion} is available, but the download package for your installation type was not found on the server.\n\nPlease visit GitHub releases manually.",
+                            "Asset Missing",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
+                        UpdateStatus = string.Empty;
+                        break;
+
+                    case UpdateCheckStatus.InternalError:
+                    default:
+                        _logger.Error($"Internal error during update check: {result.ErrorMessage}");
+                        System.Windows.MessageBox.Show(
+                            $"An internal error occurred: {result.ErrorMessage}",
+                            "Error",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error);
+                        UpdateStatus = string.Empty;
+                        break;
                 }
-                else
-                {
-                    UpdateStatus = string.Empty;
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Unhandled exception in CheckForUpdate command.", ex);
+                UpdateStatus = string.Empty;
+            }
+        }
+
+        private void HandleUpdateFound(UpdateCheckResult result)
+        {
+            var msg = (string)System.Windows.Application.Current.Resources["StrUpdateAvailable"];
+            var choice = System.Windows.MessageBox.Show(
+                $"{msg}\n\n{(_localizationService.CurrentLanguage == "zh-CN" ? "版本" : "Version")}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
+                (string)System.Windows.Application.Current.Resources["StrUpdate"],
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Information);
+
+            if (choice == System.Windows.MessageBoxResult.Yes)
+            {
+                _logger.Info("User accepted update. Starting download...");
+                IsUpdating = true;
+                
+                // 执行异步下载安装
+                _ = RunDownloadAndInstall(result);
             }
             else
             {
-                System.Windows.MessageBox.Show((string)System.Windows.Application.Current.Resources["StrAlreadyLatest"], (string)System.Windows.Application.Current.Resources["StrUpdate"]);
+                _logger.Info("User declined update.");
                 UpdateStatus = string.Empty;
+            }
+        }
+
+        private async Task RunDownloadAndInstall(UpdateCheckResult result)
+        {
+            try
+            {
+                await _updateService.DownloadAndInstallAsync(result, (progress, status) =>
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        UpdateStatus = status;
+                        UpdateProgress = progress * 100;
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Download and Install failed.", ex);
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Update download failed: {ex.Message}\n\nLogs: {_logger.GetLogPath()}", 
+                        "Error", 
+                        System.Windows.MessageBoxButton.OK, 
+                        System.Windows.MessageBoxImage.Error);
+                    IsUpdating = false;
+                    UpdateStatus = string.Empty;
+                });
             }
         }
 
@@ -101,7 +185,7 @@ namespace RikkaTracker.ViewModels
             {
                 Title = "选择数据库存储位置",
                 Filter = "SQLite Database (*.db)|*.db",
-                FileName = "tracker.db" // 统一文件名
+                FileName = "tracker.db"
             };
 
             if (dialog.ShowDialog() == true)
@@ -113,36 +197,32 @@ namespace RikkaTracker.ViewModels
 
                 try
                 {
-                    // 1. 确保新目录存在
                     if (!System.IO.Directory.Exists(newPath))
                     {
                         System.IO.Directory.CreateDirectory(newPath);
                     }
 
-                    // 2. 迁移文件 (tracker.db)
                     string oldFile = System.IO.Path.Combine(oldPath, "tracker.db");
                     string newFile = System.IO.Path.Combine(newPath, "tracker.db");
 
                     if (System.IO.File.Exists(oldFile))
                     {
-                        // 如果新位置已存在同名文件，先备份或覆盖（这里选择覆盖以完成迁移）
                         System.IO.File.Copy(oldFile, newFile, true);
                     }
 
-                    // 3. 更新配置
                     StoragePath = newPath;
                     _configService.Config.DataStoragePath = StoragePath;
                     _configService.Save();
 
-                    // 提示用户重启生效（因为数据库连接通常是单例且已打开）
                     System.Windows.MessageBox.Show(
                         "数据已迁移。为了确保所有服务都使用新路径，请重启应用程序。",
                         "更改成功",
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Information);
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
+                    _logger.Error("Failed to migrate data path.", ex);
                     System.Windows.MessageBox.Show(
                         $"迁移数据失败: {ex.Message}",
                         "错误",
@@ -165,6 +245,30 @@ namespace RikkaTracker.ViewModels
         {
             _configService.Config.TimelineZoomMode = value;
             _configService.Save();
+        }
+
+        [RelayCommand]
+        private void OpenLogFolder()
+        {
+            try
+            {
+                string logPath = _logger.GetLogPath();
+                string? logDir = System.IO.Path.GetDirectoryName(logPath);
+
+                if (!string.IsNullOrEmpty(logDir) && System.IO.Directory.Exists(logDir))
+                {
+                    _logger.Info($"User opening log folder: {logDir}");
+                    System.Diagnostics.Process.Start("explorer.exe", logDir);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("日志目录尚未创建或不存在。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open log folder.", ex);
+            }
         }
 
         [ObservableProperty]

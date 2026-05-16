@@ -6,21 +6,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Version>0.2.2</Version>
-    
-    <!-- 默认开启单文件发布与原生库嵌入 -->
+    <!-- 榛樿寮€鍚崟鏂囦欢鍙戝竷涓庡師鐢熷簱宓屽叆 -->
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-
-  <!-- 仅在 Portable 模式下开启的重型优化 -->
+  <!-- 浠呭湪 Portable 妯″紡涓嬪紑鍚殑閲嶅瀷浼樺寲 -->
   <PropertyGroup Condition="'$(IsPortable)' == 'true'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishReadyToRun>true</PublishReadyToRun>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DefineConstants>$(DefineConstants);PORTABLE</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />

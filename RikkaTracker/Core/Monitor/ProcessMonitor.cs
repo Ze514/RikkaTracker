@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Threading;
+using RikkaTracker.Services;
 
 namespace RikkaTracker.Core.Monitor
 {
@@ -23,14 +24,15 @@ namespace RikkaTracker.Core.Monitor
     public class ProcessMonitor : IProcessMonitor
     {
         private readonly DispatcherTimer _scanTimer;
-        // 维护 PID→进程名 映射，确保进程退出时能提供正确名称
+        private readonly ILoggerService _logger;
         private Dictionary<int, string> _pidNames = new();
 
-        public event EventHandler<ProcessEventArgs> ProcessStarted;
-        public event EventHandler<ProcessEventArgs> ProcessExited;
+        public event EventHandler<ProcessEventArgs>? ProcessStarted;
+        public event EventHandler<ProcessEventArgs>? ProcessExited;
 
-        public ProcessMonitor()
+        public ProcessMonitor(ILoggerService logger)
         {
+            _logger = logger;
             _scanTimer = new DispatcherTimer(DispatcherPriority.Background)
             {
                 Interval = TimeSpan.FromSeconds(5)
@@ -40,71 +42,102 @@ namespace RikkaTracker.Core.Monitor
 
         public void Start()
         {
-            _pidNames = GetCurrentPidNames();
-            _scanTimer.Start();
+            _logger.Info("Starting ProcessMonitor scan loop...");
+            try 
+            {
+                _pidNames = GetCurrentPidNames();
+                _scanTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to perform initial process scan.", ex);
+            }
         }
 
         public void Stop()
         {
+            _logger.Info("Stopping ProcessMonitor...");
             _scanTimer.Stop();
         }
 
         private void OnScanTimerTick(object? sender, EventArgs e)
         {
-            var currentPidNames = GetCurrentPidNames();
-
-            // 检测新启动的进程
-            foreach (var kvp in currentPidNames)
+            try 
             {
-                if (!_pidNames.ContainsKey(kvp.Key))
-                {
-                    ProcessStarted?.Invoke(this, new ProcessEventArgs
-                    {
-                        ProcessId = kvp.Key,
-                        ProcessName = kvp.Value
-                    });
-                }
-            }
+                var currentPidNames = GetCurrentPidNames();
 
-            // 检测已退出的进程（使用之前缓存的名称）
-            foreach (var kvp in _pidNames)
+                // 检测新启动的进程
+                foreach (var kvp in currentPidNames)
+                {
+                    if (!_pidNames.ContainsKey(kvp.Key))
+                    {
+                        ProcessStarted?.Invoke(this, new ProcessEventArgs
+                        {
+                            ProcessId = kvp.Key,
+                            ProcessName = kvp.Value
+                        });
+                    }
+                }
+
+                // 检测已退出的进程
+                foreach (var kvp in _pidNames)
+                {
+                    if (!currentPidNames.ContainsKey(kvp.Key))
+                    {
+                        ProcessExited?.Invoke(this, new ProcessEventArgs
+                        {
+                            ProcessId = kvp.Key,
+                            ProcessName = kvp.Value
+                        });
+                    }
+                }
+
+                _pidNames = currentPidNames;
+            }
+            catch (Exception ex)
             {
-                if (!currentPidNames.ContainsKey(kvp.Key))
-                {
-                    ProcessExited?.Invoke(this, new ProcessEventArgs
-                    {
-                        ProcessId = kvp.Key,
-                        ProcessName = kvp.Value
-                    });
-                }
+                _logger.Error("Error during ProcessMonitor scan tick.", ex);
             }
-
-            _pidNames = currentPidNames;
         }
 
         private Dictionary<int, string> GetCurrentPidNames()
         {
             var result = new Dictionary<int, string>();
+            Process[]? processes = null;
+            
             try
             {
-                foreach (var p in Process.GetProcesses())
+                processes = Process.GetProcesses();
+                foreach (var p in processes)
                 {
                     try
                     {
-                        // 排除系统会话进程
+                        // 排除系统会话进程（Session 0）以减少干扰
                         if (p.SessionId != 0)
                         {
                             result[p.Id] = Win32Api.GetInternalProcessName(p.Id);
                         }
                     }
-                    catch { }
+                    catch (System.ComponentModel.Win32Exception)
+                    {
+                        // 忽略权限不足的进程
+                    }
+                    catch (Exception ex)
+                    {
+                        // 仅记录意外错误
+                        _logger.Warning($"Unexpected error scanning process {p.Id}: {ex.Message}");
+                    }
                     finally
                     {
                         p.Dispose();
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.Error("Critical failure in GetCurrentPidNames.", ex);
+            }
+            
             return result;
         }
     }
