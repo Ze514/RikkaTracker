@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore RikkaTracker/RikkaTracker.csproj
+
+      - name: Publish Portable (Self-contained)
+        run: |
+          dotnet publish RikkaTracker/RikkaTracker.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/portable
+
+      - name: Publish Light (Framework-dependent)
+        run: |
+          dotnet publish RikkaTracker/RikkaTracker.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish/light
+
+      - name: Build MSI (WiX)
+        run: |
+          # Get version from tag
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          # Build MSI using WiX
+          candle -dBuildVersion="$version" -dOutputPath="./publish/portable" RikkaTracker.wxs -o RikkaTracker.wixobj
+          light -ext WixUIExtension RikkaTracker.wixobj -o RikkaTracker-Setup-$version.msi
+
+      - name: Create Artifacts
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          # Zip Portable
+          Compress-Archive -Path ./publish/portable/* -DestinationPath RikkaTracker-$version-win-x64-portable.zip
+          # Zip Light
+          Compress-Archive -Path ./publish/light/* -DestinationPath RikkaTracker-$version-win-x64-light.zip
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            RikkaTracker-*.zip
+            RikkaTracker-Setup-*.msi
+          body: |
+            ## RikkaTracker ${{ github.ref_name }}
+            
+            ### 下载说明
+            - **Setup.msi**: 推荐安装版（包含桌面快捷方式）。
+            - **Portable.zip**: 绿色自包含版（包含运行时，体积较大，解压即用）。
+            - **Light.zip**: 轻量依赖版（不含运行时，体积极小，需本地已安装 .NET 8）。
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,17 @@
+{
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "tagName": "v${version}",
+    "requireCleanWorkingDir": false
+  },
+  "github": {
+    "release": true,
+    "draft": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "hooks": {
+    "after:bump": "powershell -Command \"[xml]$xml = Get-Content RikkaTracker/RikkaTracker.csproj; $xml.Project.PropertyGroup.Version = '${version}'; $xml.Save('RikkaTracker/RikkaTracker.csproj')\""
+  }
+}
