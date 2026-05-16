@@ -6,56 +6,47 @@ using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using RikkaTracker.Core.Models;
 using RikkaTracker.Core.Monitor;
+using RikkaTracker.Services;
 
 namespace RikkaTracker.Core.Data
 {
     public interface IActivityLogStore
     {
         void RecordTransition(string processName, string processPath, string windowTitle, ActivityStatus newStatus, DateTime timestamp, string alias = "");
-        /// <summary>
-        /// 进程退出时调用，闭合该进程的开放segment并停止记录
-        /// </summary>
         void CloseProcess(string processName, DateTime timestamp);
     }
 
     public class SqliteLogStore : IActivityLogStore, IDisposable
     {
         private readonly SqliteDbContext _dbContext;
+        private readonly ILoggerService _logger;
         private readonly ConcurrentQueue<ActivitySegment> _writeQueue = new();
         private readonly System.Threading.Timer _flushTimer;
-        // 按进程名维护各自的开放segment，互不干扰
         private readonly Dictionary<string, ActivitySegment> _openSegments = new();
         private readonly object _syncLock = new();
+        private bool _isDisposing = false;
 
-        public SqliteLogStore(SqliteDbContext dbContext)
+        public SqliteLogStore(SqliteDbContext dbContext, ILoggerService logger)
         {
             _dbContext = dbContext;
-            _flushTimer = new System.Threading.Timer(async _ => await FlushQueueAsync(), null, 1000, 1000);
+            _logger = logger;
+            _flushTimer = new System.Threading.Timer(async _ => await FlushQueueAsync(), null, 2000, 2000);
+            _logger.Info("SqliteLogStore initialized with batch flush every 2 seconds.");
         }
 
         public void RecordTransition(string processName, string processPath, string windowTitle, ActivityStatus newStatus, DateTime timestamp, string alias = "")
         {
+            if (_isDisposing) return;
+
             lock (_syncLock)
             {
-                // 1. 仅关闭该进程的旧segment（其他进程不受影响）
                 if (_openSegments.TryGetValue(processName, out var oldSeg))
                 {
-                    // 如果新状态与旧状态相同，无需操作（去重）
                     if (oldSeg.Status == newStatus)
                     {
-                        // 仅更新窗口标题、路径和别名
-                        if (!string.IsNullOrEmpty(windowTitle))
-                        {
-                            oldSeg.WindowTitle = windowTitle;
-                        }
-                        if (!string.IsNullOrEmpty(processPath))
-                        {
-                            oldSeg.ProcessPath = processPath;
-                        }
-                        if (!string.IsNullOrEmpty(alias))
-                        {
-                            oldSeg.Alias = alias;
-                        }
+                        if (!string.IsNullOrEmpty(windowTitle)) oldSeg.WindowTitle = windowTitle;
+                        if (!string.IsNullOrEmpty(processPath)) oldSeg.ProcessPath = processPath;
+                        if (!string.IsNullOrEmpty(alias)) oldSeg.Alias = alias;
                         return;
                     }
 
@@ -64,7 +55,6 @@ namespace RikkaTracker.Core.Data
                     _openSegments.Remove(processName);
                 }
 
-                // 2. 为该进程创建新的开放segment
                 _openSegments[processName] = new ActivitySegment
                 {
                     ProcessName = processName,
@@ -86,17 +76,16 @@ namespace RikkaTracker.Core.Data
                     seg.EndTime = timestamp;
                     QueueSegments(seg);
                     _openSegments.Remove(processName);
+                    _logger.Info($"Closed log segment for process: {processName}");
                 }
             }
         }
 
         private void QueueSegments(ActivitySegment segment)
         {
-            // 跨天拆分逻辑
             if (segment.StartTime.Date != segment.EndTime.Date)
             {
                 DateTime endOfDay = segment.StartTime.Date.AddDays(1).AddTicks(-1);
-                
                 var firstPart = new ActivitySegment
                 {
                     ProcessName = segment.ProcessName,
@@ -119,12 +108,11 @@ namespace RikkaTracker.Core.Data
                     StartTime = segment.StartTime.Date.AddDays(1),
                     EndTime = segment.EndTime
                 };
-                // 递归处理跨多天的情况
                 QueueSegments(secondPart);
             }
             else
             {
-                if (segment.Duration.TotalMilliseconds > 100) // 过滤极短暂的过渡
+                if (segment.Duration.TotalMilliseconds > 100)
                 {
                     _writeQueue.Enqueue(segment);
                 }
@@ -146,37 +134,54 @@ namespace RikkaTracker.Core.Data
             try
             {
                 using var connection = _dbContext.CreateConnection();
+                // 确保连接已打开
+                if (connection.State != System.Data.ConnectionState.Open) await connection.OpenAsync();
+                
                 using var transaction = connection.BeginTransaction();
-
-                foreach (var seg in segmentsToWrite)
+                try 
                 {
-                    using var command = connection.CreateCommand();
-                    command.Transaction = transaction;
-                    command.CommandText = @"
-                        INSERT INTO ActivityLog (ProcessName, ProcessPath, WindowTitle, Alias, Status, StartTime, EndTime)
-                        VALUES ($proc, $path, $title, $alias, $status, $start, $end)
-                    ";
-                    command.Parameters.AddWithValue("$proc", seg.ProcessName);
-                    command.Parameters.AddWithValue("$path", seg.ProcessPath ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("$title", seg.WindowTitle ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("$alias", seg.Alias ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("$status", (int)seg.Status);
-                    command.Parameters.AddWithValue("$start", seg.StartTime.ToString("o"));
-                    command.Parameters.AddWithValue("$end", seg.EndTime.ToString("o"));
-                    await command.ExecuteNonQueryAsync();
+                    foreach (var seg in segmentsToWrite)
+                    {
+                        using var command = connection.CreateCommand();
+                        command.Transaction = transaction;
+                        command.CommandText = @"
+                            INSERT INTO ActivityLog (ProcessName, ProcessPath, WindowTitle, Alias, Status, StartTime, EndTime)
+                            VALUES ($proc, $path, $title, $alias, $status, $start, $end)
+                        ";
+                        command.Parameters.AddWithValue("$proc", seg.ProcessName);
+                        command.Parameters.AddWithValue("$path", seg.ProcessPath ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("$title", seg.WindowTitle ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("$alias", seg.Alias ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("$status", (int)seg.Status);
+                        command.Parameters.AddWithValue("$start", seg.StartTime.ToString("o"));
+                        command.Parameters.AddWithValue("$end", seg.EndTime.ToString("o"));
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    await transaction.CommitAsync();
                 }
-
-                await transaction.CommitAsync();
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw; // 重新抛出以进入外部重试/日志逻辑
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to flush activity log: {ex.Message}");
+                _logger.Error($"Failed to flush {segmentsToWrite.Count} segments to database. Re-enqueuing data.", ex);
+                // 失败保护：将数据放回队列，等待下次尝试
+                foreach (var seg in segmentsToWrite)
+                {
+                    _writeQueue.Enqueue(seg);
+                }
             }
         }
 
         public void Dispose()
         {
-            // 闭合所有进程的开放segment
+            if (_isDisposing) return;
+            _isDisposing = true;
+
+            _logger.Info("Disposing SqliteLogStore, performing final flush...");
             lock (_syncLock)
             {
                 var now = DateTime.Now;
@@ -187,8 +192,17 @@ namespace RikkaTracker.Core.Data
                 }
                 _openSegments.Clear();
             }
+            
             _flushTimer.Dispose();
-            FlushQueueAsync().GetAwaiter().GetResult();
+            // 同步等待最后一批数据写入
+            try 
+            {
+                FlushQueueAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Final flush failed during Dispose.", ex);
+            }
         }
     }
 }

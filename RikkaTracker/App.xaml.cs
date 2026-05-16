@@ -14,19 +14,42 @@ namespace RikkaTracker
     {
         public IServiceProvider ServiceProvider { get; private set; }
         private TaskbarIcon? _notifyIcon;
+        private ILoggerService? _logger;
 
         public App()
         {
             ServiceProvider = ConfigureServices();
+            _logger = ServiceProvider.GetRequiredService<ILoggerService>();
+            
+            // 最后的防线：全局异常捕获
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        }
+
+        private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            _logger?.Error("FATAL: Unhandled Dispatcher Exception", e.Exception);
+            MessageBox.Show("应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            e.Handled = true; // 防止立即崩溃，尝试优雅退出
+            ExitApplication();
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            _logger?.Error($"FATAL: Unhandled Domain Exception. IsTerminating: {e.IsTerminating}", e.ExceptionObject as Exception);
+            if (!e.IsTerminating)
+            {
+                MessageBox.Show("应用遇到了严重的非 UI 线程错误，详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            _logger?.Info("--- RikkaTracker Startup ---");
 
             // Initialize Tray Icon
             _notifyIcon = new TaskbarIcon();
-            // Placeholder Icon (Pink Circle) to ensure visibility
             var drawing = new System.Windows.Media.GeometryDrawing(
                 System.Windows.Media.Brushes.HotPink,
                 null,
@@ -34,52 +57,59 @@ namespace RikkaTracker
             );
             _notifyIcon.IconSource = new System.Windows.Media.DrawingImage(drawing);
             _notifyIcon.ToolTipText = "RikkaTracker";
-            
             _notifyIcon.DoubleClickCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(ShowMainWindow);
 
-            // Handle startup parameters
-            bool startMinimized = true; // Default to tray
+            bool startMinimized = true;
             foreach (var arg in e.Args)
             {
                 if (arg.Equals("/show", StringComparison.OrdinalIgnoreCase)) startMinimized = false;
             }
 
-            // Start Monitoring Services
-            var activityTracker = ServiceProvider.GetRequiredService<IAppActivityTracker>();
-            var logStore = ServiceProvider.GetRequiredService<IActivityLogStore>();
-
-            activityTracker.AppActivityChanged += (s, args) =>
+            try 
             {
-                System.Diagnostics.Debug.WriteLine($"[Activity] {args.ProcessName} ({args.Alias}) ({args.ProcessId}) -> {args.NewStatus} | {args.WindowTitle}");
-            };
-            activityTracker.Start();
-
-            var processMonitor = ServiceProvider.GetRequiredService<IProcessMonitor>();
-            processMonitor.ProcessStarted += (s, args) => System.Diagnostics.Debug.WriteLine($"[Process] Started: {args.ProcessName} ({args.ProcessId})");
-            processMonitor.ProcessExited += (s, args) =>
+                InitializeCoreServices();
+            }
+            catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[Process] Exited: {args.ProcessName} ({args.ProcessId})");
-                // 进程退出时闭合其开放segment
-                logStore.CloseProcess(args.ProcessName, DateTime.Now);
-            };
-            processMonitor.Start();
-
-            // Apply saved theme
-            var themeService = ServiceProvider.GetRequiredService<IThemeService>();
-            themeService.ApplyTheme(themeService.GetCurrentTheme());
-
-            // Initialize Localization
-            var localizationService = ServiceProvider.GetRequiredService<ILocalizationService>();
-            var configService = ServiceProvider.GetRequiredService<IConfigService>();
-            localizationService.Initialize(configService.Config.Language);
-
-            // Update Tray Menu with localized headers
-            UpdateTrayMenu();
+                _logger?.Error("Failed to initialize core services during startup.", ex);
+                MessageBox.Show("启动核心服务失败，应用可能无法正常工作。请检查日志。", "初始化失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
 
             if (!startMinimized)
             {
                 ShowMainWindow();
             }
+        }
+
+        private void InitializeCoreServices()
+        {
+            var activityTracker = ServiceProvider.GetRequiredService<IAppActivityTracker>();
+            var logStore = ServiceProvider.GetRequiredService<IActivityLogStore>();
+
+            activityTracker.AppActivityChanged += (s, args) =>
+            {
+                // 日志记录级别调整为 Info 以便追踪，但在生产环境下可以根据需要调低
+                _logger?.Info($"[Activity] {args.ProcessName} -> {args.NewStatus} | {args.WindowTitle}");
+            };
+            activityTracker.Start();
+
+            var processMonitor = ServiceProvider.GetRequiredService<IProcessMonitor>();
+            processMonitor.ProcessStarted += (s, args) => _logger?.Info($"[Process] Started: {args.ProcessName}");
+            processMonitor.ProcessExited += (s, args) =>
+            {
+                _logger?.Info($"[Process] Exited: {args.ProcessName}");
+                logStore.CloseProcess(args.ProcessName, DateTime.Now);
+            };
+            processMonitor.Start();
+
+            var themeService = ServiceProvider.GetRequiredService<IThemeService>();
+            themeService.ApplyTheme(themeService.GetCurrentTheme());
+
+            var localizationService = ServiceProvider.GetRequiredService<ILocalizationService>();
+            var configService = ServiceProvider.GetRequiredService<IConfigService>();
+            localizationService.Initialize(configService.Config.Language);
+
+            UpdateTrayMenu();
         }
 
         public void ShowMainWindow()
@@ -99,7 +129,6 @@ namespace RikkaTracker
 
             mainWindow.Closed += (s, e) =>
             {
-                // Task 1.3: Destroy View/ViewModel and collect GC
                 MainWindow = null;
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -113,18 +142,10 @@ namespace RikkaTracker
         private void UpdateTrayMenu()
         {
             if (_notifyIcon == null) return;
-            
             var contextMenu = new ContextMenu();
-            var showItem = new MenuItem { Header = Application.Current.Resources["StrScale"] != null ? (string)Application.Current.Resources["StrDashboard"] : "Show" }; 
-            // Wait, I should use specific keys for tray
-            
-            // Re-using keys for now or adding new ones
-            showItem.Header = GetResourceString("StrDashboard", "Show");
+            var showItem = new MenuItem { Header = GetResourceString("StrDashboard", "Show") };
             showItem.Click += (s, ex) => ShowMainWindow();
-            
-            var exitItem = new MenuItem { Header = GetResourceString("StrExportData", "Exit") }; // Just placeholder
-            // Let's add specific tray keys to xaml later, but for now:
-            exitItem.Header = CurrentLanguage == "zh-CN" ? "退出" : "Exit";
+            var exitItem = new MenuItem { Header = CurrentLanguage == "zh-CN" ? "退出" : "Exit" };
             exitItem.Click += (s, ex) => ExitApplication();
 
             contextMenu.Items.Add(showItem);
@@ -133,29 +154,32 @@ namespace RikkaTracker
             _notifyIcon.ContextMenu = contextMenu;
         }
 
-        private string GetResourceString(string key, string fallback)
-        {
-            return Application.Current.Resources[key] as string ?? fallback;
-        }
-
+        private string GetResourceString(string key, string fallback) => Application.Current.Resources[key] as string ?? fallback;
         private string CurrentLanguage => ServiceProvider?.GetService<ILocalizationService>()?.CurrentLanguage ?? "zh-CN";
 
         private void ExitApplication()
         {
-            if (ServiceProvider != null)
+            _logger?.Info("Shutting down application...");
+            try 
             {
-                var logStore = ServiceProvider.GetService<IActivityLogStore>() as IDisposable;
-                logStore?.Dispose();
+                if (ServiceProvider != null)
+                {
+                    var logStore = ServiceProvider.GetService<IActivityLogStore>() as IDisposable;
+                    logStore?.Dispose();
+                }
+                _notifyIcon?.Dispose();
             }
-            _notifyIcon?.Dispose();
+            catch (Exception ex)
+            {
+                _logger?.Error("Error during shutdown cleanup.", ex);
+            }
             Shutdown();
         }
 
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
-
-            // Services
+            services.AddSingleton<ILoggerService, FileLoggerService>();
             services.AddSingleton<IConfigService, ConfigService>();
             services.AddSingleton<IThemeService, ThemeService>();
             services.AddSingleton<SqliteDbContext>();
@@ -165,12 +189,10 @@ namespace RikkaTracker
             services.AddSingleton<IAppActivityTracker, AppActivityTracker>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
             services.AddSingleton<IIconService, IconService>();
-            services.AddSingleton<ILoggerService, FileLoggerService>();
             services.AddSingleton<ILocalizationService, LocalizationService>();
             services.AddSingleton<IUpdateService, UpdateService>();
             
-            // ViewModels
-            services.AddTransient<MainViewModel>(); // Transient so it's recreated
+            services.AddTransient<MainViewModel>();
             services.AddTransient<DashboardViewModel>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<ActivityListViewModel>();

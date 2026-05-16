@@ -128,6 +128,24 @@
                 </Grid>
             </ui:Card>
             
+            <ui:Card Padding="20" Margin="0,20,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <ui:TextBlock Text="日志管理" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <ui:TextBlock Text="查看应用运行日志，用于排错和诊断。" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <ui:Button Grid.Column="1" 
+                               Content="打开日志文件夹" 
+                               Icon="{ui:SymbolIcon FolderOpen24}" 
+                               Command="{Binding OpenLogFolderCommand}"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </ui:Card>
+            
             <ui:Button Content="{DynamicResource StrExportData}" 
                        Appearance="Primary" 
                        Margin="0,20,0,0" 

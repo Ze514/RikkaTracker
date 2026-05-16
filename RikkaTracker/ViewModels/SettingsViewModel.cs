@@ -247,6 +247,30 @@ namespace RikkaTracker.ViewModels
             _configService.Save();
         }
 
+        [RelayCommand]
+        private void OpenLogFolder()
+        {
+            try
+            {
+                string logPath = _logger.GetLogPath();
+                string? logDir = System.IO.Path.GetDirectoryName(logPath);
+
+                if (!string.IsNullOrEmpty(logDir) && System.IO.Directory.Exists(logDir))
+                {
+                    _logger.Info($"User opening log folder: {logDir}");
+                    System.Diagnostics.Process.Start("explorer.exe", logDir);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("日志目录尚未创建或不存在。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open log folder.", ex);
+            }
+        }
+
         [ObservableProperty]
         private string _language;
 
