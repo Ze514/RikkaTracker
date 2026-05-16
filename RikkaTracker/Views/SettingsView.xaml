@@ -95,7 +95,11 @@
                         <ui:TextBlock FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}">
                             <Run Text="{DynamicResource StrCurrentVersion}"/>: <Run Text="{Binding CurrentVersion}"/>
                         </ui:TextBlock>
-                        <ui:TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{ui:ThemeResource SystemFillColorSuccessBrush}" Margin="0,5,0,0" Visibility="{Binding UpdateStatus, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        
+                        <StackPanel Margin="0,10,0,0" Visibility="{Binding IsUpdating, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <ui:TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{ui:ThemeResource SystemFillColorSuccessBrush}" Margin="0,0,0,5"/>
+                            <ProgressBar Value="{Binding UpdateProgress}" Minimum="0" Maximum="100" Height="4" Margin="0,2,0,0"/>
+                        </StackPanel>
                     </StackPanel>
                     <ui:Button Grid.Column="1" 
                                Content="{DynamicResource StrCheckUpdate}" 

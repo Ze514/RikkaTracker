@@ -165,6 +165,7 @@ namespace RikkaTracker
             services.AddSingleton<IAppActivityTracker, AppActivityTracker>();
             services.AddSingleton<IProcessMonitor, ProcessMonitor>();
             services.AddSingleton<IIconService, IconService>();
+            services.AddSingleton<ILoggerService, FileLoggerService>();
             services.AddSingleton<ILocalizationService, LocalizationService>();
             services.AddSingleton<IUpdateService, UpdateService>();
             

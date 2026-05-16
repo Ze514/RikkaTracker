@@ -10,19 +10,30 @@ using Newtonsoft.Json.Linq;
 
 namespace RikkaTracker.Services
 {
+    public enum UpdateCheckStatus
+    {
+        NoUpdate,           // 已经是最新
+        UpdateAvailable,    // 发现更新且资源就绪
+        NetworkError,       // 网络错误
+        AssetMissing,       // 发现新版本但没找到匹配的下载包
+        InternalError       // 其他内部错误
+    }
+
     public class UpdateCheckResult
     {
-        public bool HasUpdate { get; set; }
+        public UpdateCheckStatus Status { get; set; } = UpdateCheckStatus.NoUpdate;
+        public bool HasUpdate => Status == UpdateCheckStatus.UpdateAvailable;
         public string LatestVersion { get; set; } = string.Empty;
         public string ReleaseNotes { get; set; } = string.Empty;
         public string DownloadUrl { get; set; } = string.Empty;
+        public string ErrorMessage { get; set; } = string.Empty;
     }
 
     public interface IUpdateService
     {
         string GetCurrentVersion();
         Task<UpdateCheckResult> CheckForUpdatesAsync();
-        Task DownloadAndInstallAsync(UpdateCheckResult updateInfo, Action<double> progressCallback = null);
+        Task DownloadAndInstallAsync(UpdateCheckResult updateInfo, Action<double, string> progressCallback = null);
     }
 
     public class UpdateService : IUpdateService
@@ -30,6 +41,7 @@ namespace RikkaTracker.Services
         private const string Owner = "remnant-song";
         private const string Repo = "RikkaTrack";
         private readonly HttpClient _httpClient;
+        private readonly ILoggerService _logger;
 
 #if PORTABLE
         private const string TargetKeyword = "Portable";
@@ -37,9 +49,11 @@ namespace RikkaTracker.Services
         private const string TargetKeyword = "Light";
 #endif
 
-        public UpdateService()
+        public UpdateService(ILoggerService logger)
         {
+            _logger = logger;
             _httpClient = new HttpClient();
+            _httpClient.Timeout = TimeSpan.FromSeconds(30);
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "RikkaTracker-Updater");
         }
 
@@ -51,25 +65,31 @@ namespace RikkaTracker.Services
 
         public async Task<UpdateCheckResult> CheckForUpdatesAsync()
         {
+            _logger.Info($"Starting update check... Current version: {GetCurrentVersion()}");
             try
             {
                 string url = $"https://api.github.com/repos/{Owner}/{Repo}/releases/latest";
+                _logger.Info($"Requesting URL: {url}");
+                
                 string json = await _httpClient.GetStringAsync(url);
+                _logger.Info("Received response from GitHub API.");
+                
                 var release = JsonConvert.DeserializeObject<JObject>(json);
-
-                if (release == null) return new UpdateCheckResult { HasUpdate = false };
+                if (release == null) return new UpdateCheckResult { Status = UpdateCheckStatus.InternalError, ErrorMessage = "Invalid API response" };
 
                 string tagName = release["tag_name"]?.ToString() ?? "v1.0.0";
                 string latestVersionStr = tagName.TrimStart('v');
+                _logger.Info($"Latest version on GitHub: {latestVersionStr}");
                 
                 Version currentVersion = new Version(GetCurrentVersion());
                 Version latestVersion = new Version(latestVersionStr);
 
                 if (latestVersion > currentVersion)
                 {
+                    _logger.Info("New version available! Checking assets...");
                     var result = new UpdateCheckResult
                     {
-                        HasUpdate = true,
+                        Status = UpdateCheckStatus.AssetMissing, // 默认先设为 AssetMissing，找到后再覆盖
                         LatestVersion = latestVersionStr,
                         ReleaseNotes = release["body"]?.ToString() ?? string.Empty
                     };
@@ -82,96 +102,106 @@ namespace RikkaTracker.Services
                             string name = asset["name"]?.ToString() ?? "";
                             string downloadUrl = asset["browser_download_url"]?.ToString() ?? "";
 
-                            // 精准匹配当前版本类型（Portable 更新 Portable，Light 更新 Light）
                             if (name.Contains(TargetKeyword, StringComparison.OrdinalIgnoreCase) && 
                                 name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                             {
+                                _logger.Info($"Found matching asset: {name}");
                                 result.DownloadUrl = downloadUrl;
+                                result.Status = UpdateCheckStatus.UpdateAvailable;
                                 break;
                             }
                         }
                     }
 
+                    if (result.Status == UpdateCheckStatus.AssetMissing)
+                    {
+                        _logger.Warning($"Found version {latestVersionStr} but no {TargetKeyword} asset found.");
+                    }
+
                     return result;
                 }
+                
+                return new UpdateCheckResult { Status = UpdateCheckStatus.NoUpdate };
+            }
+            catch (HttpRequestException hex)
+            {
+                _logger.Error("Network error during update check.", hex);
+                return new UpdateCheckResult { Status = UpdateCheckStatus.NetworkError, ErrorMessage = hex.Message };
+            }
+            catch (TaskCanceledException tex)
+            {
+                _logger.Error("Update check timed out.", tex);
+                return new UpdateCheckResult { Status = UpdateCheckStatus.NetworkError, ErrorMessage = "Request timed out" };
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Update check failed: {ex.Message}");
+                _logger.Error("Unexpected error during update check.", ex);
+                return new UpdateCheckResult { Status = UpdateCheckStatus.InternalError, ErrorMessage = ex.Message };
             }
-
-            return new UpdateCheckResult { HasUpdate = false };
         }
 
-        public async Task DownloadAndInstallAsync(UpdateCheckResult updateInfo, Action<double> progressCallback = null)
+        public async Task DownloadAndInstallAsync(UpdateCheckResult updateInfo, Action<double, string> progressCallback = null)
         {
-            if (string.IsNullOrEmpty(updateInfo.DownloadUrl)) return;
-
-            string tempPath = Path.Combine(Path.GetTempPath(), $"RikkaTracker-Update-{updateInfo.LatestVersion}.exe");
-
-            using (var response = await _httpClient.GetAsync(updateInfo.DownloadUrl, HttpCompletionOption.ResponseHeadersRead))
+            if (string.IsNullOrEmpty(updateInfo.DownloadUrl)) 
             {
-                response.EnsureSuccessStatusCode();
+                _logger.Warning("DownloadAndInstallAsync called with empty URL.");
+                throw new InvalidOperationException("Download URL is missing.");
+            }
 
-                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
-                var canReportProgress = totalBytes != -1 && progressCallback != null;
+            // ... 其余逻辑保持不变 ...
+            _logger.Info($"Starting download: {updateInfo.DownloadUrl}");
+            string tempPath = Path.Combine(Path.GetTempPath(), $"RikkaTracker-Update-{updateInfo.LatestVersion}.exe");
+            progressCallback?.Invoke(0, "Connecting to server...");
 
-                using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                using (var downloadStream = await response.Content.ReadAsStreamAsync())
+            try
+            {
+                using (var response = await _httpClient.GetAsync(updateInfo.DownloadUrl, HttpCompletionOption.ResponseHeadersRead))
                 {
-                    var buffer = new byte[8192];
-                    var totalRead = 0L;
-                    int read;
-
-                    while ((read = await downloadStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    response.EnsureSuccessStatusCode();
+                    var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                    using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    using (var downloadStream = await response.Content.ReadAsStreamAsync())
                     {
-                        await fileStream.WriteAsync(buffer, 0, read);
-                        totalRead += read;
-
-                        if (canReportProgress)
+                        var buffer = new byte[8192];
+                        var totalRead = 0L;
+                        int read;
+                        while ((read = await downloadStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                         {
-                            progressCallback!((double)totalRead / totalBytes);
+                            await fileStream.WriteAsync(buffer, 0, read);
+                            totalRead += read;
+                            if (totalBytes != -1)
+                            {
+                                double progress = (double)totalRead / totalBytes;
+                                progressCallback?.Invoke(progress, $"Downloading: {totalRead/1024.0/1024.0:F2}MB / {totalBytes/1024.0/1024.0:F2}MB");
+                            }
                         }
                     }
                 }
-            }
 
-            string currentExePath = Process.GetCurrentProcess().MainModule?.FileName;
-            if (string.IsNullOrEmpty(currentExePath)) return;
-
-            string scriptPath = Path.Combine(Path.GetTempPath(), "rikka_update.bat");
-
-            // 创建增强版批处理脚本：
-            // 1. 循环等待主进程彻底退出
-            // 2. 覆盖替换
-            // 3. 重新启动
-            // 4. 自销毁
-            string script = $@"
+                string currentExePath = Process.GetCurrentProcess().MainModule?.FileName;
+                string scriptPath = Path.Combine(Path.GetTempPath(), "rikka_update.bat");
+                string script = $@"
 @echo off
 setlocal
 set ""target={currentExePath}""
 set ""source={tempPath}""
-
 :wait_loop
 timeout /t 1 /nobreak > nul
 del /f /q ""%target%"" > nul 2>&1
 if exist ""%target%"" goto wait_loop
-
 move /y ""%source%"" ""%target%""
 start """" ""%target%""
 del ""%~f0""
 ";
-            File.WriteAllText(scriptPath, script);
-
-            Process.Start(new ProcessStartInfo
+                File.WriteAllText(scriptPath, script);
+                Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $"/c \"{scriptPath}\"", CreateNoWindow = true, UseShellExecute = true });
+                System.Windows.Application.Current.Shutdown();
+            }
+            catch (Exception ex)
             {
-                FileName = "cmd.exe",
-                Arguments = $"/c \"{scriptPath}\"",
-                CreateNoWindow = true,
-                UseShellExecute = true
-            });
-
-            System.Windows.Application.Current.Shutdown();
+                _logger.Error("Download failed.", ex);
+                throw;
+            }
         }
     }
 }
