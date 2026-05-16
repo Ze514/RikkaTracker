@@ -12,6 +12,6 @@
     "publish": false
   },
   "hooks": {
-    "after:bump": "powershell -Command \"[xml]$xml = Get-Content RikkaTracker/RikkaTracker.csproj; $xml.Project.PropertyGroup.Version = '${version}'; $xml.Save('RikkaTracker/RikkaTracker.csproj')\""
+    "after:bump": "powershell -Command \"(Get-Content -Raw -Encoding UTF8 RikkaTracker/RikkaTracker.csproj) -replace '<Version>[^<]+</Version>', '<Version>${version}</Version>' | Set-Content -Encoding UTF8 RikkaTracker/RikkaTracker.csproj\""
   }
 }
