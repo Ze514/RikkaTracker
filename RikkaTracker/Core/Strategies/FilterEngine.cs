@@ -28,15 +28,6 @@ namespace RikkaTracker.Core.Strategies
         public void Reload()
         {
             var rules = _configService.Config.FilterRules;
-            
-            // 如果规则列表为空，初始化一些默认的免空闲规则 (如 VLC, Spotify)
-            if (rules.Count == 0)
-            {
-                rules.Add(new FilterRule { ProcessPattern = "vlc*", DisableIdleDetection = true });
-                rules.Add(new FilterRule { ProcessPattern = "spotify*", DisableIdleDetection = true });
-                rules.Add(new FilterRule { ProcessPattern = "wmplayer*", DisableIdleDetection = true });
-                _configService.Save();
-            }
 
             _compiledRules = rules.Select(r => (
                 Pattern: new Regex("^" + Regex.Escape(r.ProcessPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase),

@@ -13,13 +13,11 @@ namespace RikkaTracker.ViewModels
         private readonly IThemeService _themeService;
         private readonly IConfigService _configService;
         private readonly ILocalizationService _localizationService;
-        private readonly IFilterEngine _filterEngine;
 
-        public SettingsViewModel(IThemeService themeService, IConfigService configService, IFilterEngine filterEngine, ILocalizationService localizationService)
+        public SettingsViewModel(IThemeService themeService, IConfigService configService, ILocalizationService localizationService)
         {
             _themeService = themeService;
             _configService = configService;
-            _filterEngine = filterEngine;
             _localizationService = localizationService;
             
             _isDarkMode = _themeService.GetCurrentTheme() == "Dark";
@@ -27,8 +25,6 @@ namespace RikkaTracker.ViewModels
             _storagePath = _configService.Config.DataStoragePath;
             _timelineZoomMode = _configService.Config.TimelineZoomMode;
             _language = _configService.Config.Language;
-            
-            FilterRules = new ObservableCollection<FilterRule>(_configService.Config.FilterRules);
         }
 
         [ObservableProperty]
@@ -40,36 +36,6 @@ namespace RikkaTracker.ViewModels
             _configService.Save();
         }
 
-        public ObservableCollection<FilterRule> FilterRules { get; }
-
-        [RelayCommand]
-        private void AddRule()
-        {
-            var rule = new FilterRule { ProcessPattern = "new_process" };
-            FilterRules.Add(rule);
-            _configService.Config.FilterRules.Add(rule);
-            _configService.Save();
-            _filterEngine.Reload();
-        }
-
-        [RelayCommand]
-        private void RemoveRule(FilterRule rule)
-        {
-            if (rule != null)
-            {
-                FilterRules.Remove(rule);
-                _configService.Config.FilterRules.Remove(rule);
-                _configService.Save();
-                _filterEngine.Reload();
-            }
-        }
-
-        [RelayCommand]
-        private void SaveRules()
-        {
-            _configService.Save();
-            _filterEngine.Reload();
-        }
 
         [RelayCommand]
         private void ChangeStoragePath()

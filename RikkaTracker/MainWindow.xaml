@@ -27,6 +27,9 @@
         <DataTemplate DataType="{x:Type vm:StatisticsViewModel}">
             <views:StatisticsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FilterSettingsViewModel}">
+            <views:FilterSettingsView/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -70,6 +73,14 @@
                     Command="{Binding NavigateToStatisticsCommand}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Clock24"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource StrFilterRules}"
+                    Command="{Binding NavigateToFilterSettingsCommand}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Shield24"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>

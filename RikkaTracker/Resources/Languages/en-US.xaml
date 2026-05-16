@@ -40,6 +40,9 @@
     <sys:String x:Key="StrSaveAndApply">Save &amp; Apply</sys:String>
     <sys:String x:Key="StrIgnoreRecord">Ignore Record</sys:String>
     <sys:String x:Key="StrDisableIdle">No Idle Detection</sys:String>
+    <sys:String x:Key="StrResetToDefaults">Reset to Defaults</sys:String>
+    <sys:String x:Key="StrResetConfirmTitle">Reset Confirmation</sys:String>
+    <sys:String x:Key="StrResetConfirmDesc">Are you sure you want to reset all policy rules to system defaults? This will overwrite your current custom rules.</sys:String>
     
     <sys:String x:Key="StrDataStorage">Data Storage Path</sys:String>
     <sys:String x:Key="StrChange">Change</sys:String>

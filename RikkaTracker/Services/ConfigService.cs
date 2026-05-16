@@ -41,6 +41,7 @@ namespace RikkaTracker.Services
                 {
                     string json = File.ReadAllText(_configFilePath);
                     _config = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+
                 }
                 catch
                 {

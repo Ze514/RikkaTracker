@@ -173,6 +173,7 @@ namespace RikkaTracker
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<ActivityListViewModel>();
             services.AddTransient<StatisticsViewModel>();
+            services.AddTransient<FilterSettingsViewModel>();
 
             return services.BuildServiceProvider();
         }

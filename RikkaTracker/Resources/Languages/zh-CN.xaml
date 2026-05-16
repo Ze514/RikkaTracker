@@ -40,6 +40,9 @@
     <sys:String x:Key="StrSaveAndApply">保存并生效</sys:String>
     <sys:String x:Key="StrIgnoreRecord">忽略记录</sys:String>
     <sys:String x:Key="StrDisableIdle">免空闲检测</sys:String>
+    <sys:String x:Key="StrResetToDefaults">恢复默认策略</sys:String>
+    <sys:String x:Key="StrResetConfirmTitle">确认恢复</sys:String>
+    <sys:String x:Key="StrResetConfirmDesc">确定要将所有策略规则重置为系统默认配置吗？这将会覆盖您当前的自定义规则。</sys:String>
     
     <sys:String x:Key="StrDataStorage">数据存储路径</sys:String>
     <sys:String x:Key="StrChange">更改</sys:String>

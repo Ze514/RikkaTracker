@@ -13,7 +13,15 @@ namespace RikkaTracker.Models
         public string Theme { get; set; } = "Dark"; // "Light" or "Dark"
         public string TimelineZoomMode { get; set; } = "Center"; // "Center" or "Latest"
         public string Language { get; set; } = "Auto"; // "Auto", "zh-CN", "en-US"
-        public List<FilterRule> FilterRules { get; set; } = new List<FilterRule>();
+        public List<FilterRule> FilterRules { get; set; } = new List<FilterRule>
+        {
+            // 默认免空闲检测（多媒体应用）
+            new FilterRule { ProcessPattern = "vlc*", DisableIdleDetection = true },
+            new FilterRule { ProcessPattern = "spotify*", DisableIdleDetection = true },
+            new FilterRule { ProcessPattern = "wmplayer*", DisableIdleDetection = true },
+            // 默认忽略（系统组件）
+            new FilterRule { ProcessPattern = "ShellExperienceHost", Ignore = true }
+        };
     }
 
     public class FilterRule
