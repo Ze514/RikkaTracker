@@ -7,11 +7,9 @@ on:
       - release
 
 jobs:
-  build:
+  # 1. 构建轻量依赖版 (Framework-dependent)
+  build-light:
     runs-on: windows-latest
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,6 +22,92 @@ jobs:
       - name: Restore
         run: dotnet restore RikkaTracker/RikkaTracker.csproj
 
+      - name: Publish Light (Framework-dependent)
+        run: |
+          # 显式清理
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue RikkaTracker/bin
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue RikkaTracker/obj
+          
+          dotnet publish RikkaTracker/RikkaTracker.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained false `
+            --no-self-contained `
+            -o ./publish/light
+
+      - name: Inspect Light Output
+        run: |
+          echo "Listing files in ./publish/light:"
+          Get-ChildItem -Recurse ./publish/light | Select-Object FullName, @{Name="Size(MB)";Expression={"{0:N2}" -f ($_.Length / 1MB)}}
+
+      - name: Upload Light Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: light-build
+          path: ./publish/light
+          if-no-files-found: error
+
+  # 2. 构建自包含便携版 (Self-contained)
+  build-portable:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore RikkaTracker/RikkaTracker.csproj
+
+      - name: Publish Portable (Self-contained)
+        run: |
+          # 显式清理
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue RikkaTracker/bin
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue RikkaTracker/obj
+          
+          dotnet publish RikkaTracker/RikkaTracker.csproj `
+            -c Release `
+            -r win-x64 `
+            -p:IsPortable=true `
+            -o ./publish/portable
+
+      - name: Inspect Portable Output
+        run: |
+          echo "Listing files in ./publish/portable:"
+          Get-ChildItem -Recurse ./publish/portable | Select-Object FullName, @{Name="Size(MB)";Expression={"{0:N2}" -f ($_.Length / 1MB)}}
+
+      - name: Upload Portable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-build
+          path: ./publish/portable
+          if-no-files-found: error
+
+  # 3. 打包并创建 Release
+  create-release:
+    needs: [build-light, build-portable]
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Light build
+        uses: actions/download-artifact@v4
+        with:
+          name: light-build
+          path: ./artifacts/light
+
+      - name: Download Portable build
+        uses: actions/download-artifact@v4
+        with:
+          name: portable-build
+          path: ./artifacts/portable
+
       - name: Get Version
         id: get_version
         shell: pwsh
@@ -33,25 +117,16 @@ jobs:
           echo "VERSION=$version" >> $env:GITHUB_ENV
           echo "Version found: $version"
 
-      - name: Publish Light (Framework-dependent)
-        run: |
-          dotnet clean RikkaTracker/RikkaTracker.csproj
-          dotnet publish RikkaTracker/RikkaTracker.csproj -c Release -r win-x64 --self-contained false -o ./publish/light
-
-      - name: Publish Portable (Self-contained)
-        run: |
-          dotnet clean RikkaTracker/RikkaTracker.csproj
-          dotnet publish RikkaTracker/RikkaTracker.csproj -c Release -r win-x64 -p:IsPortable=true -o ./publish/portable
-
-      - name: Create Artifacts
+      - name: Create Archives
+        shell: pwsh
         run: |
           $version = "${{ env.VERSION }}"
-          # Zip Portable
-          Compress-Archive -Path ./publish/portable/* -DestinationPath RikkaTracker-$version-win-x64-portable.zip
           # Zip Light
-          Compress-Archive -Path ./publish/light/* -DestinationPath RikkaTracker-$version-win-x64-light.zip
-          # Copy raw EXE for updater
-          Copy-Item ./publish/portable/RikkaTracker.exe RikkaTracker-$version-win-x64.exe
+          Compress-Archive -Path ./artifacts/light/* -DestinationPath RikkaTracker-$version-win-x64-light.zip
+          # Zip Portable
+          Compress-Archive -Path ./artifacts/portable/* -DestinationPath RikkaTracker-$version-win-x64-portable.zip
+          # Copy raw EXE for updater (from portable)
+          Copy-Item ./artifacts/portable/RikkaTracker.exe RikkaTracker-$version-win-x64.exe
 
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
@@ -66,7 +141,7 @@ jobs:
             ## RikkaTracker v${{ env.VERSION }}
             
             ### 下载说明
-            - **Portable.zip**: 绿色自包含版（已开启压缩与剪裁，解压即用）。
+            - **Portable.zip**: 绿色自包含版（已开启压缩与极致封装，解压即用）。
             - **Light.zip**: 轻量依赖版（体积极小，需本地已安装 .NET 8）。
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
