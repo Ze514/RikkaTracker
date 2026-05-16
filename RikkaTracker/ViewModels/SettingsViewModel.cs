@@ -49,7 +49,7 @@ namespace RikkaTracker.ViewModels
             {
                 var msg = (string)System.Windows.Application.Current.Resources["StrUpdateAvailable"];
                 var choice = System.Windows.MessageBox.Show(
-                    $"{msg}\n\n{_localizationService.CurrentLanguage == "zh-CN" ? "版本" : "Version"}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
+                    $"{msg}\n\n{(_localizationService.CurrentLanguage == "zh-CN" ? "版本" : "Version")}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
                     (string)System.Windows.Application.Current.Resources["StrUpdate"],
                     System.Windows.MessageBoxButton.YesNo,
                     System.Windows.MessageBoxImage.Information);

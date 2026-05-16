@@ -92,7 +92,9 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <ui:TextBlock Text="{DynamicResource StrUpdate}" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <ui:TextBlock Text="{Binding CurrentVersion, StringFormat={StaticResource StrCurrentVersion}: {0}}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        <ui:TextBlock FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}">
+                            <Run Text="{DynamicResource StrCurrentVersion}"/>: <Run Text="{Binding CurrentVersion}"/>
+                        </ui:TextBlock>
                         <ui:TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{ui:ThemeResource SystemFillColorSuccessBrush}" Margin="0,5,0,0" Visibility="{Binding UpdateStatus, Converter={StaticResource StringToVisibilityConverter}}"/>
                     </StackPanel>
                     <ui:Button Grid.Column="1" 
