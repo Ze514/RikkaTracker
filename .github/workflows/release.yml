@@ -116,16 +116,14 @@ jobs:
           echo "VERSION=$version" >> $env:GITHUB_ENV
           echo "Version found: $version"
 
-      - name: Create Archives
+      - name: Prepare Release Files
         shell: pwsh
         run: |
           $version = "${{ env.VERSION }}"
-          # Zip Light
-          Compress-Archive -Path ./artifacts/light/* -DestinationPath RikkaTracker-$version-win-x64-light.zip
-          # Zip Portable
-          Compress-Archive -Path ./artifacts/portable/* -DestinationPath RikkaTracker-$version-win-x64-portable.zip
-          # Copy raw EXE for updater (from portable)
-          Copy-Item ./artifacts/portable/RikkaTracker.exe RikkaTracker-$version-win-x64.exe
+          # 准备 Portable 版 EXE
+          Copy-Item ./artifacts/portable/RikkaTracker.exe RikkaTracker-v$version-Portable.exe
+          # 准备 Light 版 EXE
+          Copy-Item ./artifacts/light/RikkaTracker.exe RikkaTracker-v$version-Light.exe
 
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
@@ -134,8 +132,7 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: 'RikkaTracker v${{ env.VERSION }}'
           files: |
-            RikkaTracker-*.zip
-            RikkaTracker-*.exe
+            RikkaTracker-v*.exe
           body: |
             ## RikkaTracker v${{ env.VERSION }}
             

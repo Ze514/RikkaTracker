@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,13 +10,6 @@ using Newtonsoft.Json.Linq;
 
 namespace RikkaTracker.Services
 {
-    public interface IUpdateService
-    {
-        Task<UpdateCheckResult> CheckForUpdatesAsync();
-        Task DownloadAndInstallAsync(UpdateCheckResult updateInfo, Action<double> progressCallback = null);
-        string GetCurrentVersion();
-    }
-
     public class UpdateCheckResult
     {
         public bool HasUpdate { get; set; }
@@ -32,10 +24,15 @@ namespace RikkaTracker.Services
         private const string Repo = "RikkaTrack";
         private readonly HttpClient _httpClient;
 
+#if PORTABLE
+        private const string TargetKeyword = "Portable";
+#else
+        private const string TargetKeyword = "Light";
+#endif
+
         public UpdateService()
         {
             _httpClient = new HttpClient();
-            // GitHub API requires User-Agent
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "RikkaTracker-Updater");
         }
 
@@ -78,15 +75,12 @@ namespace RikkaTracker.Services
                             string name = asset["name"]?.ToString() ?? "";
                             string downloadUrl = asset["browser_download_url"]?.ToString() ?? "";
 
-                            // 优先寻找 .exe 以进行直接替换更新
-                            if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                            // 精准匹配当前版本类型（Portable 更新 Portable，Light 更新 Light）
+                            if (name.Contains(TargetKeyword, StringComparison.OrdinalIgnoreCase) && 
+                                name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                             {
                                 result.DownloadUrl = downloadUrl;
                                 break;
-                            }
-                            else if (name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
-                            {
-                                result.DownloadUrl = downloadUrl;
                             }
                         }
                     }
@@ -106,8 +100,7 @@ namespace RikkaTracker.Services
         {
             if (string.IsNullOrEmpty(updateInfo.DownloadUrl)) return;
 
-            string extension = Path.GetExtension(updateInfo.DownloadUrl).ToLower();
-            string tempPath = Path.Combine(Path.GetTempPath(), $"RikkaTracker-Update-{updateInfo.LatestVersion}{extension}");
+            string tempPath = Path.Combine(Path.GetTempPath(), $"RikkaTracker-Update-{updateInfo.LatestVersion}.exe");
 
             using (var response = await _httpClient.GetAsync(updateInfo.DownloadUrl, HttpCompletionOption.ResponseHeadersRead))
             {
@@ -136,38 +129,40 @@ namespace RikkaTracker.Services
                 }
             }
 
-            if (extension == ".msi")
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "msiexec.exe",
-                    Arguments = $"/i \"{tempPath}\" /passive",
-                    UseShellExecute = true
-                });
-            }
-            else if (extension == ".exe")
-            {
-                string currentExePath = Process.GetCurrentProcess().MainModule.FileName;
-                string scriptPath = Path.Combine(Path.GetTempPath(), "rikka_update.bat");
+            string currentExePath = Process.GetCurrentProcess().MainModule?.FileName;
+            if (string.IsNullOrEmpty(currentExePath)) return;
 
-                // 创建一个简单的批处理脚本来替换正在运行的 EXE
-                string script = $@"
+            string scriptPath = Path.Combine(Path.GetTempPath(), "rikka_update.bat");
+
+            // 创建增强版批处理脚本：
+            // 1. 循环等待主进程彻底退出
+            // 2. 覆盖替换
+            // 3. 重新启动
+            // 4. 自销毁
+            string script = $@"
 @echo off
+setlocal
+set ""target={currentExePath}""
+set ""source={tempPath}""
+
+:wait_loop
 timeout /t 1 /nobreak > nul
-del /f /q ""{currentExePath}""
-move /y ""{tempPath}"" ""{currentExePath}""
-start """" ""{currentExePath}""
+del /f /q ""%target%"" > nul 2>&1
+if exist ""%target%"" goto wait_loop
+
+move /y ""%source%"" ""%target%""
+start """" ""%target%""
 del ""%~f0""
 ";
-                File.WriteAllText(scriptPath, script);
+            File.WriteAllText(scriptPath, script);
 
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = scriptPath,
-                    CreateNoWindow = true,
-                    UseShellExecute = true
-                });
-            }
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{scriptPath}\"",
+                CreateNoWindow = true,
+                UseShellExecute = true
+            });
 
             System.Windows.Application.Current.Shutdown();
         }
