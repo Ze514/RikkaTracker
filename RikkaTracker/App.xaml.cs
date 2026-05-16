@@ -15,9 +15,19 @@ namespace RikkaTracker
         public IServiceProvider ServiceProvider { get; private set; }
         private TaskbarIcon? _notifyIcon;
         private ILoggerService? _logger;
+        private static Mutex? _appMutex;
 
         public App()
         {
+            // 确保单实例运行
+            _appMutex = new Mutex(true, "Global\\RikkaTracker_Mutex_Unique_ID", out bool createdNew);
+            if (!createdNew)
+            {
+                MessageBox.Show("RikkaTracker 已经在运行中。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                Application.Current.Shutdown();
+                return;
+            }
+
             ServiceProvider = ConfigureServices();
             _logger = ServiceProvider.GetRequiredService<ILoggerService>();
             
@@ -168,6 +178,8 @@ namespace RikkaTracker
                     logStore?.Dispose();
                 }
                 _notifyIcon?.Dispose();
+                _appMutex?.ReleaseMutex();
+                _appMutex?.Dispose();
             }
             catch (Exception ex)
             {
