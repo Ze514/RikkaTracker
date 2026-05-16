@@ -28,7 +28,9 @@
     <Fragment>
         <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
             <Component Id="MainExecutable" Guid="a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d">
-                <File Id="RikkaTrackerEXE" Source="$(var.OutputPath)\RikkaTracker.exe" KeyPath="yes" Checksum="yes" />
+                <File Id="RikkaTrackerEXE" Source="$(var.OutputPath)\RikkaTracker.exe" KeyPath="no" Checksum="yes" />
+                <RegistryValue Root="HKCU" Key="Software\RikkaTracker" Name="main_exe" Type="integer" Value="1" KeyPath="yes"/>
+                <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
             </Component>
         </ComponentGroup>
 

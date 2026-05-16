@@ -23,8 +23,7 @@ namespace RikkaTracker.Services
         public bool HasUpdate { get; set; }
         public string LatestVersion { get; set; } = string.Empty;
         public string ReleaseNotes { get; set; } = string.Empty;
-        public string MsiUrl { get; set; } = string.Empty;
-        public string PortableUrl { get; set; } = string.Empty;
+        public string DownloadUrl { get; set; } = string.Empty;
     }
 
     public class UpdateService : IUpdateService
@@ -79,13 +78,15 @@ namespace RikkaTracker.Services
                             string name = asset["name"]?.ToString() ?? "";
                             string downloadUrl = asset["browser_download_url"]?.ToString() ?? "";
 
-                            if (name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
+                            // 优先寻找 .exe 以进行直接替换更新
+                            if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                             {
-                                result.MsiUrl = downloadUrl;
+                                result.DownloadUrl = downloadUrl;
+                                break;
                             }
-                            else if (name.Contains("portable", StringComparison.OrdinalIgnoreCase) && name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                            else if (name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
                             {
-                                result.PortableUrl = downloadUrl;
+                                result.DownloadUrl = downloadUrl;
                             }
                         }
                     }
@@ -103,11 +104,12 @@ namespace RikkaTracker.Services
 
         public async Task DownloadAndInstallAsync(UpdateCheckResult updateInfo, Action<double> progressCallback = null)
         {
-            if (string.IsNullOrEmpty(updateInfo.MsiUrl)) return;
+            if (string.IsNullOrEmpty(updateInfo.DownloadUrl)) return;
 
-            string tempPath = Path.Combine(Path.GetTempPath(), $"RikkaTracker-Setup-{updateInfo.LatestVersion}.msi");
+            string extension = Path.GetExtension(updateInfo.DownloadUrl).ToLower();
+            string tempPath = Path.Combine(Path.GetTempPath(), $"RikkaTracker-Update-{updateInfo.LatestVersion}{extension}");
 
-            using (var response = await _httpClient.GetAsync(updateInfo.MsiUrl, HttpCompletionOption.ResponseHeadersRead))
+            using (var response = await _httpClient.GetAsync(updateInfo.DownloadUrl, HttpCompletionOption.ResponseHeadersRead))
             {
                 response.EnsureSuccessStatusCode();
 
@@ -134,13 +136,38 @@ namespace RikkaTracker.Services
                 }
             }
 
-            // Launch MSI and exit app
-            Process.Start(new ProcessStartInfo
+            if (extension == ".msi")
             {
-                FileName = "msiexec.exe",
-                Arguments = $"/i \"{tempPath}\" /passive",
-                UseShellExecute = true
-            });
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "msiexec.exe",
+                    Arguments = $"/i \"{tempPath}\" /passive",
+                    UseShellExecute = true
+                });
+            }
+            else if (extension == ".exe")
+            {
+                string currentExePath = Process.GetCurrentProcess().MainModule.FileName;
+                string scriptPath = Path.Combine(Path.GetTempPath(), "rikka_update.bat");
+
+                // 创建一个简单的批处理脚本来替换正在运行的 EXE
+                string script = $@"
+@echo off
+timeout /t 1 /nobreak > nul
+del /f /q ""{currentExePath}""
+move /y ""{tempPath}"" ""{currentExePath}""
+start """" ""{currentExePath}""
+del ""%~f0""
+";
+                File.WriteAllText(scriptPath, script);
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = scriptPath,
+                    CreateNoWindow = true,
+                    UseShellExecute = true
+                });
+            }
 
             System.Windows.Application.Current.Shutdown();
         }
