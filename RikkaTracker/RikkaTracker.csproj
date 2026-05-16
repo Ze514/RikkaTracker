@@ -5,7 +5,18 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
+    <!-- 榛樿寮€鍚崟鏂囦欢鍙戝竷 -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <DebugType>embedded</DebugType>
+    <!-- 浠呭湪 Portable 妯″紡涓嬪紑鍚殑閲嶅瀷浼樺寲 -->
+    <PropertyGroup Condition="'$(IsPortable)' == 'true'">
+      <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+      <SelfContained>true</SelfContained>
+      <PublishReadyToRun>true</PublishReadyToRun>
+      <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+      <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    </PropertyGroup>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
