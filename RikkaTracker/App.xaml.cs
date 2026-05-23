@@ -74,10 +74,15 @@ namespace RikkaTracker
             _notifyIcon.ToolTipText = "RikkaTracker";
             _notifyIcon.DoubleClickCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(ShowMainWindow);
 
-            bool startMinimized = true;
+            bool startMinimized = false;
             foreach (var arg in e.Args)
             {
-                if (arg.Equals("/show", StringComparison.OrdinalIgnoreCase)) startMinimized = false;
+                if (arg.Equals("/minimized", StringComparison.OrdinalIgnoreCase) || 
+                    arg.Equals("/hide", StringComparison.OrdinalIgnoreCase) ||
+                    arg.Equals("/silent", StringComparison.OrdinalIgnoreCase))
+                {
+                    startMinimized = true;
+                }
             }
 
             try 
