@@ -43,6 +43,12 @@ namespace RikkaTracker.ViewModels
         }
 
         [RelayCommand]
+        private void NavigateToUsageStatistics()
+        {
+            CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<UsageStatisticsViewModel>();
+        }
+
+        [RelayCommand]
         private void NavigateToFilterSettings()
         {
             CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<FilterSettingsViewModel>();

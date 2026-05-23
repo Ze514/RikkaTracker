@@ -7,6 +7,8 @@ using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows.Controls;
 using RikkaTracker.Core.Monitor;
 using RikkaTracker.Core.Data;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 
 namespace RikkaTracker
 {
@@ -57,6 +59,12 @@ namespace RikkaTracker
         {
             base.OnStartup(e);
             _logger?.Info("--- RikkaTracker Startup ---");
+
+            LiveCharts.Configure(config => 
+                config
+                    .AddDefaultMappers()
+                    .AddSkiaSharp()
+                    .AddLightTheme());
 
             // Initialize Tray Icon
             _notifyIcon = new TaskbarIcon();
@@ -210,6 +218,7 @@ namespace RikkaTracker
             services.AddTransient<ActivityListViewModel>();
             services.AddTransient<StatisticsViewModel>();
             services.AddTransient<FilterSettingsViewModel>();
+            services.AddTransient<UsageStatisticsViewModel>();
 
             return services.BuildServiceProvider();
         }

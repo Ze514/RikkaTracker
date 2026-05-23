@@ -28,6 +28,16 @@ namespace RikkaTracker.Services
         Task<IEnumerable<(int Hour, TimeSpan TotalTime)>> GetHourlyUsageAsync(DateTime date);
 
         /// <summary>
+        /// 获取指定时间段内（按天）的汇总数据
+        /// </summary>
+        Task<IEnumerable<(DateTime Date, TimeSpan TotalTime)>> GetDailyTrendAsync(DateTime start, DateTime end);
+
+        /// <summary>
+        /// 获取指定年份（按月）的汇总数据
+        /// </summary>
+        Task<IEnumerable<(int Month, TimeSpan TotalTime)>> GetMonthlyTrendAsync(int year);
+
+        /// <summary>
         /// 获取指定时段内的汇总数据（总时长、应用数、最长使用应用）
         /// </summary>
         Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime)> GetStatsSummaryAsync(DateTime start, DateTime end);

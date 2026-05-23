@@ -22,6 +22,12 @@ namespace RikkaTracker.Services
         public Task<IEnumerable<(int Hour, TimeSpan TotalTime)>> GetHourlyUsageAsync(DateTime date)
             => Task.FromResult<IEnumerable<(int Hour, TimeSpan TotalTime)>>(new List<(int, TimeSpan)>());
 
+        public Task<IEnumerable<(DateTime Date, TimeSpan TotalTime)>> GetDailyTrendAsync(DateTime start, DateTime end)
+            => Task.FromResult<IEnumerable<(DateTime, TimeSpan)>>(new List<(DateTime, TimeSpan)>());
+
+        public Task<IEnumerable<(int Month, TimeSpan TotalTime)>> GetMonthlyTrendAsync(int year)
+            => Task.FromResult<IEnumerable<(int, TimeSpan)>>(new List<(int, TimeSpan)>());
+
         public Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime)> GetStatsSummaryAsync(DateTime start, DateTime end)
             => Task.FromResult((TimeSpan.Zero, 0, "N/A", TimeSpan.Zero));
     }

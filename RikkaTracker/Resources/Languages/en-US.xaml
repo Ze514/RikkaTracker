@@ -19,6 +19,17 @@
     <sys:String x:Key="StrInactive">Inactive</sys:String>
     <sys:String x:Key="StrBackground">Background</sys:String>
 
+    <!-- Usage Statistics -->
+    <sys:String x:Key="StrUsageStatistics">Usage Statistics</sys:String>
+    <sys:String x:Key="StrByDay">By Day</sys:String>
+    <sys:String x:Key="StrByWeek">By Week</sys:String>
+    <sys:String x:Key="StrByMonth">By Month</sys:String>
+    <sys:String x:Key="StrByYear">By Year</sys:String>
+    <sys:String x:Key="StrSelectPeriod">Select Period</sys:String>
+    <sys:String x:Key="StrYear">Year</sys:String>
+    <sys:String x:Key="StrMonth">Month</sys:String>
+    <sys:String x:Key="StrTotalUsageTrend">Usage Trend</sys:String>
+
     <!-- Settings -->
     <sys:String x:Key="StrSettings">Settings</sys:String>
     <sys:String x:Key="StrIdleTimeout">Idle Timeout (Min)</sys:String>

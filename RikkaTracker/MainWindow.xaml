@@ -27,6 +27,9 @@
         <DataTemplate DataType="{x:Type vm:StatisticsViewModel}">
             <views:StatisticsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UsageStatisticsViewModel}">
+            <views:UsageStatisticsView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:FilterSettingsViewModel}">
             <views:FilterSettingsView/>
         </DataTemplate>
@@ -73,6 +76,14 @@
                     Command="{Binding NavigateToStatisticsCommand}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Clock24"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource StrUsageStatistics}"
+                    Command="{Binding NavigateToUsageStatisticsCommand}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="DataBarVertical24"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 

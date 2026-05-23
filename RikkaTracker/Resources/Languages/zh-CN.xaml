@@ -19,6 +19,17 @@
     <sys:String x:Key="StrInactive">非活动</sys:String>
     <sys:String x:Key="StrBackground">后台</sys:String>
 
+    <!-- Usage Statistics -->
+    <sys:String x:Key="StrUsageStatistics">统计分析</sys:String>
+    <sys:String x:Key="StrByDay">按天</sys:String>
+    <sys:String x:Key="StrByWeek">按周</sys:String>
+    <sys:String x:Key="StrByMonth">按月</sys:String>
+    <sys:String x:Key="StrByYear">按年</sys:String>
+    <sys:String x:Key="StrSelectPeriod">选择日期</sys:String>
+    <sys:String x:Key="StrYear">年</sys:String>
+    <sys:String x:Key="StrMonth">月</sys:String>
+    <sys:String x:Key="StrTotalUsageTrend">使用时长趋势</sys:String>
+
     <!-- Settings -->
     <sys:String x:Key="StrSettings">设置</sys:String>
     <sys:String x:Key="StrIdleTimeout">空闲超时 (分钟)</sys:String>

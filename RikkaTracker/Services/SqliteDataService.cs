@@ -132,6 +132,96 @@ namespace RikkaTracker.Services
             return Enumerable.Range(0, 24).Select(h => (h, TimeSpan.FromSeconds(hourlyData[h])));
         }
 
+        public async Task<IEnumerable<(DateTime Date, TimeSpan TotalTime)>> GetDailyTrendAsync(DateTime start, DateTime end)
+        {
+            var result = new Dictionary<DateTime, double>();
+            for (var d = start.Date; d < end.Date; d = d.AddDays(1))
+            {
+                result[d] = 0;
+            }
+
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT StartTime, EndTime 
+                FROM ActivityLog 
+                WHERE StartTime >= $from AND StartTime < $to AND Status = $status
+            ";
+            command.Parameters.AddWithValue("$from", start.ToString("o"));
+            command.Parameters.AddWithValue("$to", end.ToString("o"));
+            command.Parameters.AddWithValue("$status", (int)ActivityStatus.ForegroundActive);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                DateTime segStart = DateTime.Parse(reader.GetString(0), null, DateTimeStyles.RoundtripKind);
+                DateTime segEnd = DateTime.Parse(reader.GetString(1), null, DateTimeStyles.RoundtripKind);
+
+                DateTime current = segStart.Date;
+                while (current < segEnd.Date)
+                {
+                    DateTime nextDay = current.AddDays(1);
+                    if (result.ContainsKey(current))
+                    {
+                        result[current] += (nextDay - (segStart > current ? segStart : current)).TotalSeconds;
+                    }
+                    current = nextDay;
+                    segStart = current;
+                }
+                if (result.ContainsKey(current))
+                {
+                    result[current] += (segEnd - (segStart > current ? segStart : current)).TotalSeconds;
+                }
+            }
+
+            return result.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, TimeSpan.FromSeconds(kvp.Value)));
+        }
+
+        public async Task<IEnumerable<(int Month, TimeSpan TotalTime)>> GetMonthlyTrendAsync(int year)
+        {
+            var result = new Dictionary<int, double>();
+            for (int i = 1; i <= 12; i++) result[i] = 0;
+
+            DateTime start = new DateTime(year, 1, 1);
+            DateTime end = start.AddYears(1);
+
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT StartTime, EndTime 
+                FROM ActivityLog 
+                WHERE StartTime >= $from AND StartTime < $to AND Status = $status
+            ";
+            command.Parameters.AddWithValue("$from", start.ToString("o"));
+            command.Parameters.AddWithValue("$to", end.ToString("o"));
+            command.Parameters.AddWithValue("$status", (int)ActivityStatus.ForegroundActive);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                DateTime segStart = DateTime.Parse(reader.GetString(0), null, DateTimeStyles.RoundtripKind);
+                DateTime segEnd = DateTime.Parse(reader.GetString(1), null, DateTimeStyles.RoundtripKind);
+
+                DateTime currentMonthStart = new DateTime(segStart.Year, segStart.Month, 1);
+                while (currentMonthStart < new DateTime(segEnd.Year, segEnd.Month, 1))
+                {
+                    DateTime nextMonth = currentMonthStart.AddMonths(1);
+                    if (currentMonthStart.Year == year)
+                    {
+                        result[currentMonthStart.Month] += (nextMonth - (segStart > currentMonthStart ? segStart : currentMonthStart)).TotalSeconds;
+                    }
+                    currentMonthStart = nextMonth;
+                    segStart = currentMonthStart;
+                }
+                if (currentMonthStart.Year == year)
+                {
+                    result[currentMonthStart.Month] += (segEnd - (segStart > currentMonthStart ? segStart : currentMonthStart)).TotalSeconds;
+                }
+            }
+
+            return result.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, TimeSpan.FromSeconds(kvp.Value)));
+        }
+
         public async Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime)> GetStatsSummaryAsync(DateTime start, DateTime end)
         {
             using var connection = _dbContext.CreateConnection();
