@@ -23,9 +23,9 @@
             <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <ui:Card Grid.Row="1" Padding="10">
+        <ui:Card Grid.Row="1" Padding="10" HorizontalContentAlignment="Stretch">
             <Grid>
-                <ListView ItemsSource="{Binding Processes}" BorderThickness="0" Background="Transparent">
+                <ListView ItemsSource="{Binding Processes}" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,5">
