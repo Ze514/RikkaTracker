@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows7.0</TargetFramework>
@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Version>0.2.3</Version>
+    <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
     
     <!-- 默认开启单文件发布与原生库嵌入 -->
     <PublishSingleFile>true</PublishSingleFile>
@@ -32,6 +33,11 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.7" />
     <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app-icon.ico" />
+    <Resource Include="Assets\app-icon.png" />
   </ItemGroup>
 </Project>
 

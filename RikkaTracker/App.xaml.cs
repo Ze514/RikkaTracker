@@ -68,12 +68,9 @@ namespace RikkaTracker
 
             // Initialize Tray Icon
             _notifyIcon = new TaskbarIcon();
-            var drawing = new System.Windows.Media.GeometryDrawing(
-                System.Windows.Media.Brushes.HotPink,
-                null,
-                new System.Windows.Media.EllipseGeometry(new Point(16, 16), 12, 12)
+            _notifyIcon.IconSource = new System.Windows.Media.Imaging.BitmapImage(
+                new Uri("pack://application:,,,/Assets/app-icon.png")
             );
-            _notifyIcon.IconSource = new System.Windows.Media.DrawingImage(drawing);
             _notifyIcon.ToolTipText = "RikkaTracker";
             _notifyIcon.DoubleClickCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(ShowMainWindow);
 
