@@ -9,6 +9,10 @@
     <sys:String x:Key="StrActiveApps">活跃应用</sys:String>
     <sys:String x:Key="StrTopApp">最长使用</sys:String>
     <sys:String x:Key="StrHourlyTrend">24小时活跃趋势</sys:String>
+    <sys:String x:Key="StrNoData">暂无数据</sys:String>
+    <sys:String x:Key="StrVsYesterday">较昨日对比</sys:String>
+    <sys:String x:Key="StrMostActiveHour">最活跃时段</sys:String>
+    <sys:String x:Key="StrAvgTimePerApp">平均单应用时长</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">时间轴</sys:String>

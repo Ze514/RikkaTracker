@@ -9,6 +9,10 @@
     <sys:String x:Key="StrActiveApps">Active Apps</sys:String>
     <sys:String x:Key="StrTopApp">Most Used</sys:String>
     <sys:String x:Key="StrHourlyTrend">24h Activity Trend</sys:String>
+    <sys:String x:Key="StrNoData">No Data Available</sys:String>
+    <sys:String x:Key="StrVsYesterday">Vs Yesterday</sys:String>
+    <sys:String x:Key="StrMostActiveHour">Most Active Hour</sys:String>
+    <sys:String x:Key="StrAvgTimePerApp">Avg Time / App</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">Timeline</sys:String>

@@ -51,66 +51,74 @@
             </ui:TitleBar.Header>
         </ui:TitleBar>
 
-        <ui:NavigationView
-            Grid.Row="1"
-            PaneDisplayMode="Left"
-            IsBackButtonVisible="Collapsed"
-            IsPaneToggleVisible="True"
-            OpenPaneLength="200">
-            
-            <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem
-                    Content="{DynamicResource StrDashboard}"
-                    Command="{Binding NavigateToDashboardCommand}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Home24"/>
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:NavigationView
+                Grid.Column="0"
+                HorizontalAlignment="Left"
+                PaneDisplayMode="Left"
+                IsBackButtonVisible="Collapsed"
+                IsPaneToggleVisible="True"
+                OpenPaneLength="200">
                 
-                <ui:NavigationViewItem
-                    Content="{DynamicResource StrActiveApps}"
-                    Command="{Binding NavigateToActivityListCommand}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Apps24"/>
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
+                <ui:NavigationView.MenuItems>
+                    <ui:NavigationViewItem
+                        Content="{DynamicResource StrDashboard}"
+                        Command="{Binding NavigateToDashboardCommand}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="Home24"/>
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+                    
+                    <ui:NavigationViewItem
+                        Content="{DynamicResource StrActiveApps}"
+                        Command="{Binding NavigateToActivityListCommand}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="Apps24"/>
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
 
-                <ui:NavigationViewItem
-                    Content="{DynamicResource StrTimeline}"
-                    Command="{Binding NavigateToStatisticsCommand}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Clock24"/>
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
+                    <ui:NavigationViewItem
+                        Content="{DynamicResource StrTimeline}"
+                        Command="{Binding NavigateToStatisticsCommand}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="Clock24"/>
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
 
-                <ui:NavigationViewItem
-                    Content="{DynamicResource StrUsageStatistics}"
-                    Command="{Binding NavigateToUsageStatisticsCommand}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="DataBarVertical24"/>
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
+                    <ui:NavigationViewItem
+                        Content="{DynamicResource StrUsageStatistics}"
+                        Command="{Binding NavigateToUsageStatisticsCommand}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="DataBarVertical24"/>
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
 
-                <ui:NavigationViewItem
-                    Content="{DynamicResource StrFilterRules}"
-                    Command="{Binding NavigateToFilterSettingsCommand}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Shield24"/>
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-            </ui:NavigationView.MenuItems>
+                    <ui:NavigationViewItem
+                        Content="{DynamicResource StrFilterRules}"
+                        Command="{Binding NavigateToFilterSettingsCommand}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="Shield24"/>
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+                </ui:NavigationView.MenuItems>
 
-            <ui:NavigationView.FooterMenuItems>
-                <ui:NavigationViewItem
-                    Content="{DynamicResource StrSettings}"
-                    Command="{Binding NavigateToSettingsCommand}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Settings24"/>
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-            </ui:NavigationView.FooterMenuItems>
-        </ui:NavigationView>
+                <ui:NavigationView.FooterMenuItems>
+                    <ui:NavigationViewItem
+                        Content="{DynamicResource StrSettings}"
+                        Command="{Binding NavigateToSettingsCommand}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="Settings24"/>
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+                </ui:NavigationView.FooterMenuItems>
+            </ui:NavigationView>
 
-        <ContentPresenter Grid.Row="1" Margin="210,10,10,10" Content="{Binding CurrentViewModel}" />
+            <ContentPresenter Grid.Column="1" Margin="10" Content="{Binding CurrentViewModel}" />
+        </Grid>
     </Grid>
 </ui:FluentWindow>

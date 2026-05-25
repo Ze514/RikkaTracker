@@ -222,7 +222,7 @@ namespace RikkaTracker.Services
             return result.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, TimeSpan.FromSeconds(kvp.Value)));
         }
 
-        public async Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime)> GetStatsSummaryAsync(DateTime start, DateTime end)
+        public async Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime, string TopAppPath)> GetStatsSummaryAsync(DateTime start, DateTime end)
         {
             using var connection = _dbContext.CreateConnection();
             using var command = connection.CreateCommand();
@@ -235,10 +235,10 @@ namespace RikkaTracker.Services
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status;
 
-                SELECT ProcessName, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TopSeconds, MAX(Alias) as TopAlias
+                SELECT ProcessName, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TopSeconds, MAX(Alias) as TopAlias, ProcessPath
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status
-                GROUP BY ProcessName
+                GROUP BY ProcessName, ProcessPath
                 ORDER BY TopSeconds DESC
                 LIMIT 1;
             ";
@@ -250,6 +250,7 @@ namespace RikkaTracker.Services
             int appCount = 0;
             string topAppName = "N/A";
             TimeSpan topAppTime = TimeSpan.Zero;
+            string topAppPath = string.Empty;
 
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
@@ -263,12 +264,13 @@ namespace RikkaTracker.Services
                 string procName = reader.GetString(0);
                 double seconds = reader.GetDouble(1);
                 string alias = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                topAppPath = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
                 
                 topAppName = !string.IsNullOrEmpty(alias) ? alias : procName;
                 topAppTime = TimeSpan.FromSeconds(seconds);
             }
 
-            return (totalTime, appCount, topAppName, topAppTime);
+            return (totalTime, appCount, topAppName, topAppTime, topAppPath);
         }
     }
 }

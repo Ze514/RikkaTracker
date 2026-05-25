@@ -98,47 +98,69 @@
                 <ui:TextBlock Grid.Row="3" Text="{DynamicResource StrActiveApps}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 
                 <!-- 活动应用排行 -->
-                <ui:Card Grid.Row="4" Padding="10" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                    <ItemsControl ItemsSource="{Binding Leaderboard}" Background="Transparent">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="0,5">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                <ui:Card Grid.Row="4" Padding="10" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" MinHeight="200">
+                    <Grid>
+                        <ItemsControl Name="LeaderboardList" ItemsSource="{Binding Leaderboard}" Background="Transparent">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <!-- 图标 -->
-                                    <Grid Width="24" Height="24" Margin="0,0,15,0">
-                                        <Image Source="{Binding Icon}" Visibility="{Binding Icon, Converter={StaticResource NullToVisibilityConverter}}"/>
-                                        <ui:SymbolIcon Symbol="Apps24" FontSize="24" 
-                                                       Visibility="{Binding Icon, Converter={StaticResource InverseNullToVisibilityConverter}}"
-                                                       Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                                    </Grid>
-
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <ui:TextBlock Text="{Binding ProcessName}" FontSize="14" FontWeight="SemiBold"/>
-                                        
-                                        <!-- 进度条 -->
-                                        <Grid Margin="0,5,0,0" Height="6">
-                                            <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" CornerRadius="3"/>
-                                            <Border HorizontalAlignment="Left" Background="{StaticResource BrushPink}" CornerRadius="3">
-                                                <Border.Width>
-                                                    <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                        <Binding Path="Percentage"/>
-                                                        <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Grid}"/>
-                                                    </MultiBinding>
-                                                </Border.Width>
-                                            </Border>
+                                        <!-- 图标 -->
+                                        <Grid Width="24" Height="24" Margin="0,0,15,0">
+                                            <Image Source="{Binding Icon}" Visibility="{Binding Icon, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                            <ui:SymbolIcon Symbol="Apps24" FontSize="24" 
+                                                           Visibility="{Binding Icon, Converter={StaticResource InverseNullToVisibilityConverter}}"
+                                                           Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                                         </Grid>
-                                    </StackPanel>
 
-                                    <ui:TextBlock Grid.Column="2" Text="{Binding TimeDisplay}" VerticalAlignment="Center" Margin="15,0,0,0" Opacity="0.8"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <ui:TextBlock Text="{Binding ProcessName}" FontSize="14" FontWeight="SemiBold"/>
+                                            
+                                            <!-- 进度条 -->
+                                            <Grid Margin="0,5,0,0" Height="6">
+                                                <Border Background="{ui:ThemeResource ControlFillColorDefaultBrush}" CornerRadius="3"/>
+                                                <Border HorizontalAlignment="Left" Background="{StaticResource BrushPink}" CornerRadius="3">
+                                                    <Border.Width>
+                                                        <MultiBinding Converter="{StaticResource MultiplyConverter}">
+                                                            <Binding Path="Percentage"/>
+                                                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Grid}"/>
+                                                        </MultiBinding>
+                                                    </Border.Width>
+                                                </Border>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <ui:TextBlock Grid.Column="2" Text="{Binding TimeDisplay}" VerticalAlignment="Center" Margin="15,0,0,0" Opacity="0.8"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <!-- 空数据提示 -->
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding ElementName=LeaderboardList, Path=HasItems}" Value="False"/>
+                                                <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <ui:SymbolIcon Symbol="Box24" FontSize="48" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="0,0,0,10"/>
+                            <ui:TextBlock Text="{DynamicResource StrNoData}" FontSize="16" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
                 </ui:Card>
             </Grid>
         </ScrollViewer>

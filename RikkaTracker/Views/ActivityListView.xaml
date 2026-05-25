@@ -23,9 +23,9 @@
             <DatePicker SelectedDate="{Binding SelectedDate}" Width="150" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <ui:Card Grid.Row="1" Padding="10" HorizontalContentAlignment="Stretch">
+        <ui:Card Grid.Row="1" Padding="10" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" MinHeight="200" VerticalAlignment="Stretch">
             <Grid>
-                <ListView ItemsSource="{Binding Processes}" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
+                <ListView Name="ActivityList" ItemsSource="{Binding Processes}" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,5">
@@ -65,6 +65,26 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                
+                <!-- 空数据提示 -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding ElementName=ActivityList, Path=HasItems}" Value="False"/>
+                                        <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <ui:SymbolIcon Symbol="Box24" FontSize="48" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="0,0,0,10"/>
+                    <ui:TextBlock Text="{DynamicResource StrNoData}" FontSize="16" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
 
                 <!-- 加载中遮罩 -->
                 <ui:ProgressRing IsIndeterminate="True" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
