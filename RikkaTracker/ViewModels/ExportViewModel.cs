@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using RikkaTracker.Core.Models;
 using RikkaTracker.Core.Monitor;
 using RikkaTracker.Services;
+using RikkaTracker.Controls;
 
 namespace RikkaTracker.ViewModels
 {
@@ -195,7 +196,7 @@ namespace RikkaTracker.ViewModels
         {
             if (string.IsNullOrEmpty(SelectedFilePath))
             {
-                MessageBox.Show(
+                RikkaMessageBox.Show(
                     (string)App.Current.Resources["StrSelectExportLocation"],
                     "提示",
                     MessageBoxButton.OK,
@@ -206,7 +207,7 @@ namespace RikkaTracker.ViewModels
             var selectedAppNames = Apps.Where(a => a.IsSelected).Select(a => a.ProcessName).ToList();
             if (selectedAppNames.Count == 0)
             {
-                MessageBox.Show(
+                RikkaMessageBox.Show(
                     (string)App.Current.Resources["StrExportNoAppSelected"],
                     "提示",
                     MessageBoxButton.OK,
@@ -229,7 +230,7 @@ namespace RikkaTracker.ViewModels
 
                 if (filteredSegments.Count == 0)
                 {
-                    MessageBox.Show(
+                    RikkaMessageBox.Show(
                         (string)App.Current.Resources["StrExportNoData"],
                         "提示",
                         MessageBoxButton.OK,
@@ -257,7 +258,7 @@ namespace RikkaTracker.ViewModels
                     await ExportToPdfAsync(SelectedFilePath, filteredSegments, start, end);
                 }
 
-                MessageBox.Show(
+                RikkaMessageBox.Show(
                     (string)App.Current.Resources["StrExportSuccess"],
                     "成功",
                     MessageBoxButton.OK,
@@ -266,7 +267,7 @@ namespace RikkaTracker.ViewModels
             catch (Exception ex)
             {
                 _logger.Error("Failed to export data", ex);
-                MessageBox.Show(
+                RikkaMessageBox.Show(
                     (string)App.Current.Resources["StrExportFailed"] + "\n" + ex.Message,
                     "错误",
                     MessageBoxButton.OK,

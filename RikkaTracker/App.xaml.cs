@@ -9,6 +9,7 @@ using RikkaTracker.Core.Monitor;
 using RikkaTracker.Core.Data;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
+using RikkaTracker.Controls;
 
 namespace RikkaTracker
 {
@@ -25,7 +26,7 @@ namespace RikkaTracker
             _appMutex = new Mutex(true, "Global\\RikkaTracker_Mutex_Unique_ID", out bool createdNew);
             if (!createdNew)
             {
-                MessageBox.Show("RikkaTracker 已经在运行中。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                RikkaMessageBox.Show("RikkaTracker 已经在运行中。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 Application.Current.Shutdown();
                 return;
             }
@@ -41,7 +42,7 @@ namespace RikkaTracker
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             _logger?.Error("FATAL: Unhandled Dispatcher Exception", e.Exception);
-            MessageBox.Show("应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            RikkaMessageBox.Show("应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true; // 防止立即崩溃，尝试优雅退出
             ExitApplication();
         }
@@ -51,7 +52,7 @@ namespace RikkaTracker
             _logger?.Error($"FATAL: Unhandled Domain Exception. IsTerminating: {e.IsTerminating}", e.ExceptionObject as Exception);
             if (!e.IsTerminating)
             {
-                MessageBox.Show("应用遇到了严重的非 UI 线程错误，详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                RikkaMessageBox.Show("应用遇到了严重的非 UI 线程错误，详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -92,7 +93,7 @@ namespace RikkaTracker
             catch (Exception ex)
             {
                 _logger?.Error("Failed to initialize core services during startup.", ex);
-                MessageBox.Show("启动核心服务失败，应用可能无法正常工作。请检查日志。", "初始化失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                RikkaMessageBox.Show("启动核心服务失败，应用可能无法正常工作。请检查日志。", "初始化失败", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
             if (!startMinimized)
