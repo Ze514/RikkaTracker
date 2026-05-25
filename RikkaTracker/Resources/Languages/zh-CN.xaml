@@ -71,4 +71,21 @@
     <sys:String x:Key="StrUpdateAvailable">发现新版本！是否立即下载并安装？</sys:String>
     <sys:String x:Key="StrUpdating">正在下载更新...</sys:String>
     <sys:String x:Key="StrAlreadyLatest">当前已是最新版本</sys:String>
+
+    <!-- Export -->
+    <sys:String x:Key="StrExportFormat">导出格式</sys:String>
+    <sys:String x:Key="StrExportLocation">导出位置</sys:String>
+    <sys:String x:Key="StrExportTimeRange">时间区间</sys:String>
+    <sys:String x:Key="StrSelectAll">全选</sys:String>
+    <sys:String x:Key="StrUnselectAll">全不选</sys:String>
+    <sys:String x:Key="StrExportApps">选择导出应用</sys:String>
+    <sys:String x:Key="StrBrowse">浏览...</sys:String>
+    <sys:String x:Key="StrExport">导出</sys:String>
+    <sys:String x:Key="StrExportSuccess">数据导出成功！</sys:String>
+    <sys:String x:Key="StrExportFailed">数据导出失败：</sys:String>
+    <sys:String x:Key="StrExportAppCategory">应用类别 (TODO)</sys:String>
+    <sys:String x:Key="StrExportLog">数据导出中，请稍候...</sys:String>
+    <sys:String x:Key="StrSelectExportLocation">请选择导出文件的保存位置</sys:String>
+    <sys:String x:Key="StrExportNoData">所选时间区间内无活动记录，无法导出。</sys:String>
+    <sys:String x:Key="StrExportNoAppSelected">请至少勾选一个要导出的应用。</sys:String>
 </ResourceDictionary>

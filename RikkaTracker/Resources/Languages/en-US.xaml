@@ -71,4 +71,21 @@
     <sys:String x:Key="StrUpdateAvailable">New version available! Download and install now?</sys:String>
     <sys:String x:Key="StrUpdating">Downloading update...</sys:String>
     <sys:String x:Key="StrAlreadyLatest">You are using the latest version</sys:String>
+
+    <!-- Export -->
+    <sys:String x:Key="StrExportFormat">Export Format</sys:String>
+    <sys:String x:Key="StrExportLocation">Export Location</sys:String>
+    <sys:String x:Key="StrExportTimeRange">Time Range</sys:String>
+    <sys:String x:Key="StrSelectAll">Select All</sys:String>
+    <sys:String x:Key="StrUnselectAll">Clear All</sys:String>
+    <sys:String x:Key="StrExportApps">Filter Apps</sys:String>
+    <sys:String x:Key="StrBrowse">Browse...</sys:String>
+    <sys:String x:Key="StrExport">Export</sys:String>
+    <sys:String x:Key="StrExportSuccess">Data exported successfully!</sys:String>
+    <sys:String x:Key="StrExportFailed">Export failed: </sys:String>
+    <sys:String x:Key="StrExportAppCategory">App Category (TODO)</sys:String>
+    <sys:String x:Key="StrExportLog">Exporting data, please wait...</sys:String>
+    <sys:String x:Key="StrSelectExportLocation">Please select a location to save the export file</sys:String>
+    <sys:String x:Key="StrExportNoData">No activity logs found in the selected range, cannot export.</sys:String>
+    <sys:String x:Key="StrExportNoAppSelected">Please select at least one application to export.</sys:String>
 </ResourceDictionary>

@@ -41,5 +41,10 @@ namespace RikkaTracker.Services
         /// 获取指定时段内的汇总数据（总时长、应用数、最长使用应用）
         /// </summary>
         Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime, string TopAppPath)> GetStatsSummaryAsync(DateTime start, DateTime end);
+
+        /// <summary>
+        /// 获取指定时段内有记录的所有应用程序信息（去重）
+        /// </summary>
+        Task<IEnumerable<(string ProcessName, string ProcessPath, string Alias)>> GetAppsInPeriodAsync(DateTime start, DateTime end);
     }
 }

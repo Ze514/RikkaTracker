@@ -30,5 +30,8 @@ namespace RikkaTracker.Services
 
         public Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime, string TopAppPath)> GetStatsSummaryAsync(DateTime start, DateTime end)
             => Task.FromResult((TimeSpan.Zero, 0, "N/A", TimeSpan.Zero, string.Empty));
+
+        public Task<IEnumerable<(string ProcessName, string ProcessPath, string Alias)>> GetAppsInPeriodAsync(DateTime start, DateTime end)
+            => Task.FromResult<IEnumerable<(string ProcessName, string ProcessPath, string Alias)>>(new List<(string, string, string)>());
     }
 }

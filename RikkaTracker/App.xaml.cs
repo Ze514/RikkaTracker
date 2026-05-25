@@ -221,6 +221,7 @@ namespace RikkaTracker
             services.AddTransient<StatisticsViewModel>();
             services.AddTransient<FilterSettingsViewModel>();
             services.AddTransient<UsageStatisticsViewModel>();
+            services.AddTransient<ExportViewModel>();
 
             return services.BuildServiceProvider();
         }

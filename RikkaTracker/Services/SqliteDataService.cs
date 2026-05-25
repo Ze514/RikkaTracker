@@ -272,5 +272,35 @@ namespace RikkaTracker.Services
 
             return (totalTime, appCount, topAppName, topAppTime, topAppPath);
         }
+
+        public async Task<IEnumerable<(string ProcessName, string ProcessPath, string Alias)>> GetAppsInPeriodAsync(DateTime start, DateTime end)
+        {
+            var apps = new List<(string, string, string)>();
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            
+            // 使用 strftime('%s', EndTime) - strftime('%s', StartTime) 保证只列出有实际时长记录的应用
+            // 另外，通过 MAX(Alias) 和 MAX(ProcessPath) 获取可能存在的名称与路径
+            command.CommandText = @"
+                SELECT ProcessName, MAX(ProcessPath) as ProcessPath, MAX(Alias) as Alias
+                FROM ActivityLog
+                WHERE StartTime >= $from AND StartTime <= $to
+                GROUP BY ProcessName
+                ORDER BY ProcessName ASC
+            ";
+            command.Parameters.AddWithValue("$from", start.ToString("o"));
+            command.Parameters.AddWithValue("$to", end.ToString("o"));
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                apps.Add((
+                    reader.GetString(0),
+                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
+                ));
+            }
+            return apps;
+        }
     }
 }

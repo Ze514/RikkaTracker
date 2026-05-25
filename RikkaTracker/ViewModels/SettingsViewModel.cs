@@ -301,5 +301,14 @@ namespace RikkaTracker.ViewModels
                 }
             }
         }
+
+        [RelayCommand]
+        private void NavigateToExport()
+        {
+            if (System.Windows.Application.Current.MainWindow.DataContext is MainViewModel mainVm)
+            {
+                mainVm.NavigateToExport();
+            }
+        }
     }
 }

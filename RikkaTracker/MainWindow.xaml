@@ -33,6 +33,9 @@
         <DataTemplate DataType="{x:Type vm:FilterSettingsViewModel}">
             <views:FilterSettingsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ExportViewModel}">
+            <views:ExportView/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -103,6 +106,14 @@
                         Command="{Binding NavigateToFilterSettingsCommand}">
                         <ui:NavigationViewItem.Icon>
                             <ui:SymbolIcon Symbol="Shield24"/>
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+
+                    <ui:NavigationViewItem
+                        Content="{DynamicResource StrExport}"
+                        Command="{Binding NavigateToExportCommand}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="ArrowExportUp24"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
                 </ui:NavigationView.MenuItems>

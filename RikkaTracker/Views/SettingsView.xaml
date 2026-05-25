@@ -150,7 +150,8 @@
                        Appearance="Primary" 
                        Margin="0,20,0,0" 
                        Padding="20,10"
-                       Icon="{ui:SymbolIcon Share24}"/>
+                       Icon="{ui:SymbolIcon Share24}"
+                       Command="{Binding NavigateToExportCommand}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>
