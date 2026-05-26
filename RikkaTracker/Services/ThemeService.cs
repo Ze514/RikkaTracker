@@ -6,6 +6,7 @@ namespace RikkaTracker.Services
 {
     public interface IThemeService
     {
+        event Action<string> ThemeChanged;
         void ApplyTheme(string themeName);
         string GetCurrentTheme();
     }
@@ -13,6 +14,8 @@ namespace RikkaTracker.Services
     public class ThemeService : IThemeService
     {
         private readonly IConfigService _configService;
+
+        public event Action<string>? ThemeChanged;
 
         public ThemeService(IConfigService configService)
         {
@@ -28,6 +31,8 @@ namespace RikkaTracker.Services
             ApplicationThemeManager.Apply(theme);
             _configService.Config.Theme = themeName;
             _configService.Save();
+
+            ThemeChanged?.Invoke(themeName);
         }
 
         public string GetCurrentTheme()

@@ -9,6 +9,10 @@
     <sys:String x:Key="StrActiveApps">Active Apps</sys:String>
     <sys:String x:Key="StrTopApp">Most Used</sys:String>
     <sys:String x:Key="StrHourlyTrend">24h Activity Trend</sys:String>
+    <sys:String x:Key="StrNoData">No Data Available</sys:String>
+    <sys:String x:Key="StrVsYesterday">Vs Yesterday</sys:String>
+    <sys:String x:Key="StrMostActiveHour">Most Active Hour</sys:String>
+    <sys:String x:Key="StrAvgTimePerApp">Avg Time / App</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">Timeline</sys:String>
@@ -18,6 +22,17 @@
     <sys:String x:Key="StrSearchApp">Search app...</sys:String>
     <sys:String x:Key="StrInactive">Inactive</sys:String>
     <sys:String x:Key="StrBackground">Background</sys:String>
+
+    <!-- Usage Statistics -->
+    <sys:String x:Key="StrUsageStatistics">Usage Statistics</sys:String>
+    <sys:String x:Key="StrByDay">By Day</sys:String>
+    <sys:String x:Key="StrByWeek">By Week</sys:String>
+    <sys:String x:Key="StrByMonth">By Month</sys:String>
+    <sys:String x:Key="StrByYear">By Year</sys:String>
+    <sys:String x:Key="StrSelectPeriod">Select Period</sys:String>
+    <sys:String x:Key="StrYear">Year</sys:String>
+    <sys:String x:Key="StrMonth">Month</sys:String>
+    <sys:String x:Key="StrTotalUsageTrend">Usage Trend</sys:String>
 
     <!-- Settings -->
     <sys:String x:Key="StrSettings">Settings</sys:String>
@@ -56,4 +71,79 @@
     <sys:String x:Key="StrUpdateAvailable">New version available! Download and install now?</sys:String>
     <sys:String x:Key="StrUpdating">Downloading update...</sys:String>
     <sys:String x:Key="StrAlreadyLatest">You are using the latest version</sys:String>
+
+    <!-- Export -->
+    <sys:String x:Key="StrExportFormat">Export Format</sys:String>
+    <sys:String x:Key="StrExportLocation">Export Location</sys:String>
+    <sys:String x:Key="StrExportTimeRange">Time Range</sys:String>
+    <sys:String x:Key="StrSelectAll">Select All</sys:String>
+    <sys:String x:Key="StrUnselectAll">Clear All</sys:String>
+    <sys:String x:Key="StrExportApps">Filter Apps</sys:String>
+    <sys:String x:Key="StrBrowse">Browse...</sys:String>
+    <sys:String x:Key="StrExport">Export</sys:String>
+    <sys:String x:Key="StrExportSuccess">Data exported successfully!</sys:String>
+    <sys:String x:Key="StrExportFailed">Export failed: </sys:String>
+    <sys:String x:Key="StrExportAppCategory">App Category (TODO)</sys:String>
+    <sys:String x:Key="StrExportLog">Exporting data, please wait...</sys:String>
+    <sys:String x:Key="StrSelectExportLocation">Please select a location to save the export file</sys:String>
+    <sys:String x:Key="StrExportNoData">No activity logs found in the selected range, cannot export.</sys:String>
+    <sys:String x:Key="StrExportNoAppSelected">Please select at least one application to export.</sys:String>
+    <!-- System Common -->
+    <sys:String x:Key="StrOk">OK</sys:String>
+    <sys:String x:Key="StrCancel">Cancel</sys:String>
+    <sys:String x:Key="StrYes">Yes</sys:String>
+    <sys:String x:Key="StrNoBtn">No</sys:String>
+    <sys:String x:Key="StrExit">Exit</sys:String>
+    <sys:String x:Key="StrError">Error</sys:String>
+    <sys:String x:Key="StrPrompt">Info</sys:String>
+    <sys:String x:Key="StrSuccess">Success</sys:String>
+
+    <!-- Additional Settings & Filter -->
+    <sys:String x:Key="StrLogManagement">Log Management</sys:String>
+    <sys:String x:Key="StrLogManagementDesc">View application running logs for debugging and diagnosis.</sys:String>
+    <sys:String x:Key="StrOpenLogFolder">Open Log Folder</sys:String>
+    <sys:String x:Key="StrProcessPatternPlaceholder">Process Name (e.g. Chrome*)</sys:String>
+    <sys:String x:Key="StrTo"> to </sys:String>
+    <sys:String x:Key="StrSelectDbLocation">Select Database Location</sys:String>
+    <sys:String x:Key="StrDbMigratedSuccess">Data migrated. Please restart the application to apply changes.</sys:String>
+    <sys:String x:Key="StrDbMigrateFailed">Failed to migrate data: </sys:String>
+    <sys:String x:Key="StrLogDirNotExist">Log directory has not been created or does not exist.</sys:String>
+
+    <!-- Export & Report -->
+    <sys:String x:Key="StrActive">Active</sys:String>
+    <sys:String x:Key="StrUnitDay">d</sys:String>
+    <sys:String x:Key="StrUnitHour">h</sys:String>
+    <sys:String x:Key="StrUnitMinute">m</sys:String>
+    <sys:String x:Key="StrUnitSecond">s</sys:String>
+    <sys:String x:Key="StrUnitMonth"></sys:String>
+    <sys:String x:Key="StrExportBrowserTodo">Browser (Future Support)</sys:String>
+    <sys:String x:Key="StrExportDevToolsTodo">Dev Tools (Future Support)</sys:String>
+    <sys:String x:Key="StrExportMediaTodo">Media (Future Support)</sys:String>
+    <sys:String x:Key="StrExportSystemTodo">System Components (Future Support)</sys:String>
+    <sys:String x:Key="StrExportSheetSummary">Summary</sys:String>
+    <sys:String x:Key="StrExportSheetDetail">Details</sys:String>
+    <sys:String x:Key="StrExportReportTitle">Application Activity Report</sys:String>
+    <sys:String x:Key="StrExportHeaderAppName">Application Name</sys:String>
+    <sys:String x:Key="StrExportHeaderAlias">Alias</sys:String>
+    <sys:String x:Key="StrExportHeaderPath">Process Path</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationActive">Active Duration</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationInactive">Inactive Duration</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationBackground">Background Duration</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationTotal">Total Duration</sys:String>
+    <sys:String x:Key="StrExportHeaderWindowTitle">Window Title</sys:String>
+    <sys:String x:Key="StrExportHeaderStatus">Status</sys:String>
+    <sys:String x:Key="StrExportHeaderStartTime">Start Time</sys:String>
+    <sys:String x:Key="StrExportHeaderEndTime">End Time</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationSec">Duration(Sec)</sys:String>
+    <sys:String x:Key="StrExportPdfTitle">RikkaTracker Activity Report</sys:String>
+    <sys:String x:Key="StrExportPdfGeneratedTime">Generated Time</sys:String>
+    <sys:String x:Key="StrExportPdfTotalActive">Total Active Duration</sys:String>
+    <sys:String x:Key="StrExportPdfUniqueApps">Unique Apps</sys:String>
+    <sys:String x:Key="StrExportPdfTopApp">Top Application</sys:String>
+    <sys:String x:Key="StrExportPdfRank">Rank</sys:String>
+    <sys:String x:Key="StrExportPdfRatio">Ratio</sys:String>
+    <sys:String x:Key="StrExportPdfDetailSummary">Detailed Log Summary</sys:String>
+    <sys:String x:Key="StrExportPdfDetailTip">* The detailed log summary only shows up to 500 latest entries out of the first 1000. For full data, please export as Excel or CSV.</sys:String>
+    <sys:String x:Key="StrExportPdfFooter">Report generated automatically by RikkaTracker. All rights reserved.</sys:String>
+    <sys:String x:Key="StrExportPdfUnitApp"></sys:String>
 </ResourceDictionary>

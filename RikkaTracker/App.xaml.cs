@@ -7,6 +7,9 @@ using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows.Controls;
 using RikkaTracker.Core.Monitor;
 using RikkaTracker.Core.Data;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using RikkaTracker.Controls;
 
 namespace RikkaTracker
 {
@@ -15,9 +18,19 @@ namespace RikkaTracker
         public IServiceProvider ServiceProvider { get; private set; }
         private TaskbarIcon? _notifyIcon;
         private ILoggerService? _logger;
+        private static Mutex? _appMutex;
 
         public App()
         {
+            // 确保单实例运行
+            _appMutex = new Mutex(true, "Global\\RikkaTracker_Mutex_Unique_ID", out bool createdNew);
+            if (!createdNew)
+            {
+                RikkaMessageBox.Show("RikkaTracker 已经在运行中。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                Application.Current.Shutdown();
+                return;
+            }
+
             ServiceProvider = ConfigureServices();
             _logger = ServiceProvider.GetRequiredService<ILoggerService>();
             
@@ -29,7 +42,7 @@ namespace RikkaTracker
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             _logger?.Error("FATAL: Unhandled Dispatcher Exception", e.Exception);
-            MessageBox.Show("应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            RikkaMessageBox.Show("应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true; // 防止立即崩溃，尝试优雅退出
             ExitApplication();
         }
@@ -39,7 +52,7 @@ namespace RikkaTracker
             _logger?.Error($"FATAL: Unhandled Domain Exception. IsTerminating: {e.IsTerminating}", e.ExceptionObject as Exception);
             if (!e.IsTerminating)
             {
-                MessageBox.Show("应用遇到了严重的非 UI 线程错误，详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                RikkaMessageBox.Show("应用遇到了严重的非 UI 线程错误，详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -48,21 +61,29 @@ namespace RikkaTracker
             base.OnStartup(e);
             _logger?.Info("--- RikkaTracker Startup ---");
 
+            LiveCharts.Configure(config => 
+                config
+                    .AddDefaultMappers()
+                    .AddSkiaSharp()
+                    .AddLightTheme());
+
             // Initialize Tray Icon
             _notifyIcon = new TaskbarIcon();
-            var drawing = new System.Windows.Media.GeometryDrawing(
-                System.Windows.Media.Brushes.HotPink,
-                null,
-                new System.Windows.Media.EllipseGeometry(new Point(16, 16), 12, 12)
+            _notifyIcon.IconSource = new System.Windows.Media.Imaging.BitmapImage(
+                new Uri("pack://application:,,,/Assets/app-icon.png")
             );
-            _notifyIcon.IconSource = new System.Windows.Media.DrawingImage(drawing);
             _notifyIcon.ToolTipText = "RikkaTracker";
             _notifyIcon.DoubleClickCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(ShowMainWindow);
 
-            bool startMinimized = true;
+            bool startMinimized = false;
             foreach (var arg in e.Args)
             {
-                if (arg.Equals("/show", StringComparison.OrdinalIgnoreCase)) startMinimized = false;
+                if (arg.Equals("/minimized", StringComparison.OrdinalIgnoreCase) || 
+                    arg.Equals("/hide", StringComparison.OrdinalIgnoreCase) ||
+                    arg.Equals("/silent", StringComparison.OrdinalIgnoreCase))
+                {
+                    startMinimized = true;
+                }
             }
 
             try 
@@ -72,7 +93,7 @@ namespace RikkaTracker
             catch (Exception ex)
             {
                 _logger?.Error("Failed to initialize core services during startup.", ex);
-                MessageBox.Show("启动核心服务失败，应用可能无法正常工作。请检查日志。", "初始化失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                RikkaMessageBox.Show("启动核心服务失败，应用可能无法正常工作。请检查日志。", "初始化失败", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
             if (!startMinimized)
@@ -145,7 +166,7 @@ namespace RikkaTracker
             var contextMenu = new ContextMenu();
             var showItem = new MenuItem { Header = GetResourceString("StrDashboard", "Show") };
             showItem.Click += (s, ex) => ShowMainWindow();
-            var exitItem = new MenuItem { Header = CurrentLanguage == "zh-CN" ? "退出" : "Exit" };
+            var exitItem = new MenuItem { Header = GetResourceString("StrExit", "Exit") };
             exitItem.Click += (s, ex) => ExitApplication();
 
             contextMenu.Items.Add(showItem);
@@ -168,6 +189,8 @@ namespace RikkaTracker
                     logStore?.Dispose();
                 }
                 _notifyIcon?.Dispose();
+                _appMutex?.ReleaseMutex();
+                _appMutex?.Dispose();
             }
             catch (Exception ex)
             {
@@ -198,6 +221,8 @@ namespace RikkaTracker
             services.AddTransient<ActivityListViewModel>();
             services.AddTransient<StatisticsViewModel>();
             services.AddTransient<FilterSettingsViewModel>();
+            services.AddTransient<UsageStatisticsViewModel>();
+            services.AddTransient<ExportViewModel>();
 
             return services.BuildServiceProvider();
         }

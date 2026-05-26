@@ -132,7 +132,97 @@ namespace RikkaTracker.Services
             return Enumerable.Range(0, 24).Select(h => (h, TimeSpan.FromSeconds(hourlyData[h])));
         }
 
-        public async Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime)> GetStatsSummaryAsync(DateTime start, DateTime end)
+        public async Task<IEnumerable<(DateTime Date, TimeSpan TotalTime)>> GetDailyTrendAsync(DateTime start, DateTime end)
+        {
+            var result = new Dictionary<DateTime, double>();
+            for (var d = start.Date; d < end.Date; d = d.AddDays(1))
+            {
+                result[d] = 0;
+            }
+
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT StartTime, EndTime 
+                FROM ActivityLog 
+                WHERE StartTime >= $from AND StartTime < $to AND Status = $status
+            ";
+            command.Parameters.AddWithValue("$from", start.ToString("o"));
+            command.Parameters.AddWithValue("$to", end.ToString("o"));
+            command.Parameters.AddWithValue("$status", (int)ActivityStatus.ForegroundActive);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                DateTime segStart = DateTime.Parse(reader.GetString(0), null, DateTimeStyles.RoundtripKind);
+                DateTime segEnd = DateTime.Parse(reader.GetString(1), null, DateTimeStyles.RoundtripKind);
+
+                DateTime current = segStart.Date;
+                while (current < segEnd.Date)
+                {
+                    DateTime nextDay = current.AddDays(1);
+                    if (result.ContainsKey(current))
+                    {
+                        result[current] += (nextDay - (segStart > current ? segStart : current)).TotalSeconds;
+                    }
+                    current = nextDay;
+                    segStart = current;
+                }
+                if (result.ContainsKey(current))
+                {
+                    result[current] += (segEnd - (segStart > current ? segStart : current)).TotalSeconds;
+                }
+            }
+
+            return result.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, TimeSpan.FromSeconds(kvp.Value)));
+        }
+
+        public async Task<IEnumerable<(int Month, TimeSpan TotalTime)>> GetMonthlyTrendAsync(int year)
+        {
+            var result = new Dictionary<int, double>();
+            for (int i = 1; i <= 12; i++) result[i] = 0;
+
+            DateTime start = new DateTime(year, 1, 1);
+            DateTime end = start.AddYears(1);
+
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT StartTime, EndTime 
+                FROM ActivityLog 
+                WHERE StartTime >= $from AND StartTime < $to AND Status = $status
+            ";
+            command.Parameters.AddWithValue("$from", start.ToString("o"));
+            command.Parameters.AddWithValue("$to", end.ToString("o"));
+            command.Parameters.AddWithValue("$status", (int)ActivityStatus.ForegroundActive);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                DateTime segStart = DateTime.Parse(reader.GetString(0), null, DateTimeStyles.RoundtripKind);
+                DateTime segEnd = DateTime.Parse(reader.GetString(1), null, DateTimeStyles.RoundtripKind);
+
+                DateTime currentMonthStart = new DateTime(segStart.Year, segStart.Month, 1);
+                while (currentMonthStart < new DateTime(segEnd.Year, segEnd.Month, 1))
+                {
+                    DateTime nextMonth = currentMonthStart.AddMonths(1);
+                    if (currentMonthStart.Year == year)
+                    {
+                        result[currentMonthStart.Month] += (nextMonth - (segStart > currentMonthStart ? segStart : currentMonthStart)).TotalSeconds;
+                    }
+                    currentMonthStart = nextMonth;
+                    segStart = currentMonthStart;
+                }
+                if (currentMonthStart.Year == year)
+                {
+                    result[currentMonthStart.Month] += (segEnd - (segStart > currentMonthStart ? segStart : currentMonthStart)).TotalSeconds;
+                }
+            }
+
+            return result.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, TimeSpan.FromSeconds(kvp.Value)));
+        }
+
+        public async Task<(TimeSpan TotalTime, int AppCount, string TopAppName, TimeSpan TopAppTime, string TopAppPath)> GetStatsSummaryAsync(DateTime start, DateTime end)
         {
             using var connection = _dbContext.CreateConnection();
             using var command = connection.CreateCommand();
@@ -145,10 +235,10 @@ namespace RikkaTracker.Services
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status;
 
-                SELECT ProcessName, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TopSeconds, MAX(Alias) as TopAlias
+                SELECT ProcessName, SUM(strftime('%s', EndTime) - strftime('%s', StartTime)) as TopSeconds, MAX(Alias) as TopAlias, ProcessPath
                 FROM ActivityLog 
                 WHERE StartTime >= $from AND StartTime <= $to AND Status = $status
-                GROUP BY ProcessName
+                GROUP BY ProcessName, ProcessPath
                 ORDER BY TopSeconds DESC
                 LIMIT 1;
             ";
@@ -160,6 +250,7 @@ namespace RikkaTracker.Services
             int appCount = 0;
             string topAppName = "N/A";
             TimeSpan topAppTime = TimeSpan.Zero;
+            string topAppPath = string.Empty;
 
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
@@ -173,12 +264,43 @@ namespace RikkaTracker.Services
                 string procName = reader.GetString(0);
                 double seconds = reader.GetDouble(1);
                 string alias = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                topAppPath = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
                 
                 topAppName = !string.IsNullOrEmpty(alias) ? alias : procName;
                 topAppTime = TimeSpan.FromSeconds(seconds);
             }
 
-            return (totalTime, appCount, topAppName, topAppTime);
+            return (totalTime, appCount, topAppName, topAppTime, topAppPath);
+        }
+
+        public async Task<IEnumerable<(string ProcessName, string ProcessPath, string Alias)>> GetAppsInPeriodAsync(DateTime start, DateTime end)
+        {
+            var apps = new List<(string, string, string)>();
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            
+            // 使用 strftime('%s', EndTime) - strftime('%s', StartTime) 保证只列出有实际时长记录的应用
+            // 另外，通过 MAX(Alias) 和 MAX(ProcessPath) 获取可能存在的名称与路径
+            command.CommandText = @"
+                SELECT ProcessName, MAX(ProcessPath) as ProcessPath, MAX(Alias) as Alias
+                FROM ActivityLog
+                WHERE StartTime >= $from AND StartTime <= $to
+                GROUP BY ProcessName
+                ORDER BY ProcessName ASC
+            ";
+            command.Parameters.AddWithValue("$from", start.ToString("o"));
+            command.Parameters.AddWithValue("$to", end.ToString("o"));
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                apps.Add((
+                    reader.GetString(0),
+                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
+                ));
+            }
+            return apps;
         }
     }
 }

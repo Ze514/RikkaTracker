@@ -135,22 +135,16 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <ui:TextBlock Text="日志管理" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <ui:TextBlock Text="查看应用运行日志，用于排错和诊断。" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        <ui:TextBlock Text="{DynamicResource StrLogManagement}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <ui:TextBlock Text="{DynamicResource StrLogManagementDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                     <ui:Button Grid.Column="1" 
-                               Content="打开日志文件夹" 
+                               Content="{DynamicResource StrOpenLogFolder}" 
                                Icon="{ui:SymbolIcon FolderOpen24}" 
                                Command="{Binding OpenLogFolderCommand}"
                                VerticalAlignment="Center"/>
                 </Grid>
             </ui:Card>
-            
-            <ui:Button Content="{DynamicResource StrExportData}" 
-                       Appearance="Primary" 
-                       Margin="0,20,0,0" 
-                       Padding="20,10"
-                       Icon="{ui:SymbolIcon Share24}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

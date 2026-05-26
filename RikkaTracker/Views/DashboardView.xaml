@@ -4,107 +4,99 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              xmlns:local="clr-namespace:RikkaTracker.Views"
              xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000"
              d:DataContext="{d:DesignInstance vm:DashboardViewModel}">
     <Grid Margin="20">
-        <StackPanel>
-            <ui:TextBlock Text="{DynamicResource StrTodayOverview}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
-            
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <ui:TextBlock Text="{DynamicResource StrTodayOverview}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
                 
-                <!-- 总时长 -->
-                <ui:Card Grid.Column="0" Margin="0,0,10,0" Padding="20">
-                    <StackPanel>
-                        <ui:SymbolIcon Symbol="Clock24" FontSize="32" Foreground="{StaticResource BrushPink}"/>
-                        <ui:TextBlock Text="{DynamicResource StrTotalTime}" FontSize="12" Margin="0,10,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                        <ui:TextBlock Text="{Binding TotalTimeText}" FontSize="24" FontWeight="Bold"/>
-                    </StackPanel>
-                </ui:Card>
-
-                <!-- 应用数 -->
-                <ui:Card Grid.Column="1" Margin="10,0,10,0" Padding="20">
-                    <StackPanel>
-                        <ui:SymbolIcon Symbol="Apps24" FontSize="32" Foreground="{StaticResource BrushGreenGradient}"/>
-                        <ui:TextBlock Text="{DynamicResource StrActiveApps}" FontSize="12" Margin="0,10,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                        <ui:TextBlock Text="{Binding AppCount}" FontSize="24" FontWeight="Bold"/>
-                    </StackPanel>
-                </ui:Card>
-
-                <!-- 最长使用 -->
-                <ui:Card Grid.Column="2" Margin="10,0,0,0" Padding="20">
-                    <StackPanel>
-                        <ui:SymbolIcon Symbol="Star24" FontSize="32" Foreground="Gold"/>
-                        <ui:TextBlock Text="{DynamicResource StrTopApp}" FontSize="12" Margin="0,10,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                        <ui:TextBlock Text="{Binding TopAppName}" FontSize="18" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
-                        <ui:TextBlock Text="{Binding TopAppTimeText}" FontSize="14" Opacity="0.7"/>
-                    </StackPanel>
-                </ui:Card>
-            </Grid>
-
-            <!-- 活跃趋势图 -->
-            <ui:Card Margin="0,20,0,0" Padding="25">
-                <StackPanel>
-                    <ui:TextBlock Text="{DynamicResource StrHourlyTrend}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     
-                    <Grid Height="200">
-                        <!-- Y轴装饰线 (可选) -->
-                        <ItemsControl ItemsSource="{Binding HourlyActivity}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="24" Rows="1"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid VerticalAlignment="Bottom" Height="180">
-                                        <!-- 柱子 -->
-                                        <Border Style="{StaticResource HourlyBarStyle}">
-                                            <Border.Height>
-                                                <!-- 通过百分比控制高度，最小高度 2 像素 -->
-                                                <MultiBinding Converter="{StaticResource MultiplyConverter}">
-                                                    <Binding Path="Percentage"/>
-                                                    <Binding Source="180"/>
-                                                </MultiBinding>
-                                            </Border.Height>
-                                        </Border>
-                                        
-                                        <!-- X轴刻度 (每3小时显示一次) -->
-                                        <ui:TextBlock Text="{Binding Hour}" FontSize="10" 
-                                                      HorizontalAlignment="Center" 
-                                                      VerticalAlignment="Bottom"
-                                                      Margin="0,0,0,-20"
-                                                      Opacity="0.5">
-                                            <ui:TextBlock.Style>
-                                                <Style TargetType="ui:TextBlock">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Hour}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding Hour}" Value="6"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding Hour}" Value="12"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding Hour}" Value="18"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding Hour}" Value="23"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </ui:TextBlock.Style>
-                                        </ui:TextBlock>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Grid>
+                    <!-- 总时长 -->
+                    <ui:Card Grid.Column="0" Margin="0,0,10,0" Padding="20">
+                        <StackPanel>
+                            <ui:TextBlock Text="{DynamicResource StrTotalTime}" FontSize="12" Margin="0,0,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{Binding TotalTimeText}" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- 活跃应用 -->
+                    <ui:Card Grid.Column="1" Margin="10,0,10,0" Padding="20">
+                        <StackPanel>
+                            <ui:TextBlock Text="{DynamicResource StrActiveApps}" FontSize="12" Margin="0,0,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{Binding AppCount}" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- 最长使用 -->
+                    <ui:Card Grid.Column="2" Margin="10,0,0,0" Padding="20">
+                        <StackPanel>
+                            <ui:TextBlock Text="{DynamicResource StrTopApp}" FontSize="12" Margin="0,0,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="{Binding TopAppIcon}" Width="24" Height="24" Margin="0,0,8,0"/>
+                                <ui:TextBlock Text="{Binding TopAppName}" FontSize="18" FontWeight="Bold" TextTrimming="CharacterEllipsis" MaxWidth="120" VerticalAlignment="Center"/>
+                                <ui:TextBlock Text="{Binding TopAppTimeText}" FontSize="16" Opacity="0.7" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:Card>
+                </Grid>
+
+                <Grid Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     
-                    <!-- 底部间距 -->
-                    <Border Height="20"/>
-                </StackPanel>
-            </ui:Card>
-        </StackPanel>
+                    <!-- 较昨日变化 -->
+                    <ui:Card Grid.Column="0" Margin="0,0,10,0" Padding="20">
+                        <StackPanel>
+                            <ui:TextBlock Text="{DynamicResource StrVsYesterday}" FontSize="12" Margin="0,0,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{Binding TimeComparedToYesterday}" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- 最活跃时段 -->
+                    <ui:Card Grid.Column="1" Margin="10,0,10,0" Padding="20">
+                        <StackPanel>
+                            <ui:TextBlock Text="{DynamicResource StrMostActiveHour}" FontSize="12" Margin="0,0,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{Binding MostActiveHour}" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- 平均单应用时长 -->
+                    <ui:Card Grid.Column="2" Margin="10,0,0,0" Padding="20">
+                        <StackPanel>
+                            <ui:TextBlock Text="{DynamicResource StrAvgTimePerApp}" FontSize="12" Margin="0,0,0,5" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{Binding AverageTimePerApp}" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
+                    </ui:Card>
+                </Grid>
+
+                <!-- 活跃趋势图 -->
+                <ui:Card Margin="0,20,0,0" Padding="25">
+                    <StackPanel>
+                        <ui:TextBlock Text="{DynamicResource StrHourlyTrend}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                        
+                        <Grid Height="200">
+                            <lvc:CartesianChart Series="{Binding Series}" XAxes="{Binding XAxes}" YAxes="{Binding YAxes}" TooltipPosition="Top" Background="Transparent" />
+                        </Grid>
+                        
+                        <!-- 底部间距 -->
+                        <Border Height="20"/>
+                    </StackPanel>
+                </ui:Card>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

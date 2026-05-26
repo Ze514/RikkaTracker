@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using RikkaTracker.Models;
 using RikkaTracker.Services;
 using RikkaTracker.Core.Strategies;
+using RikkaTracker.Controls;
 
 namespace RikkaTracker.ViewModels
 {
@@ -54,7 +55,7 @@ namespace RikkaTracker.ViewModels
         [RelayCommand]
         private void ResetToDefaults()
         {
-            var result = System.Windows.MessageBox.Show(
+            var result = RikkaMessageBox.Show(
                 (string)System.Windows.Application.Current.Resources["StrResetConfirmDesc"],
                 (string)System.Windows.Application.Current.Resources["StrResetConfirmTitle"],
                 System.Windows.MessageBoxButton.YesNo,

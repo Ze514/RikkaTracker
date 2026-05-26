@@ -43,9 +43,24 @@ namespace RikkaTracker.ViewModels
         }
 
         [RelayCommand]
+        private void NavigateToUsageStatistics()
+        {
+            CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<UsageStatisticsViewModel>();
+        }
+
+        [RelayCommand]
         private void NavigateToFilterSettings()
         {
             CurrentViewModel = App.Current.ServiceProvider.GetRequiredService<FilterSettingsViewModel>();
+        }
+
+        [RelayCommand]
+        public void NavigateToExport()
+        {
+            var exportVm = App.Current.ServiceProvider.GetRequiredService<ExportViewModel>();
+            // 每次导航到导出页面，都重新加载一下当前时间区间的应用
+            _ = exportVm.LoadAppsAsync();
+            CurrentViewModel = exportVm;
         }
     }
 }

@@ -1,0 +1,153 @@
+<UserControl x:Class="RikkaTracker.Views.ExportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             d:DataContext="{d:DesignInstance vm:ExportViewModel}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <sys:Boolean x:Key="True">True</sys:Boolean>
+        <sys:Boolean x:Key="False">False</sys:Boolean>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 顶部标题 -->
+            <ui:TextBlock Text="{DynamicResource StrExport}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20" Grid.Row="0"/>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4*"/> <!-- 左侧配置 -->
+                    <ColumnDefinition Width="20"/>  <!-- 间隔 -->
+                    <ColumnDefinition Width="5*"/> <!-- 右侧过滤 -->
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧配置 -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0">
+                    <StackPanel Margin="0,0,0,10">
+                        <ui:Card Padding="20" Margin="0,0,0,15">
+                            <StackPanel>
+                                <ui:TextBlock Text="{DynamicResource StrExportFormat}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                <ComboBox ItemsSource="{Binding ExportFormats}" SelectedItem="{Binding SelectedFormat}" Height="38" HorizontalAlignment="Stretch" Margin="0,0,0,20"/>
+
+                                <ui:TextBlock Text="{DynamicResource StrExportTimeRange}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <DatePicker SelectedDate="{Binding StartDate}" Height="38" Grid.Column="0" HorizontalAlignment="Stretch"/>
+                                    <ui:TextBlock Text="{DynamicResource StrTo}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5,0" Grid.Column="1"/>
+                                    <DatePicker SelectedDate="{Binding EndDate}" Height="38" Grid.Column="2" HorizontalAlignment="Stretch"/>
+                                </Grid>
+
+                                <ui:TextBlock Text="{DynamicResource StrExportLocation}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ui:TextBox Text="{Binding SelectedFilePath, Mode=TwoWay}" Grid.Column="0" Height="38" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <ui:Button Content="{DynamicResource StrBrowse}" Command="{Binding BrowseFilePathCommand}" Grid.Column="1" Height="38" VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <ui:Button Content="{DynamicResource StrExport}" Command="{Binding ExportDataCommand}" 
+                                   Appearance="Primary" Height="45" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 右侧过滤 -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="3*"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 应用筛选 -->
+                    <ui:Card Grid.Row="0" Padding="15">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <ui:TextBlock Text="{DynamicResource StrExportApps}" FontSize="15" FontWeight="SemiBold" Grid.Row="0"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,10" Grid.Row="1">
+                                <ui:Button Content="{DynamicResource StrSelectAll}" Command="{Binding SelectAllAppsCommand}" CommandParameter="{StaticResource True}" Height="32" Margin="0,0,8,0" Padding="15,4"/>
+                                <ui:Button Content="{DynamicResource StrUnselectAll}" Command="{Binding SelectAllAppsCommand}" CommandParameter="{StaticResource False}" Height="32" Padding="15,4"/>
+                            </StackPanel>
+
+                            <!-- 滚动列表 -->
+                            <ListBox ItemsSource="{Binding Apps}" Grid.Row="2" Background="Transparent" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        <Setter Property="Padding" Value="6,8"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{ui:ThemeResource ControlFillColorSecondaryBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding DisplayName}" VerticalAlignment="Center" Grid.Column="0"/>
+                                            <ui:TextBlock Text="{Binding ProcessName}" FontSize="11" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Grid.Column="1" Margin="10,0,0,0" Opacity="0.7"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </ui:Card>
+
+                    <!-- 类别筛选（置灰 TODO） -->
+                    <ui:Card Grid.Row="2" Padding="15" IsEnabled="False" Opacity="0.5">
+                        <StackPanel>
+                            <ui:TextBlock Text="{DynamicResource StrExportAppCategory}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <ItemsControl ItemsSource="{Binding Categories}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Name}" Margin="0,4,15,4"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ui:Card>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- 全局加载遮罩 -->
+        <Border Background="#40000000" CornerRadius="8" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ui:ProgressRing IsIndeterminate="True" Width="50" Height="50"/>
+        </Border>
+    </Grid>
+</UserControl>

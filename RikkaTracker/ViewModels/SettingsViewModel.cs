@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using RikkaTracker.Models;
 using RikkaTracker.Services;
 using RikkaTracker.Core.Strategies;
+using RikkaTracker.Controls;
 
 namespace RikkaTracker.ViewModels
 {
@@ -70,7 +71,7 @@ namespace RikkaTracker.ViewModels
 
                     case UpdateCheckStatus.NoUpdate:
                         _logger.Info("No update available.");
-                        System.Windows.MessageBox.Show(
+                        RikkaMessageBox.Show(
                             (string)System.Windows.Application.Current.Resources["StrAlreadyLatest"], 
                             (string)System.Windows.Application.Current.Resources["StrUpdate"]);
                         UpdateStatus = string.Empty;
@@ -78,7 +79,7 @@ namespace RikkaTracker.ViewModels
 
                     case UpdateCheckStatus.NetworkError:
                         _logger.Warning($"Update check failed due to network error: {result.ErrorMessage}");
-                        System.Windows.MessageBox.Show(
+                        RikkaMessageBox.Show(
                             $"Network Error: {result.ErrorMessage}\n\nPlease check your internet connection or proxy settings.",
                             "Update Check Failed",
                             System.Windows.MessageBoxButton.OK,
@@ -88,7 +89,7 @@ namespace RikkaTracker.ViewModels
 
                     case UpdateCheckStatus.AssetMissing:
                         _logger.Warning($"New version {result.LatestVersion} found, but no matching asset for this installation type.");
-                        System.Windows.MessageBox.Show(
+                        RikkaMessageBox.Show(
                             $"New version {result.LatestVersion} is available, but the download package for your installation type was not found on the server.\n\nPlease visit GitHub releases manually.",
                             "Asset Missing",
                             System.Windows.MessageBoxButton.OK,
@@ -99,7 +100,7 @@ namespace RikkaTracker.ViewModels
                     case UpdateCheckStatus.InternalError:
                     default:
                         _logger.Error($"Internal error during update check: {result.ErrorMessage}");
-                        System.Windows.MessageBox.Show(
+                        RikkaMessageBox.Show(
                             $"An internal error occurred: {result.ErrorMessage}",
                             "Error",
                             System.Windows.MessageBoxButton.OK,
@@ -118,7 +119,7 @@ namespace RikkaTracker.ViewModels
         private void HandleUpdateFound(UpdateCheckResult result)
         {
             var msg = (string)System.Windows.Application.Current.Resources["StrUpdateAvailable"];
-            var choice = System.Windows.MessageBox.Show(
+            var choice = RikkaMessageBox.Show(
                 $"{msg}\n\n{(_localizationService.CurrentLanguage == "zh-CN" ? "版本" : "Version")}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
                 (string)System.Windows.Application.Current.Resources["StrUpdate"],
                 System.Windows.MessageBoxButton.YesNo,
@@ -157,7 +158,7 @@ namespace RikkaTracker.ViewModels
                 _logger.Error("Download and Install failed.", ex);
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    System.Windows.MessageBox.Show(
+                    RikkaMessageBox.Show(
                         $"Update download failed: {ex.Message}\n\nLogs: {_logger.GetLogPath()}", 
                         "Error", 
                         System.Windows.MessageBoxButton.OK, 
@@ -214,7 +215,7 @@ namespace RikkaTracker.ViewModels
                     _configService.Config.DataStoragePath = StoragePath;
                     _configService.Save();
 
-                    System.Windows.MessageBox.Show(
+                    RikkaMessageBox.Show(
                         "数据已迁移。为了确保所有服务都使用新路径，请重启应用程序。",
                         "更改成功",
                         System.Windows.MessageBoxButton.OK,
@@ -223,7 +224,7 @@ namespace RikkaTracker.ViewModels
                 catch (Exception ex)
                 {
                     _logger.Error("Failed to migrate data path.", ex);
-                    System.Windows.MessageBox.Show(
+                    RikkaMessageBox.Show(
                         $"迁移数据失败: {ex.Message}",
                         "错误",
                         System.Windows.MessageBoxButton.OK,
@@ -262,7 +263,7 @@ namespace RikkaTracker.ViewModels
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("日志目录尚未创建或不存在。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    RikkaMessageBox.Show("日志目录尚未创建或不存在。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)

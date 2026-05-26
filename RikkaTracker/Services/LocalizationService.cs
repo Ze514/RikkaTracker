@@ -11,12 +11,29 @@ namespace RikkaTracker.Services
         string CurrentLanguage { get; }
         void SetLanguage(string languageCode);
         void Initialize(string preferredLanguage);
+        string GetString(string key, string fallback = "");
     }
 
     public class LocalizationService : ILocalizationService
     {
         private const string LanguageResourceTag = "LanguageResource";
         public string CurrentLanguage { get; private set; } = "zh-CN";
+
+        public string GetString(string key, string fallback = "")
+        {
+            try
+            {
+                if (Application.Current?.Resources != null && Application.Current.Resources.Contains(key))
+                {
+                    return Application.Current.Resources[key] as string ?? fallback;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to GetString for key '{key}': {ex.Message}");
+            }
+            return fallback;
+        }
 
         public void Initialize(string preferredLanguage)
         {
