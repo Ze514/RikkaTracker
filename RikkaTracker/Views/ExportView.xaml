@@ -78,7 +78,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- 应用筛选 -->
-                    <ui:Card Grid.Row="0" Padding="15">
+                    <ui:Card Grid.Row="0" Padding="15" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
