@@ -27,11 +27,22 @@ namespace RikkaTracker.ViewModels
     {
         private readonly IDataService _dataService;
         private readonly IIconService _iconService;
+        private readonly ILocalizationService _localizationService;
+        private readonly IThemeService _themeService;
 
-        public UsageStatisticsViewModel(IDataService dataService, IIconService iconService)
+        private SolidColorPaint? _axisLabelPaint;
+        private SolidColorPaint? _axisSeparatorPaint;
+        private SolidColorPaint? _columnFillPaint;
+
+        public UsageStatisticsViewModel(IDataService dataService, IIconService iconService, ILocalizationService localizationService, IThemeService themeService)
         {
             _dataService = dataService;
             _iconService = iconService;
+            _localizationService = localizationService;
+            _themeService = themeService;
+
+            _themeService.ThemeChanged += OnThemeChanged;
+            UpdateChartColors(_themeService.GetCurrentTheme());
             
             // Initialize chart first so that property setters triggering LoadDataAsync won't throw NRE
             Series = new ISeries[]
@@ -39,15 +50,15 @@ namespace RikkaTracker.ViewModels
                 new ColumnSeries<ObservablePoint>
                 {
                     Values = new ObservablePoint[0],
-                    Fill = new SolidColorPaint(SKColors.DodgerBlue),
+                    Fill = _columnFillPaint,
                     MaxBarWidth = 40,
                     Rx = 4,
                     Ry = 4
                 }
             };
 
-            XAxes = new Axis[] { new Axis { Labels = new string[0] } };
-            YAxes = new Axis[] { new Axis { Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss") } };
+            XAxes = new Axis[] { new Axis { Labels = new string[0], LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
+            YAxes = new Axis[] { new Axis { Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"), LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
 
             // Initialize dates
             var now = DateTime.Today;
@@ -196,18 +207,20 @@ namespace RikkaTracker.ViewModels
                     for (int i = 1; i <= 12; i++)
                     {
                         values.Add(new ObservablePoint(i - 1, dict.ContainsKey(i) ? dict[i] : 0));
-                        labels.Add($"{i}月");
+                        labels.Add($"{i}" + _localizationService.GetString("StrUnitMonth", "月"));
                     }
                     Leaderboard.Clear();
                 }
 
                 var maxVal = values.Count > 0 ? values.Max(v => v.Y ?? 0) : 0;
                 
-                XAxes = new Axis[] { new Axis { Labels = labels } };
+                XAxes = new Axis[] { new Axis { Labels = labels, LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
                 YAxes = new Axis[] { new Axis { 
                     MinLimit = 0,
                     MaxLimit = maxVal == 0 ? 60 : null, // Default max to 60s if no data
-                    Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss") 
+                    Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"),
+                    LabelsPaint = _axisLabelPaint,
+                    SeparatorsPaint = _axisSeparatorPaint
                 } };
 
                 Series = new ISeries[]
@@ -215,7 +228,7 @@ namespace RikkaTracker.ViewModels
                     new ColumnSeries<ObservablePoint>
                     {
                         Values = values,
-                        Fill = new SolidColorPaint(SKColors.DodgerBlue),
+                        Fill = _columnFillPaint,
                         MaxBarWidth = 40,
                         Rx = 4,
                         Ry = 4
@@ -225,6 +238,42 @@ namespace RikkaTracker.ViewModels
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        private void UpdateChartColors(string theme)
+        {
+            var isDark = theme.Equals("Dark", StringComparison.OrdinalIgnoreCase);
+            var labelColor = isDark ? new SKColor(220, 220, 220) : new SKColor(80, 80, 80);
+            var separatorColor = isDark ? new SKColor(255, 255, 255, 30) : new SKColor(0, 0, 0, 15);
+            var barColor = isDark ? new SKColor(244, 114, 182) : new SKColor(14, 165, 233);
+
+            ( _axisLabelPaint as IDisposable)?.Dispose();
+            ( _axisSeparatorPaint as IDisposable)?.Dispose();
+            ( _columnFillPaint as IDisposable)?.Dispose();
+
+            _axisLabelPaint = new SolidColorPaint(labelColor);
+            _axisSeparatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 1 };
+            _columnFillPaint = new SolidColorPaint(barColor);
+        }
+
+        private void OnThemeChanged(string newTheme)
+        {
+            UpdateChartColors(newTheme);
+
+            if (XAxes != null && XAxes.Length > 0)
+            {
+                XAxes[0].LabelsPaint = _axisLabelPaint;
+                XAxes[0].SeparatorsPaint = _axisSeparatorPaint;
+            }
+            if (YAxes != null && YAxes.Length > 0)
+            {
+                YAxes[0].LabelsPaint = _axisLabelPaint;
+                YAxes[0].SeparatorsPaint = _axisSeparatorPaint;
+            }
+            if (Series != null && Series.Length > 0 && Series[0] is ColumnSeries<ObservablePoint> colSeries)
+            {
+                colSeries.Fill = _columnFillPaint;
             }
         }
 

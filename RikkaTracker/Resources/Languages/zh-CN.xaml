@@ -88,4 +88,62 @@
     <sys:String x:Key="StrSelectExportLocation">请选择导出文件的保存位置</sys:String>
     <sys:String x:Key="StrExportNoData">所选时间区间内无活动记录，无法导出。</sys:String>
     <sys:String x:Key="StrExportNoAppSelected">请至少勾选一个要导出的应用。</sys:String>
+    <!-- System Common -->
+    <sys:String x:Key="StrOk">确定</sys:String>
+    <sys:String x:Key="StrCancel">取消</sys:String>
+    <sys:String x:Key="StrYes">是</sys:String>
+    <sys:String x:Key="StrNoBtn">否</sys:String>
+    <sys:String x:Key="StrExit">退出</sys:String>
+    <sys:String x:Key="StrError">错误</sys:String>
+    <sys:String x:Key="StrPrompt">提示</sys:String>
+    <sys:String x:Key="StrSuccess">成功</sys:String>
+
+    <!-- Additional Settings & Filter -->
+    <sys:String x:Key="StrLogManagement">日志管理</sys:String>
+    <sys:String x:Key="StrLogManagementDesc">查看应用运行日志，用于排错和诊断。</sys:String>
+    <sys:String x:Key="StrOpenLogFolder">打开日志文件夹</sys:String>
+    <sys:String x:Key="StrProcessPatternPlaceholder">进程名 (支持 *)</sys:String>
+    <sys:String x:Key="StrTo"> 至 </sys:String>
+    <sys:String x:Key="StrSelectDbLocation">选择数据库存储位置</sys:String>
+    <sys:String x:Key="StrDbMigratedSuccess">数据已迁移。为了确保所有服务都使用新路径，请重启应用程序。</sys:String>
+    <sys:String x:Key="StrDbMigrateFailed">迁移数据失败: </sys:String>
+    <sys:String x:Key="StrLogDirNotExist">日志目录尚未创建或不存在。</sys:String>
+
+    <!-- Export & Report -->
+    <sys:String x:Key="StrActive">活跃</sys:String>
+    <sys:String x:Key="StrUnitDay">天</sys:String>
+    <sys:String x:Key="StrUnitHour">小时</sys:String>
+    <sys:String x:Key="StrUnitMinute">分</sys:String>
+    <sys:String x:Key="StrUnitSecond">秒</sys:String>
+    <sys:String x:Key="StrUnitMonth">月</sys:String>
+    <sys:String x:Key="StrExportBrowserTodo">浏览器 (未来支持)</sys:String>
+    <sys:String x:Key="StrExportDevToolsTodo">开发工具 (未来支持)</sys:String>
+    <sys:String x:Key="StrExportMediaTodo">多媒体 (未来支持)</sys:String>
+    <sys:String x:Key="StrExportSystemTodo">系统组件 (未来支持)</sys:String>
+    <sys:String x:Key="StrExportSheetSummary">汇总报告</sys:String>
+    <sys:String x:Key="StrExportSheetDetail">详细记录</sys:String>
+    <sys:String x:Key="StrExportReportTitle">应用活跃时长统计报告</sys:String>
+    <sys:String x:Key="StrExportHeaderAppName">应用名称</sys:String>
+    <sys:String x:Key="StrExportHeaderAlias">应用别名</sys:String>
+    <sys:String x:Key="StrExportHeaderPath">进程路径</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationActive">活跃时长</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationInactive">非活动时长</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationBackground">后台时长</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationTotal">总时长</sys:String>
+    <sys:String x:Key="StrExportHeaderWindowTitle">窗口标题</sys:String>
+    <sys:String x:Key="StrExportHeaderStatus">状态</sys:String>
+    <sys:String x:Key="StrExportHeaderStartTime">开始时间</sys:String>
+    <sys:String x:Key="StrExportHeaderEndTime">结束时间</sys:String>
+    <sys:String x:Key="StrExportHeaderDurationSec">时长(秒)</sys:String>
+    <sys:String x:Key="StrExportPdfTitle">RikkaTracker 活动统计报告</sys:String>
+    <sys:String x:Key="StrExportPdfGeneratedTime">生成时间</sys:String>
+    <sys:String x:Key="StrExportPdfTotalActive">总活跃时长</sys:String>
+    <sys:String x:Key="StrExportPdfUniqueApps">记录应用数</sys:String>
+    <sys:String x:Key="StrExportPdfTopApp">最长使用应用</sys:String>
+    <sys:String x:Key="StrExportPdfRank">排名</sys:String>
+    <sys:String x:Key="StrExportPdfRatio">占比</sys:String>
+    <sys:String x:Key="StrExportPdfDetailSummary">详细日志摘要</sys:String>
+    <sys:String x:Key="StrExportPdfDetailTip">* 报告中详细日志仅展示了前 1000 条中的 500 条最新摘要。完整数据请导出为 Excel 或 CSV。</sys:String>
+    <sys:String x:Key="StrExportPdfFooter">报告由 RikkaTracker 自动生成。保留所有权利。</sys:String>
+    <sys:String x:Key="StrExportPdfUnitApp">个</sys:String>
 </ResourceDictionary>

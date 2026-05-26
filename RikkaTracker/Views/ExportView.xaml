@@ -48,7 +48,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <DatePicker SelectedDate="{Binding StartDate}" Height="38" Grid.Column="0" HorizontalAlignment="Stretch"/>
-                                    <ui:TextBlock Text="  至  " VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5,0" Grid.Column="1"/>
+                                    <ui:TextBlock Text="{DynamicResource StrTo}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5,0" Grid.Column="1"/>
                                     <DatePicker SelectedDate="{Binding EndDate}" Height="38" Grid.Column="2" HorizontalAlignment="Stretch"/>
                                 </Grid>
 

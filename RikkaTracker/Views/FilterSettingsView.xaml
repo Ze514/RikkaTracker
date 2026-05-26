@@ -34,7 +34,7 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         
-                                        <ui:TextBox Text="{Binding ProcessPattern, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="进程名 (支持 *)" Margin="0,0,10,0"/>
+                                        <ui:TextBox Text="{Binding ProcessPattern, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{DynamicResource StrProcessPatternPlaceholder}" Margin="0,0,10,0"/>
                                         
                                         <CheckBox Grid.Column="1" Content="{DynamicResource StrIgnoreRecord}" IsChecked="{Binding Ignore}" VerticalAlignment="Center"/>
                                         <CheckBox Grid.Column="2" Content="{DynamicResource StrDisableIdle}" IsChecked="{Binding DisableIdleDetection}" VerticalAlignment="Center"/>

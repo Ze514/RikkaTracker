@@ -89,7 +89,7 @@
                         <ui:TextBlock Text="{DynamicResource StrHourlyTrend}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
                         
                         <Grid Height="200">
-                            <lvc:CartesianChart Series="{Binding Series}" XAxes="{Binding XAxes}" YAxes="{Binding YAxes}" TooltipPosition="Top" />
+                            <lvc:CartesianChart Series="{Binding Series}" XAxes="{Binding XAxes}" YAxes="{Binding YAxes}" TooltipPosition="Top" Background="Transparent" />
                         </Grid>
                         
                         <!-- 底部间距 -->

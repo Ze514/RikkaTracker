@@ -351,18 +351,70 @@ namespace RikkaTracker.Controls
                 Pen timePen = new Pen(new SolidColorBrush(Color.FromArgb(30, 128, 128, 128)), 1);
                 timePen.DashStyle = DashStyles.Dash;
 
-                for (int i = 0; i <= 24; i++)
+                Pen tickPen = new Pen(new SolidColorBrush(Color.FromArgb(80, 128, 128, 128)), 1); // 刻度短实线
+                Brush labelBrush = (Brush)FindResource("TextFillColorPrimaryBrush") ?? Brushes.White;
+
+                // 动态计算时间步长 (单位：小时)
+                double minPixelInterval = 100.0;
+                double[] candidateSteps = new double[] {
+                    1.0 / 60.0,   // 1分钟
+                    2.0 / 60.0,   // 2分钟
+                    5.0 / 60.0,   // 5分钟
+                    10.0 / 60.0,  // 10分钟
+                    15.0 / 60.0,  // 15分钟
+                    30.0 / 60.0,  // 30分钟
+                    1.0,          // 1小时
+                    2.0,          // 2小时
+                    3.0,          // 3小时
+                    4.0,          // 4小时
+                    6.0,          // 6小时
+                    12.0          // 12小时
+                };
+
+                double step = 1.0;
+                foreach (var s in candidateSteps)
                 {
-                    double x = xOffset + i * PixelsPerHour;
-                    dc.DrawLine(timePen, new Point(x, topOffset - 10), new Point(x, height));
+                    if (s * PixelsPerHour >= minPixelInterval)
+                    {
+                        step = s;
+                        break;
+                    }
+                }
+
+                for (double h = 0; h <= 24.0 + 1e-9; h += step)
+                {
+                    double x = xOffset + h * PixelsPerHour;
                     
+                    int totalMinutes = (int)Math.Round(h * 60.0);
+                    int hours = totalMinutes / 60;
+                    int minutes = totalMinutes % 60;
+
+                    // 判断是否绘制全屏虚线：
+                    // 如果 step >= 1.0，则全部绘制全屏虚线。
+                    // 如果 step < 1.0 且 minutes == 0（即整点小时），绘制全屏虚线。
+                    // 其他情况下只绘制顶部短刻度线。
+                    bool drawFullLine = (step >= 1.0) || (minutes == 0);
+
+                    if (drawFullLine)
+                    {
+                        dc.DrawLine(timePen, new Point(x, topOffset - 10), new Point(x, height));
+                    }
+                    else
+                    {
+                        // 绘制顶部短刻度指示线
+                        dc.DrawLine(tickPen, new Point(x, topOffset - 10), new Point(x, topOffset - 4));
+                    }
+
+                    // 格式化时间字符串
+                    string timeStr = step >= 1.0 ? $"{hours}:00" : $"{hours:D2}:{minutes:D2}";
+
                     var text = new FormattedText(
-                        $"{i}:00",
+                        timeStr,
                         CultureInfo.CurrentUICulture,
                         FlowDirection.LeftToRight,
                         new Typeface("Segoe UI"),
                         11,
-                        Brushes.Gray,
+                        labelBrush,
                         VisualTreeHelper.GetDpi(this).PixelsPerDip);
                     
                     dc.DrawText(text, new Point(x - text.Width / 2, topOffset - 30));

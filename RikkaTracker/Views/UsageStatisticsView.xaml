@@ -87,6 +87,7 @@
                                             XAxes="{Binding XAxes}" 
                                             YAxes="{Binding YAxes}"
                                             MinHeight="200"
+                                            Background="Transparent"
                                             DataPointerDown="CartesianChart_DataPointerDown"/>
                         
                         <!-- 加载中遮罩 -->

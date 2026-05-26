@@ -47,11 +47,13 @@ namespace RikkaTracker.ViewModels
     {
         private readonly IDataService _dataService;
         private readonly ILoggerService _logger;
+        private readonly ILocalizationService _localizationService;
 
-        public ExportViewModel(IDataService dataService, ILoggerService logger)
+        public ExportViewModel(IDataService dataService, ILoggerService logger, ILocalizationService localizationService)
         {
             _dataService = dataService;
             _logger = logger;
+            _localizationService = localizationService;
 
             _startDate = DateTime.Today.AddDays(-7);
             _endDate = DateTime.Today;
@@ -61,10 +63,10 @@ namespace RikkaTracker.ViewModels
             Apps = new ObservableCollection<AppExportItem>();
             Categories = new ObservableCollection<CategoryExportItem>
             {
-                new CategoryExportItem { Name = "浏览器 (未来支持)" },
-                new CategoryExportItem { Name = "开发工具 (未来支持)" },
-                new CategoryExportItem { Name = "娱乐影音 (未来支持)" },
-                new CategoryExportItem { Name = "系统工具 (未来支持)" }
+                new CategoryExportItem { Name = _localizationService.GetString("StrExportBrowserTodo", "浏览器 (未来支持)") },
+                new CategoryExportItem { Name = _localizationService.GetString("StrExportDevToolsTodo", "开发工具 (未来支持)") },
+                new CategoryExportItem { Name = _localizationService.GetString("StrExportMediaTodo", "多媒体 (未来支持)") },
+                new CategoryExportItem { Name = _localizationService.GetString("StrExportSystemTodo", "系统组件 (未来支持)") }
             };
 
             UpdateDefaultFilePath();
@@ -179,7 +181,7 @@ namespace RikkaTracker.ViewModels
 
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = (string)App.Current.Resources["StrSelectExportLocation"],
+                Title = _localizationService.GetString("StrSelectExportLocation", "请选择导出文件的保存位置"),
                 Filter = filter,
                 FileName = Path.GetFileName(SelectedFilePath),
                 InitialDirectory = Path.GetDirectoryName(SelectedFilePath)
@@ -194,11 +196,12 @@ namespace RikkaTracker.ViewModels
         [RelayCommand]
         private async Task ExportData()
         {
+            string promptTitle = _localizationService.GetString("StrPrompt", "提示");
             if (string.IsNullOrEmpty(SelectedFilePath))
             {
                 RikkaMessageBox.Show(
-                    (string)App.Current.Resources["StrSelectExportLocation"],
-                    "提示",
+                    _localizationService.GetString("StrSelectExportLocation", "请选择导出文件的保存位置"),
+                    promptTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 return;
@@ -208,8 +211,8 @@ namespace RikkaTracker.ViewModels
             if (selectedAppNames.Count == 0)
             {
                 RikkaMessageBox.Show(
-                    (string)App.Current.Resources["StrExportNoAppSelected"],
-                    "提示",
+                    _localizationService.GetString("StrExportNoAppSelected", "请至少勾选一个要导出的应用。"),
+                    promptTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 return;
@@ -231,8 +234,8 @@ namespace RikkaTracker.ViewModels
                 if (filteredSegments.Count == 0)
                 {
                     RikkaMessageBox.Show(
-                        (string)App.Current.Resources["StrExportNoData"],
-                        "提示",
+                        _localizationService.GetString("StrExportNoData", "所选时间区间内无活动记录，无法导出。"),
+                        promptTitle,
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;
@@ -259,8 +262,8 @@ namespace RikkaTracker.ViewModels
                 }
 
                 RikkaMessageBox.Show(
-                    (string)App.Current.Resources["StrExportSuccess"],
-                    "成功",
+                    _localizationService.GetString("StrExportSuccess", "数据导出成功！"),
+                    _localizationService.GetString("StrSuccess", "成功"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
@@ -268,8 +271,8 @@ namespace RikkaTracker.ViewModels
             {
                 _logger.Error("Failed to export data", ex);
                 RikkaMessageBox.Show(
-                    (string)App.Current.Resources["StrExportFailed"] + "\n" + ex.Message,
-                    "错误",
+                    _localizationService.GetString("StrExportFailed", "数据导出失败：") + "\n" + ex.Message,
+                    _localizationService.GetString("StrError", "错误"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -286,16 +289,25 @@ namespace RikkaTracker.ViewModels
             writer.Write('\uFEFF');
 
             // 写入 CSV 表头
-            writer.WriteLine("应用名称,别名,应用路径,窗口标题,状态,开始时间,结束时间,时长(秒)");
+            string headerAppName = _localizationService.GetString("StrExportHeaderAppName", "应用名称");
+            string headerAlias = _localizationService.GetString("StrExportHeaderAlias", "别名");
+            string headerPath = _localizationService.GetString("StrExportHeaderPath", "应用路径");
+            string headerWindowTitle = _localizationService.GetString("StrExportHeaderWindowTitle", "窗口标题");
+            string headerStatus = _localizationService.GetString("StrExportHeaderStatus", "状态");
+            string headerStartTime = _localizationService.GetString("StrExportHeaderStartTime", "开始时间");
+            string headerEndTime = _localizationService.GetString("StrExportHeaderEndTime", "结束时间");
+            string headerDurationSec = _localizationService.GetString("StrExportHeaderDurationSec", "时长(秒)");
+
+            writer.WriteLine($"{headerAppName},{headerAlias},{headerPath},{headerWindowTitle},{headerStatus},{headerStartTime},{headerEndTime},{headerDurationSec}");
 
             foreach (var seg in segments)
             {
                 string statusText = seg.Status switch
                 {
-                    ActivityStatus.ForegroundActive => "活跃",
-                    ActivityStatus.ForegroundInactive => "非活动",
-                    ActivityStatus.Background => "后台",
-                    _ => "未知"
+                    ActivityStatus.ForegroundActive => _localizationService.GetString("StrActive", "活跃"),
+                    ActivityStatus.ForegroundInactive => _localizationService.GetString("StrInactive", "非活动"),
+                    ActivityStatus.Background => _localizationService.GetString("StrBackground", "后台"),
+                    _ => "Unknown"
                 };
 
                 writer.WriteLine(string.Format(
@@ -359,8 +371,23 @@ namespace RikkaTracker.ViewModels
             writer.WriteLine("  </Style>");
             writer.WriteLine(" </Styles>");
 
+            // 本地化文本准备
+            string sheetSummary = _localizationService.GetString("StrExportSheetSummary", "使用时长汇总");
+            string sheetDetail = _localizationService.GetString("StrExportSheetDetail", "详细日志");
+            string reportTitle = _localizationService.GetString("StrExportReportTitle", "应用活跃时长统计报告");
+            string toText = _localizationService.GetString("StrTo", " 至 ");
+
+            string headerAppName = _localizationService.GetString("StrExportHeaderAppName", "应用名称");
+            string headerAlias = _localizationService.GetString("StrExportHeaderAlias", "应用别名");
+            string headerPath = _localizationService.GetString("StrExportHeaderPath", "进程路径");
+            
+            string headerActive = _localizationService.GetString("StrExportHeaderDurationActive", "活跃时长");
+            string headerInactive = _localizationService.GetString("StrExportHeaderDurationInactive", "非活动时长");
+            string headerBackground = _localizationService.GetString("StrExportHeaderDurationBackground", "后台时长");
+            string headerTotal = _localizationService.GetString("StrExportHeaderDurationTotal", "总时长");
+
             // Sheet 1: 时长汇总
-            writer.WriteLine(" <Worksheet ss:Name=\"使用时长汇总\">");
+            writer.WriteLine($" <Worksheet ss:Name=\"{sheetSummary}\">");
             writer.WriteLine("  <Table>");
             writer.WriteLine("   <Column ss:Width=\"150\"/>");
             writer.WriteLine("   <Column ss:Width=\"150\"/>");
@@ -372,16 +399,16 @@ namespace RikkaTracker.ViewModels
 
             // 标题行
             writer.WriteLine("   <Row ss:Height=\"30\">");
-            writer.WriteLine($"    <Cell ss:MergeAcross=\"6\" ss:StyleID=\"Title\"><Data ss:Type=\"String\">应用活跃时长统计报告 ({start:yyyy-MM-dd} 至 {end:yyyy-MM-dd})</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:MergeAcross=\"6\" ss:StyleID=\"Title\"><Data ss:Type=\"String\">{reportTitle} ({start:yyyy-MM-dd}{toText}{end:yyyy-MM-dd})</Data></Cell>");
             writer.WriteLine("   </Row>");
             writer.WriteLine("   <Row ss:Height=\"20\">");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">应用名称</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">应用别名</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">进程路径</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">活跃时长</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">非活动时长</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">后台时长</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">总时长</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerAppName}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerAlias}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerPath}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerActive}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerInactive}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerBackground}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerTotal}</Data></Cell>");
             writer.WriteLine("   </Row>");
 
             foreach (var item in summary)
@@ -400,7 +427,7 @@ namespace RikkaTracker.ViewModels
             writer.WriteLine(" </Worksheet>");
 
             // Sheet 2: 详细活动日志
-            writer.WriteLine(" <Worksheet ss:Name=\"详细日志\">");
+            writer.WriteLine($" <Worksheet ss:Name=\"{sheetDetail}\">");
             writer.WriteLine("  <Table>");
             writer.WriteLine("   <Column ss:Width=\"100\"/>");
             writer.WriteLine("   <Column ss:Width=\"100\"/>");
@@ -410,24 +437,30 @@ namespace RikkaTracker.ViewModels
             writer.WriteLine("   <Column ss:Width=\"130\"/>");
             writer.WriteLine("   <Column ss:Width=\"80\"/>");
 
+            string headerWindowTitle = _localizationService.GetString("StrExportHeaderWindowTitle", "窗口标题");
+            string headerStatus = _localizationService.GetString("StrExportHeaderStatus", "状态");
+            string headerStartTime = _localizationService.GetString("StrExportHeaderStartTime", "开始时间");
+            string headerEndTime = _localizationService.GetString("StrExportHeaderEndTime", "结束时间");
+            string headerDurationSec = _localizationService.GetString("StrExportHeaderDurationSec", "时长(秒)");
+
             writer.WriteLine("   <Row ss:Height=\"20\">");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">应用名称</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">应用别名</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">窗口标题</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">状态</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">开始时间</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">结束时间</Data></Cell>");
-            writer.WriteLine("    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">时长(秒)</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerAppName}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerAlias}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerWindowTitle}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerStatus}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerStartTime}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerEndTime}</Data></Cell>");
+            writer.WriteLine($"    <Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{headerDurationSec}</Data></Cell>");
             writer.WriteLine("   </Row>");
 
             foreach (var seg in segments)
             {
                 string statusText = seg.Status switch
                 {
-                    ActivityStatus.ForegroundActive => "活跃",
-                    ActivityStatus.ForegroundInactive => "非活动",
-                    ActivityStatus.Background => "后台",
-                    _ => "未知"
+                    ActivityStatus.ForegroundActive => _localizationService.GetString("StrActive", "活跃"),
+                    ActivityStatus.ForegroundInactive => _localizationService.GetString("StrInactive", "非活动"),
+                    ActivityStatus.Background => _localizationService.GetString("StrBackground", "后台"),
+                    _ => "Unknown"
                 };
 
                 writer.WriteLine("   <Row>");
@@ -474,12 +507,16 @@ namespace RikkaTracker.ViewModels
             double maxActiveSec = summary.FirstOrDefault()?.ActiveSec ?? 1.0;
             if (maxActiveSec < 1.0) maxActiveSec = 1.0;
 
+            // 本地化文本准备
+            string noneText = _localizationService.GetString("StrNoData", "无");
+            string unitSecText = _localizationService.GetString("StrUnitSecond", "秒");
+            
             // 基础指标统计
             double totalActiveSec = summary.Sum(s => s.ActiveSec);
             var totalActiveTime = TimeSpan.FromSeconds(totalActiveSec);
             int uniqueAppsCount = summary.Count;
-            string topApp = summary.FirstOrDefault()?.DisplayName ?? "无";
-            string topAppTimeStr = summary.FirstOrDefault() != null ? FormatDuration(summary.First().ActiveTime) : "0秒";
+            string topApp = summary.FirstOrDefault()?.DisplayName ?? noneText;
+            string topAppTimeStr = summary.FirstOrDefault() != null ? FormatDuration(summary.First().ActiveTime) : "0" + unitSecText;
 
             // 1. 生成 HTML 模板
             var sb = new StringBuilder();
@@ -597,37 +634,62 @@ namespace RikkaTracker.ViewModels
 </head>
 <body>");
 
+            string pdfTitle = _localizationService.GetString("StrExportPdfTitle", "RikkaTracker 活动统计报告");
+            string timeRangeText = _localizationService.GetString("StrExportTimeRange", "统计区间");
+            string toText = _localizationService.GetString("StrTo", " 至 ");
+            string generatedTimeText = _localizationService.GetString("StrExportPdfGeneratedTime", "生成时间");
+            
+            string totalActiveTitle = _localizationService.GetString("StrExportPdfTotalActive", "总活跃时长");
+            string uniqueAppsTitle = _localizationService.GetString("StrExportPdfUniqueApps", "记录应用数");
+            string topAppTitle = _localizationService.GetString("StrExportPdfTopApp", "最长使用应用");
+            string unitAppText = _localizationService.GetString("StrExportPdfUnitApp", "个");
+            
+            string headerAppName = _localizationService.GetString("StrExportHeaderAppName", "应用名称");
+            string headerAlias = _localizationService.GetString("StrExportHeaderAlias", "别名");
+            string headerActive = _localizationService.GetString("StrExportHeaderDurationActive", "活跃时长");
+            string headerWindowTitle = _localizationService.GetString("StrExportHeaderWindowTitle", "窗口标题");
+            string headerStatus = _localizationService.GetString("StrExportHeaderStatus", "状态");
+            string headerStartTime = _localizationService.GetString("StrExportHeaderStartTime", "开始时间");
+            string headerDurationSec = _localizationService.GetString("StrExportHeaderDurationSec", "时长(秒)");
+
+            string rankTitle = _localizationService.GetString("StrExportPdfRank", "排名");
+            string ratioTitle = _localizationService.GetString("StrExportPdfRatio", "占比");
+            
+            string detailSummaryTitle = _localizationService.GetString("StrExportPdfDetailSummary", "详细日志摘要");
+            string detailTipText = _localizationService.GetString("StrExportPdfDetailTip", "* 报告中详细日志仅展示了前 1000 条中的 500 条最新摘要。完整数据请导出为 Excel 或 CSV。");
+            string pdfFooterText = _localizationService.GetString("StrExportPdfFooter", "报告由 RikkaTracker 自动生成。保留所有权利。");
+
             // 头部
             sb.Append("<div class='header'>");
-            sb.Append(" <div class='title'>RikkaTracker 活动统计报告</div>");
-            sb.Append($" <div class='subtitle'>统计区间: {start:yyyy-MM-dd} 至 {end:yyyy-MM-dd} | 生成时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}</div>");
+            sb.Append($" <div class='title'>{pdfTitle}</div>");
+            sb.Append($" <div class='subtitle'>{timeRangeText}: {start:yyyy-MM-dd}{toText}{end:yyyy-MM-dd} | {generatedTimeText}: {DateTime.Now:yyyy-MM-dd HH:mm:ss}</div>");
             sb.Append("</div>");
 
             // 卡片
             sb.Append("<div class='card-container'>");
             sb.Append(" <div class='card'>");
-            sb.Append("  <div class='card-title'>总活跃时长</div>");
+            sb.Append($"  <div class='card-title'>{totalActiveTitle}</div>");
             sb.Append($"  <div class='card-value'>{FormatDuration(totalActiveTime)}</div>");
             sb.Append(" </div>");
             sb.Append(" <div class='card'>");
-            sb.Append("  <div class='card-title'>记录应用数</div>");
-            sb.Append($"  <div class='card-value'>{uniqueAppsCount} 个</div>");
+            sb.Append($"  <div class='card-title'>{uniqueAppsTitle}</div>");
+            sb.Append($"  <div class='card-value'>{uniqueAppsCount} {unitAppText}</div>");
             sb.Append(" </div>");
             sb.Append(" <div class='card'>");
-            sb.Append("  <div class='card-title'>最长使用应用</div>");
+            sb.Append($"  <div class='card-title'>{topAppTitle}</div>");
             sb.Append($"  <div class='card-value' style='font-size: 16px; margin-top: 4px;'>{topApp} ({topAppTimeStr})</div>");
             sb.Append(" </div>");
             sb.Append("</div>");
 
             // 时长排行 (前 15)
-            sb.Append("<div class='section-title'>活跃时长排行 (Top 15)</div>");
+            sb.Append($"<div class='section-title'>{headerActive}排行 (Top 15)</div>");
             sb.Append("<table>");
             sb.Append(" <thead>");
             sb.Append("  <tr>");
-            sb.Append("   <th style='width: 5%;'>排名</th>");
-            sb.Append("   <th style='width: 30%;'>应用别名 / 进程</th>");
-            sb.Append("   <th style='width: 40%;'>占比</th>");
-            sb.Append("   <th style='width: 25%;'>活跃时长</th>");
+            sb.Append($"   <th style='width: 5%;'>{rankTitle}</th>");
+            sb.Append($"   <th style='width: 30%;'>{headerAlias} / {headerAppName}</th>");
+            sb.Append($"   <th style='width: 40%;'>{ratioTitle}</th>");
+            sb.Append($"   <th style='width: 25%;'>{headerActive}</th>");
             sb.Append("  </tr>");
             sb.Append(" </thead>");
             sb.Append(" <tbody>");
@@ -652,15 +714,15 @@ namespace RikkaTracker.ViewModels
             sb.Append("</table>");
 
             // 详细活动日志
-            sb.Append("<div class='section-title'>详细日志摘要 (最新 500 条)</div>");
+            sb.Append($"<div class='section-title'>{detailSummaryTitle}摘要 (最新 500 条)</div>");
             sb.Append("<table>");
             sb.Append(" <thead>");
             sb.Append("  <tr>");
-            sb.Append("   <th style='width: 25%;'>应用别名 / 进程</th>");
-            sb.Append("   <th style='width: 35%;'>窗口标题</th>");
-            sb.Append("   <th style='width: 10%;'>状态</th>");
-            sb.Append("   <th style='width: 20%;'>开始时间</th>");
-            sb.Append("   <th style='width: 10%;'>持续(秒)</th>");
+            sb.Append($"   <th style='width: 25%;'>{headerAlias} / {headerAppName}</th>");
+            sb.Append($"   <th style='width: 35%;'>{headerWindowTitle}</th>");
+            sb.Append($"   <th style='width: 10%;'>{headerStatus}</th>");
+            sb.Append($"   <th style='width: 20%;'>{headerStartTime}</th>");
+            sb.Append($"   <th style='width: 10%;'>{headerDurationSec}</th>");
             sb.Append("  </tr>");
             sb.Append(" </thead>");
             sb.Append(" <tbody>");
@@ -671,10 +733,10 @@ namespace RikkaTracker.ViewModels
             {
                 string statusText = seg.Status switch
                 {
-                    ActivityStatus.ForegroundActive => "活跃",
-                    ActivityStatus.ForegroundInactive => "非活动",
-                    ActivityStatus.Background => "后台",
-                    _ => "未知"
+                    ActivityStatus.ForegroundActive => _localizationService.GetString("StrActive", "活跃"),
+                    ActivityStatus.ForegroundInactive => _localizationService.GetString("StrInactive", "非活动"),
+                    ActivityStatus.Background => _localizationService.GetString("StrBackground", "后台"),
+                    _ => "Unknown"
                 };
 
                 string name = string.IsNullOrEmpty(seg.Alias) ? seg.ProcessName : seg.Alias;
@@ -693,11 +755,11 @@ namespace RikkaTracker.ViewModels
 
             if (segments.Count > 1000)
             {
-                sb.Append($"<p style='font-size: 12px; color: #888; text-align: center; margin-top: 15px;'>* 报告中详细日志仅展示了前 1000 条中的 500 条最新摘要。完整数据请导出为 Excel 或 CSV。</p>");
+                sb.Append($"<p style='font-size: 12px; color: #888; text-align: center; margin-top: 15px;'>{detailTipText}</p>");
             }
 
             sb.Append("<div class='footer'>");
-            sb.Append(" 报告由 RikkaTracker 自动生成。保留所有权利。");
+            sb.Append($" {pdfFooterText}");
             sb.Append("</div>");
             sb.Append("</body></html>");
 
@@ -724,7 +786,7 @@ namespace RikkaTracker.ViewModels
                 }
 
                 // 4. 执行 Edge headless 转换为 PDF
-                // 使用 --no-pdf-header-footer 隐藏默认页眉和页脚，--disable-gpu 兼容无图形环境
+                // 使用 --no-pdf-header-footer 隐藏默认页眉 and 页脚，--disable-gpu 兼容无图形环境
                 string arguments = $"--headless --disable-gpu --no-pdf-header-footer --print-to-pdf=\"{filePath}\" \"{tempHtmlPath}\"";
 
                 var psi = new System.Diagnostics.ProcessStartInfo
@@ -784,12 +846,12 @@ namespace RikkaTracker.ViewModels
 
         private string FormatDuration(TimeSpan ts)
         {
-            if (ts.TotalSeconds < 1) return "0秒";
+            if (ts.TotalSeconds < 1) return "0" + _localizationService.GetString("StrUnitSecond", "秒");
             var parts = new List<string>();
-            if (ts.Days > 0) parts.Add($"{ts.Days}天");
-            if (ts.Hours > 0) parts.Add($"{ts.Hours}小时");
-            if (ts.Minutes > 0) parts.Add($"{ts.Minutes}分");
-            if (ts.Seconds > 0 || parts.Count == 0) parts.Add($"{ts.Seconds}秒");
+            if (ts.Days > 0) parts.Add($"{ts.Days}" + _localizationService.GetString("StrUnitDay", "天"));
+            if (ts.Hours > 0) parts.Add($"{ts.Hours}" + _localizationService.GetString("StrUnitHour", "小时"));
+            if (ts.Minutes > 0) parts.Add($"{ts.Minutes}" + _localizationService.GetString("StrUnitMinute", "分"));
+            if (ts.Seconds > 0 || parts.Count == 0) parts.Add($"{ts.Seconds}" + _localizationService.GetString("StrUnitSecond", "秒"));
             return string.Join("", parts);
         }
     }

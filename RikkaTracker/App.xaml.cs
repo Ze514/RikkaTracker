@@ -166,7 +166,7 @@ namespace RikkaTracker
             var contextMenu = new ContextMenu();
             var showItem = new MenuItem { Header = GetResourceString("StrDashboard", "Show") };
             showItem.Click += (s, ex) => ShowMainWindow();
-            var exitItem = new MenuItem { Header = CurrentLanguage == "zh-CN" ? "退出" : "Exit" };
+            var exitItem = new MenuItem { Header = GetResourceString("StrExit", "Exit") };
             exitItem.Click += (s, ex) => ExitApplication();
 
             contextMenu.Items.Add(showItem);

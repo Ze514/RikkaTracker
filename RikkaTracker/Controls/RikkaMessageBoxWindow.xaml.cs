@@ -47,27 +47,41 @@ namespace RikkaTracker.Controls
             }
         }
 
+        private string GetLocalizedString(string key, string fallback)
+        {
+            if (Application.Current?.Resources != null && Application.Current.Resources.Contains(key))
+            {
+                return Application.Current.Resources[key] as string ?? fallback;
+            }
+            return fallback;
+        }
+
         private void SetupButtons(System.Windows.MessageBoxButton button)
         {
             ButtonsPanel.Children.Clear();
 
+            string okText = GetLocalizedString("StrOk", "确定");
+            string cancelText = GetLocalizedString("StrCancel", "取消");
+            string yesText = GetLocalizedString("StrYes", "是");
+            string noText = GetLocalizedString("StrNoBtn", "否");
+
             switch (button)
             {
                 case System.Windows.MessageBoxButton.OK:
-                    AddButton("确定", System.Windows.MessageBoxResult.OK, isDefault: true);
+                    AddButton(okText, System.Windows.MessageBoxResult.OK, isDefault: true);
                     break;
                 case System.Windows.MessageBoxButton.OKCancel:
-                    AddButton("确定", System.Windows.MessageBoxResult.OK, isDefault: true);
-                    AddButton("取消", System.Windows.MessageBoxResult.Cancel, isCancel: true);
+                    AddButton(okText, System.Windows.MessageBoxResult.OK, isDefault: true);
+                    AddButton(cancelText, System.Windows.MessageBoxResult.Cancel, isCancel: true);
                     break;
                 case System.Windows.MessageBoxButton.YesNo:
-                    AddButton("是", System.Windows.MessageBoxResult.Yes, isDefault: true);
-                    AddButton("否", System.Windows.MessageBoxResult.No);
+                    AddButton(yesText, System.Windows.MessageBoxResult.Yes, isDefault: true);
+                    AddButton(noText, System.Windows.MessageBoxResult.No);
                     break;
                 case System.Windows.MessageBoxButton.YesNoCancel:
-                    AddButton("是", System.Windows.MessageBoxResult.Yes, isDefault: true);
-                    AddButton("否", System.Windows.MessageBoxResult.No);
-                    AddButton("取消", System.Windows.MessageBoxResult.Cancel, isCancel: true);
+                    AddButton(yesText, System.Windows.MessageBoxResult.Yes, isDefault: true);
+                    AddButton(noText, System.Windows.MessageBoxResult.No);
+                    AddButton(cancelText, System.Windows.MessageBoxResult.Cancel, isCancel: true);
                     break;
             }
         }
