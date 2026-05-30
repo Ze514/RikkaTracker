@@ -137,7 +137,9 @@ jobs:
             ## RikkaTracker v${{ env.VERSION }}
             
             ### 下载说明
-            - **Portable.zip**: 绿色自包含版（已开启压缩与极致封装，解压即用）。
-            - **Light.zip**: 轻量依赖版（体积极小，需本地已安装 .NET 8）。
+              - Portable: 普通版（ 自包含.NET 8，安装即用）。
+              - Light: 轻量版（体积极小，需本地已安装 .NET 8）。
+              - Portable: Regular edition (self-contained .NET 8).
+              - Light: Lightweight edition (extremely small size, requires .NET 8 installed locally).
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
