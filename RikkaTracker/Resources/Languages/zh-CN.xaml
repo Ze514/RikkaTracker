@@ -102,6 +102,11 @@
     <sys:String x:Key="StrLogManagement">日志管理</sys:String>
     <sys:String x:Key="StrLogManagementDesc">查看应用运行日志，用于排错和诊断。</sys:String>
     <sys:String x:Key="StrOpenLogFolder">打开日志文件夹</sys:String>
+    <sys:String x:Key="StrOpenDiagnosticConsole">打开诊断控制台</sys:String>
+    <sys:String x:Key="StrDiagnosticConsole">诊断控制台</sys:String>
+    <sys:String x:Key="StrClearLogs">清空日志</sys:String>
+    <sys:String x:Key="StrTopmost">始终置顶</sys:String>
+    <sys:String x:Key="StrProcessFilter">过滤进程名或窗口标题...</sys:String>
     <sys:String x:Key="StrProcessPatternPlaceholder">进程名 (支持 *)</sys:String>
     <sys:String x:Key="StrTo"> 至 </sys:String>
     <sys:String x:Key="StrSelectDbLocation">选择数据库存储位置</sys:String>

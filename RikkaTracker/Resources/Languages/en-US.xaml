@@ -102,6 +102,11 @@
     <sys:String x:Key="StrLogManagement">Log Management</sys:String>
     <sys:String x:Key="StrLogManagementDesc">View application running logs for debugging and diagnosis.</sys:String>
     <sys:String x:Key="StrOpenLogFolder">Open Log Folder</sys:String>
+    <sys:String x:Key="StrOpenDiagnosticConsole">Open Diagnostic Console</sys:String>
+    <sys:String x:Key="StrDiagnosticConsole">Diagnostic Console</sys:String>
+    <sys:String x:Key="StrClearLogs">Clear Logs</sys:String>
+    <sys:String x:Key="StrTopmost">Topmost</sys:String>
+    <sys:String x:Key="StrProcessFilter">Filter process name or window title...</sys:String>
     <sys:String x:Key="StrProcessPatternPlaceholder">Process Name (e.g. Chrome*)</sys:String>
     <sys:String x:Key="StrTo"> to </sys:String>
     <sys:String x:Key="StrSelectDbLocation">Select Database Location</sys:String>

@@ -19,6 +19,7 @@ namespace RikkaTracker
         private TaskbarIcon? _notifyIcon;
         private ILoggerService? _logger;
         private static Mutex? _appMutex;
+        private Views.DiagnosticWindow? _diagnosticWindow;
 
         public App()
         {
@@ -166,13 +167,31 @@ namespace RikkaTracker
             var contextMenu = new ContextMenu();
             var showItem = new MenuItem { Header = GetResourceString("StrDashboard", "Show") };
             showItem.Click += (s, ex) => ShowMainWindow();
+            var diagnosticItem = new MenuItem { Header = GetResourceString("StrDiagnosticConsole", "Diagnostic Console") };
+            diagnosticItem.Click += (s, ex) => ShowDiagnosticWindow();
             var exitItem = new MenuItem { Header = GetResourceString("StrExit", "Exit") };
             exitItem.Click += (s, ex) => ExitApplication();
 
             contextMenu.Items.Add(showItem);
+            contextMenu.Items.Add(diagnosticItem);
             contextMenu.Items.Add(new Separator());
             contextMenu.Items.Add(exitItem);
             _notifyIcon.ContextMenu = contextMenu;
+        }
+
+        public void ShowDiagnosticWindow()
+        {
+            if (_diagnosticWindow != null)
+            {
+                _diagnosticWindow.Activate();
+                if (_diagnosticWindow.WindowState == WindowState.Minimized)
+                    _diagnosticWindow.WindowState = WindowState.Normal;
+                return;
+            }
+
+            _diagnosticWindow = ServiceProvider.GetRequiredService<Views.DiagnosticWindow>();
+            _diagnosticWindow.Closed += (s, e) => _diagnosticWindow = null;
+            _diagnosticWindow.Show();
         }
 
         private string GetResourceString(string key, string fallback) => Application.Current.Resources[key] as string ?? fallback;
@@ -188,6 +207,7 @@ namespace RikkaTracker
                     var logStore = ServiceProvider.GetService<IActivityLogStore>() as IDisposable;
                     logStore?.Dispose();
                 }
+                _diagnosticWindow?.Close();
                 _notifyIcon?.Dispose();
                 _appMutex?.ReleaseMutex();
                 _appMutex?.Dispose();
@@ -214,6 +234,7 @@ namespace RikkaTracker
             services.AddSingleton<IIconService, IconService>();
             services.AddSingleton<ILocalizationService, LocalizationService>();
             services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddTransient<Views.DiagnosticWindow>();
             
             services.AddTransient<MainViewModel>();
             services.AddTransient<DashboardViewModel>();
