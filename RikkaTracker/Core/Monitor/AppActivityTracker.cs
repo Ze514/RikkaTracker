@@ -199,6 +199,21 @@ namespace RikkaTracker.Core.Monitor
             // 记录焦点切换日志
             _logger.Info($"Focus changed to: {processName} (PID: {newPid}) | Title: {title}");
 
+            // 过滤系统组件和非应用窗口（如桌面、任务栏、锁屏等）
+            if (!Win32Api.IsAppWindow(hwnd))
+            {
+                _logger.Info($"Ignoring non-app window for focus tracking: {processName} (HWND: {hwnd})");
+                if (_currentForegroundPid != 0)
+                {
+                    UpdateProcessStatus(_currentForegroundPid, string.Empty, ActivityStatus.ForegroundInactive);
+                    _currentForegroundPid = 0;
+                    _currentForegroundHwnd = IntPtr.Zero;
+                    _idleTimer.Stop();
+                    _isIdleDemoted = false;
+                }
+                return;
+            }
+
             if (IsSystemUI(newPid, title) || _filterEngine.ShouldIgnore(processName))
             {
                 _logger.Info($"Ignoring system UI or filtered process: {processName}");

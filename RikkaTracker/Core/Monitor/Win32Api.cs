@@ -236,5 +236,156 @@ namespace RikkaTracker.Core.Monitor
             Marshal.StructureToPtr(info, lParam, true);
             return true;
         }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(EnumWindowProc lpEnumFunc, IntPtr lParam);
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, uint dwAttribute, out int pvAttribute, int cbAttribute);
+
+        public const uint DWMWA_CLOAKED = 14;
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+        private static extern IntPtr GetWindowLong32(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
+        private static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
+
+        public static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
+        {
+            if (IntPtr.Size == 8)
+                return GetWindowLongPtr64(hWnd, nIndex);
+            else
+                return GetWindowLong32(hWnd, nIndex);
+        }
+
+        public const int GWL_EXSTYLE = -20;
+        public const int WS_EX_TOOLWINDOW = 0x00000080;
+        public const int WS_EX_APPWINDOW = 0x00040000;
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+        public const uint GW_OWNER = 4;
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetWindowTextLength(IntPtr hWnd);
+
+        // 检查窗口是否为正常应用窗口
+        public static bool IsAppWindow(IntPtr hWnd)
+        {
+            // 必须是可见窗口
+            if (!IsWindowVisible(hWnd)) return false;
+
+            // 检查 DWM 遮蔽状态（排除虚拟桌面后台、挂起的 UWP 等）
+            int cloaked = 0;
+            if (DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, out cloaked, sizeof(int)) == 0)
+            {
+                if (cloaked != 0) return false;
+            }
+
+            // 检查窗口扩展样式，排除工具窗口（除非它有 APPWINDOW 样式）
+            long exStyle = (long)GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+            bool isToolWindow = (exStyle & WS_EX_TOOLWINDOW) != 0;
+            bool isAppWindowStyle = (exStyle & WS_EX_APPWINDOW) != 0;
+            if (isToolWindow && !isAppWindowStyle) return false;
+
+            // 检查所有者，如果是子/被拥有窗口则排除
+            IntPtr owner = GetWindow(hWnd, GW_OWNER);
+            if (owner != IntPtr.Zero) return false;
+
+            // 检查标题长度，过滤掉无标题的系统窗口
+            if (GetWindowTextLength(hWnd) == 0) return false;
+
+            // 检查类名，排除已知的系统组件类名
+            StringBuilder className = new StringBuilder(256);
+            if (GetClassName(hWnd, className, 256) > 0)
+            {
+                string cls = className.ToString();
+                string[] systemClasses = { 
+                    "Shell_TrayWnd",                    // 任务栏
+                    "Progman", "WorkerW",               // 桌面背景
+                    "Button",                           // Win7 开始按钮
+                    "Shell_InputSwitchTopLevelWindow",  // 输入法切换
+                    "LockScreenControllerProxyWindow",  // 锁屏
+                    "XamlExplorerHostIslandWindow",     // Win11 某些系统组件
+                    "Windows.UI.Core.CoreWindow"        // UWP后台窗口或系统窗口
+                };
+                foreach (var systemClass in systemClasses)
+                {
+                    if (cls.Equals(systemClass, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            // 检查进程名，排除已知的后台系统组件进程
+            GetWindowThreadProcessId(hWnd, out uint pid);
+            int processId = (int)pid;
+            if (processId != 0)
+            {
+                string processName = GetInternalProcessName(processId);
+                string[] systemProcesses = {
+                    "SearchHost",
+                    "StartMenuExperienceHost",
+                    "ShellExperienceHost",
+                    "TextInputHost",
+                    "LockApp",
+                    "RuntimeBroker",
+                    "SettingSyncHost",
+                    "backgroundTaskHost",
+                    "sihost",
+                    "svchost",
+                    "dllhost",
+                    "taskhostw"
+                };
+                foreach (var systemProcess in systemProcesses)
+                {
+                    if (processName.Equals(systemProcess, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // 获取所有属于正常应用的进程 ID
+        public static HashSet<int> GetAppProcessIds()
+        {
+            var appPids = new HashSet<int>();
+            EnumWindows((hWnd, lParam) =>
+            {
+                if (IsAppWindow(hWnd))
+                {
+                    GetWindowThreadProcessId(hWnd, out uint pid);
+                    int processId = (int)pid;
+                    if (processId != 0)
+                    {
+                        // 解析 UWP 窗口真正的子进程 PID
+                        string processName = GetInternalProcessName(processId);
+                        if (processName.Equals("ApplicationFrameHost", StringComparison.OrdinalIgnoreCase))
+                        {
+                            int realPid = ResolveUwpProcessId(hWnd, processId);
+                            if (realPid != 0 && realPid != processId)
+                            {
+                                processId = realPid;
+                            }
+                        }
+
+                        appPids.Add(processId);
+                    }
+                }
+                return true;
+            }, IntPtr.Zero);
+
+            return appPids;
+        }
     }
 }
