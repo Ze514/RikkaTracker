@@ -272,6 +272,12 @@ namespace RikkaTracker.ViewModels
             }
         }
 
+        [RelayCommand]
+        private void OpenDiagnosticConsole()
+        {
+            App.Current.ShowDiagnosticWindow();
+        }
+
         [ObservableProperty]
         private string _language;
 

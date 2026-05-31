@@ -138,11 +138,15 @@
                         <ui:TextBlock Text="{DynamicResource StrLogManagement}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         <ui:TextBlock Text="{DynamicResource StrLogManagementDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
-                    <ui:Button Grid.Column="1" 
-                               Content="{DynamicResource StrOpenLogFolder}" 
-                               Icon="{ui:SymbolIcon FolderOpen24}" 
-                               Command="{Binding OpenLogFolderCommand}"
-                               VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:Button Content="{DynamicResource StrOpenDiagnosticConsole}" 
+                                   Icon="{ui:SymbolIcon DeveloperBoard24}" 
+                                   Command="{Binding OpenDiagnosticConsoleCommand}"
+                                   Margin="0,0,10,0"/>
+                        <ui:Button Content="{DynamicResource StrOpenLogFolder}" 
+                                   Icon="{ui:SymbolIcon FolderOpen24}" 
+                                   Command="{Binding OpenLogFolderCommand}"/>
+                    </StackPanel>
                 </Grid>
             </ui:Card>
             </StackPanel>

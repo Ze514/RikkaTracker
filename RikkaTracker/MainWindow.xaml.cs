@@ -18,6 +18,7 @@ namespace RikkaTracker
     {
         public MainWindow()
         {
+            App.EnsureLiveChartsConfigured();
             InitializeComponent();
             DataContext = App.Current.ServiceProvider.GetService<ViewModels.MainViewModel>();
         }

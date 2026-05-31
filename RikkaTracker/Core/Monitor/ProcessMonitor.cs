@@ -84,6 +84,9 @@ namespace RikkaTracker.Core.Monitor
                 {
                     if (!currentPidNames.ContainsKey(kvp.Key))
                     {
+                        // 清理已退出的 PID 在 Win32Api 内部缓存的名称
+                        Win32Api.RemoveCachedProcessName(kvp.Key);
+
                         ProcessExited?.Invoke(this, new ProcessEventArgs
                         {
                             ProcessId = kvp.Key,
@@ -103,33 +106,24 @@ namespace RikkaTracker.Core.Monitor
         private Dictionary<int, string> GetCurrentPidNames()
         {
             var result = new Dictionary<int, string>();
-            Process[]? processes = null;
             
             try
             {
-                processes = Process.GetProcesses();
-                foreach (var p in processes)
+                // 获取当前拥有应用级可见窗口的进程 ID
+                var appPids = Win32Api.GetAppProcessIds();
+                foreach (var pid in appPids)
                 {
                     try
                     {
-                        // 排除系统会话进程（Session 0）以减少干扰
-                        if (p.SessionId != 0)
+                        string name = Win32Api.GetInternalProcessName(pid);
+                        if (!string.IsNullOrEmpty(name) && name != "Unknown")
                         {
-                            result[p.Id] = Win32Api.GetInternalProcessName(p.Id);
+                            result[pid] = name;
                         }
-                    }
-                    catch (System.ComponentModel.Win32Exception)
-                    {
-                        // 忽略权限不足的进程
                     }
                     catch (Exception ex)
                     {
-                        // 仅记录意外错误
-                        _logger.Warning($"Unexpected error scanning process {p.Id}: {ex.Message}");
-                    }
-                    finally
-                    {
-                        p.Dispose();
+                        _logger.Warning($"Unexpected error scanning process {pid}: {ex.Message}");
                     }
                 }
             }
