@@ -118,6 +118,9 @@ namespace RikkaTracker.Core.Monitor
         [DllImport("kernel32.dll")]
         public static extern bool CloseHandle(IntPtr hObject);
 
+        [DllImport("psapi.dll", SetLastError = true)]
+        public static extern bool EmptyWorkingSet(IntPtr hProcess);
+
         public const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 
         public static string GetWindowTitle(IntPtr hWnd)
@@ -153,14 +156,80 @@ namespace RikkaTracker.Core.Monitor
             return string.Empty;
         }
 
+        // 静态缓存进程名，防止频繁重复发起 API 查询
+        private static readonly Dictionary<int, string> _processNameCache = new();
+        private static readonly object _cacheLock = new();
+
+        /// <summary>
+        /// 从 PID 缓存中清除进程名，防止 PID 复用问题
+        /// </summary>
+        public static void RemoveCachedProcessName(int pid)
+        {
+            lock (_cacheLock)
+            {
+                _processNameCache.Remove(pid);
+            }
+        }
+
         public static string GetInternalProcessName(int pid)
+        {
+            if (pid <= 0) return "Unknown";
+
+            // 优先从缓存读取
+            lock (_cacheLock)
+            {
+                if (_processNameCache.TryGetValue(pid, out var cachedName))
+                {
+                    return cachedName;
+                }
+            }
+
+            try
+            {
+                // 使用 QueryFullProcessImageName 代替昂贵的 Process.GetProcessById 诊断 API
+                string path = GetProcessPath(pid);
+                string name = "Unknown";
+                
+                if (!string.IsNullOrEmpty(path))
+                {
+                    name = Path.GetFileNameWithoutExtension(path);
+                }
+
+                // 写入缓存，供后续高频扫描使用
+                lock (_cacheLock)
+                {
+                    _processNameCache[pid] = name;
+                }
+                return name;
+            }
+            catch
+            {
+                return "Unknown";
+            }
+        }
+
+        /// <summary>
+        /// 回收当前进程的物理内存，强制换出到虚拟内存中（退入后台时调用）
+        /// </summary>
+        public static void MinimizeMemory()
         {
             try
             {
-                using var proc = Process.GetProcessById(pid);
-                return proc.ProcessName;
+                // 1. 强制托管堆执行 full 垃圾回收
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                // 2. 将进程的工作集页面置换出物理内存
+                using (var process = Process.GetCurrentProcess())
+                {
+                    EmptyWorkingSet(process.Handle);
+                }
             }
-            catch { return "Unknown"; }
+            catch
+            {
+                // 忽略异常，确保后台监视不会因清理失败而崩溃
+            }
         }
 
         public static string GetProcessAlias(int pid)

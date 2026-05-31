@@ -84,6 +84,9 @@ namespace RikkaTracker.Core.Monitor
                 {
                     if (!currentPidNames.ContainsKey(kvp.Key))
                     {
+                        // 清理已退出的 PID 在 Win32Api 内部缓存的名称
+                        Win32Api.RemoveCachedProcessName(kvp.Key);
+
                         ProcessExited?.Invoke(this, new ProcessEventArgs
                         {
                             ProcessId = kvp.Key,
