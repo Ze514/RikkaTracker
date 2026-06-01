@@ -98,6 +98,15 @@
     <sys:String x:Key="StrPrompt">提示</sys:String>
     <sys:String x:Key="StrSuccess">成功</sys:String>
 
+    <!-- App Startup & Errors -->
+    <sys:String x:Key="StrDuplicateInstanceTitle">RikkaTracker</sys:String>
+    <sys:String x:Key="StrDuplicateInstanceMessage">RikkaTracker 已经在运行中。</sys:String>
+    <sys:String x:Key="StrFatalErrorTitle">致命错误</sys:String>
+    <sys:String x:Key="StrFatalErrorUiMessage">应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。</sys:String>
+    <sys:String x:Key="StrFatalErrorNonUiMessage">应用遇到了严重的非 UI 线程错误，详情请见日志。</sys:String>
+    <sys:String x:Key="StrInitFailedTitle">初始化失败</sys:String>
+    <sys:String x:Key="StrInitFailedMessage">启动核心服务失败，应用可能无法正常工作。请检查日志。</sys:String>
+
     <!-- Additional Settings & Filter -->
     <sys:String x:Key="StrLogManagement">日志管理</sys:String>
     <sys:String x:Key="StrLogManagementDesc">查看应用运行日志，用于排错和诊断。</sys:String>

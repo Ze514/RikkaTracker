@@ -25,15 +25,6 @@ namespace RikkaTracker
 
         public App()
         {
-            // 确保单实例运行
-            _appMutex = new Mutex(true, "Global\\RikkaTracker_Mutex_Unique_ID", out bool createdNew);
-            if (!createdNew)
-            {
-                RikkaMessageBox.Show("RikkaTracker 已经在运行中。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                Application.Current.Shutdown();
-                return;
-            }
-
             ServiceProvider = ConfigureServices();
             _logger = ServiceProvider.GetRequiredService<ILoggerService>();
             
@@ -45,7 +36,14 @@ namespace RikkaTracker
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             _logger?.Error("FATAL: Unhandled Dispatcher Exception", e.Exception);
-            RikkaMessageBox.Show("应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Console.WriteLine($"[FATAL Dispatcher Exception] {e.Exception}");
+            System.Diagnostics.Debug.WriteLine($"[FATAL Dispatcher Exception] {e.Exception}");
+            
+            var localizationService = ServiceProvider?.GetService<ILocalizationService>();
+            string title = localizationService?.GetString("StrFatalErrorTitle", "致命错误") ?? "致命错误";
+            string msg = localizationService?.GetString("StrFatalErrorUiMessage", "应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。") ?? "应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。";
+            
+            RikkaMessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true; // 防止立即崩溃，尝试优雅退出
             ExitApplication();
         }
@@ -53,14 +51,53 @@ namespace RikkaTracker
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             _logger?.Error($"FATAL: Unhandled Domain Exception. IsTerminating: {e.IsTerminating}", e.ExceptionObject as Exception);
+            System.Console.WriteLine($"[FATAL Domain Exception] IsTerminating: {e.IsTerminating}, Exception Object: {e.ExceptionObject}");
+            System.Diagnostics.Debug.WriteLine($"[FATAL Domain Exception] IsTerminating: {e.IsTerminating}, Exception Object: {e.ExceptionObject}");
             if (!e.IsTerminating)
             {
-                RikkaMessageBox.Show("应用遇到了严重的非 UI 线程错误，详情请见日志。", "致命错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                var localizationService = ServiceProvider?.GetService<ILocalizationService>();
+                string title = localizationService?.GetString("StrFatalErrorTitle", "致命错误") ?? "致命错误";
+                string msg = localizationService?.GetString("StrFatalErrorNonUiMessage", "应用遇到了严重的非 UI 线程错误，详情请见日志。") ?? "应用遇到了严重的非 UI 线程错误，详情请见日志。";
+                
+                RikkaMessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // 确保单实例运行之前先初始化语言系统以供本地化弹窗使用
+            var configService = ServiceProvider.GetRequiredService<IConfigService>();
+            var localizationService = ServiceProvider.GetRequiredService<ILocalizationService>();
+            localizationService.Initialize(configService.Config.Language);
+
+            // 确保单实例运行
+            bool createdNew;
+            try
+            {
+                _appMutex = new Mutex(true, "Global\\RikkaTracker_Mutex_Unique_ID", out createdNew);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                createdNew = false;
+            }
+
+            if (!createdNew)
+            {
+                // 使用 Windows 原生 MessageBox，避免在 WPF 资源和主题尚未加载时使用自定义 FluentWindow 导致样式缺失或白屏
+                string title = localizationService.GetString("StrDuplicateInstanceTitle", "RikkaTracker");
+                string msg = localizationService.GetString("StrDuplicateInstanceMessage", "RikkaTracker 已经在运行中。");
+                
+                System.Console.WriteLine("Duplicate instance detected: RikkaTracker is already running. Showing native MessageBox...");
+                System.Diagnostics.Debug.WriteLine("Duplicate instance detected: RikkaTracker is already running. Showing native MessageBox...");
+                System.Windows.MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                // 立即退出，避免进入 WPF 的 OnStartup 生命周期造成残留进程和白色空窗口挂起
+                System.Console.WriteLine("Exiting application process immediately.");
+                System.Diagnostics.Debug.WriteLine("Exiting application process immediately.");
+                Environment.Exit(0);
+                return;
+            }
+
             base.OnStartup(e);
             _logger?.Info("--- RikkaTracker Startup ---");
 
@@ -90,7 +127,12 @@ namespace RikkaTracker
             catch (Exception ex)
             {
                 _logger?.Error("Failed to initialize core services during startup.", ex);
-                RikkaMessageBox.Show("启动核心服务失败，应用可能无法正常工作。请检查日志。", "初始化失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Console.WriteLine($"[Core Services Init Failed] Exception: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[Core Services Init Failed] Exception: {ex}");
+                
+                string title = localizationService.GetString("StrInitFailedTitle", "初始化失败");
+                string msg = localizationService.GetString("StrInitFailedMessage", "启动核心服务失败，应用可能无法正常工作。请检查日志。");
+                RikkaMessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
             if (!startMinimized)
@@ -128,13 +170,10 @@ namespace RikkaTracker
             var themeService = ServiceProvider.GetRequiredService<IThemeService>();
             themeService.ApplyTheme(themeService.GetCurrentTheme());
 
-            var localizationService = ServiceProvider.GetRequiredService<ILocalizationService>();
-            var configService = ServiceProvider.GetRequiredService<IConfigService>();
-            localizationService.Initialize(configService.Config.Language);
-
             // 确保开机自启动路径的正确性（如果在配置中启用，则重新写入当前路径，应对程序移动或更新等情况）
             try
             {
+                var configService = ServiceProvider.GetRequiredService<IConfigService>();
                 if (configService.Config.StartWithWindows)
                 {
                     Helpers.StartupHelper.SetStartup(true);

@@ -98,6 +98,15 @@
     <sys:String x:Key="StrPrompt">Info</sys:String>
     <sys:String x:Key="StrSuccess">Success</sys:String>
 
+    <!-- App Startup & Errors -->
+    <sys:String x:Key="StrDuplicateInstanceTitle">RikkaTracker</sys:String>
+    <sys:String x:Key="StrDuplicateInstanceMessage">RikkaTracker is already running.</sys:String>
+    <sys:String x:Key="StrFatalErrorTitle">Fatal Error</sys:String>
+    <sys:String x:Key="StrFatalErrorUiMessage">The application encountered a critical UI thread error, which will be logged. Attempting to shut down. See logs for details.</sys:String>
+    <sys:String x:Key="StrFatalErrorNonUiMessage">The application encountered a critical non-UI thread error. See logs for details.</sys:String>
+    <sys:String x:Key="StrInitFailedTitle">Initialization Failed</sys:String>
+    <sys:String x:Key="StrInitFailedMessage">Failed to start core services. The application may not function correctly. See logs for details.</sys:String>
+
     <!-- Additional Settings & Filter -->
     <sys:String x:Key="StrLogManagement">Log Management</sys:String>
     <sys:String x:Key="StrLogManagementDesc">View application running logs for debugging and diagnosis.</sys:String>
