@@ -132,6 +132,19 @@ namespace RikkaTracker
             var configService = ServiceProvider.GetRequiredService<IConfigService>();
             localizationService.Initialize(configService.Config.Language);
 
+            // 确保开机自启动路径的正确性（如果在配置中启用，则重新写入当前路径，应对程序移动或更新等情况）
+            try
+            {
+                if (configService.Config.StartWithWindows)
+                {
+                    Helpers.StartupHelper.SetStartup(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Warning($"启动时同步自启动注册表项失败: {ex.Message}");
+            }
+
             UpdateTrayMenu();
         }
 

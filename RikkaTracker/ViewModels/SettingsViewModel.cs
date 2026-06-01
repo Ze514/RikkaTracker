@@ -38,6 +38,9 @@ namespace RikkaTracker.ViewModels
             _timelineZoomMode = _configService.Config.TimelineZoomMode;
             _language = _configService.Config.Language;
             _currentVersion = _updateService.GetCurrentVersion();
+            
+            // 初始化自启动属性
+            _isAutoStart = _configService.Config.StartWithWindows;
         }
 
         [ObservableProperty]
@@ -234,7 +237,24 @@ namespace RikkaTracker.ViewModels
         }
 
         [ObservableProperty]
-        private bool _isAutoStart = true;
+        private bool _isAutoStart;
+
+        // 监听自启动状态改变
+        partial void OnIsAutoStartChanged(bool value)
+        {
+            _configService.Config.StartWithWindows = value;
+            _configService.Save();
+
+            try
+            {
+                Helpers.StartupHelper.SetStartup(value);
+                _logger.Info($"已同步自启动注册表项，新值: {value}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"同步自启动注册表项失败: {ex.Message}", ex);
+            }
+        }
 
         [ObservableProperty]
         private string _storagePath;
