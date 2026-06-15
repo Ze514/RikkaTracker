@@ -13,6 +13,8 @@ namespace RikkaTracker.Models
         public string Theme { get; set; } = "Dark"; // "Light" or "Dark"
         public string TimelineZoomMode { get; set; } = "Center"; // "Center" or "Latest"
         public string Language { get; set; } = "Auto"; // "Auto", "zh-CN", "en-US"
+        public bool WebMonitorEnabled { get; set; } = true;
+        public int WebSocketPort { get; set; } = 8910;
         public List<FilterRule> FilterRules { get; set; } = new List<FilterRule>
         {
             // 默认免空闲检测（多媒体应用）

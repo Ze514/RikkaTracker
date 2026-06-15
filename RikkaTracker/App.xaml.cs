@@ -170,6 +170,22 @@ namespace RikkaTracker
             var themeService = ServiceProvider.GetRequiredService<IThemeService>();
             themeService.ApplyTheme(themeService.GetCurrentTheme());
 
+            try
+            {
+                var configService = ServiceProvider.GetRequiredService<IConfigService>();
+                if (configService.Config.WebMonitorEnabled)
+                {
+                    var webMonitor = ServiceProvider.GetRequiredService<IWebMonitorService>();
+                    webMonitor.WebUsageReceived += (usage) =>
+                        _logger?.Info($"[Web] {usage.Domain} | {usage.Title} | {usage.Duration.TotalSeconds:F0}s");
+                    webMonitor.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Warning($"Failed to start web monitor: {ex.Message}");
+            }
+
             // 确保开机自启动路径的正确性（如果在配置中启用，则重新写入当前路径，应对程序移动或更新等情况）
             try
             {
@@ -256,6 +272,8 @@ namespace RikkaTracker
             {
                 if (ServiceProvider != null)
                 {
+                    var webMonitor = ServiceProvider.GetService<IWebMonitorService>();
+                    webMonitor?.Stop();
                     var logStore = ServiceProvider.GetService<IActivityLogStore>() as IDisposable;
                     logStore?.Dispose();
                 }
@@ -286,6 +304,8 @@ namespace RikkaTracker
             services.AddSingleton<IIconService, IconService>();
             services.AddSingleton<ILocalizationService, LocalizationService>();
             services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IWebDataService, WebDataService>();
+            services.AddSingleton<IWebMonitorService, WebMonitorService>();
             services.AddTransient<Views.DiagnosticWindow>();
             
             services.AddTransient<MainViewModel>();

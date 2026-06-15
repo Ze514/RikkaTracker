@@ -7,6 +7,7 @@ using Microsoft.Data.Sqlite;
 using RikkaTracker.Core.Data;
 using RikkaTracker.Core.Models;
 using RikkaTracker.Core.Monitor;
+using RikkaTracker.Core.Librarys;
 using RikkaTracker.Models;
 
 namespace RikkaTracker.Services
@@ -20,11 +21,53 @@ namespace RikkaTracker.Services
             _dbContext = dbContext;
         }
 
-        // Old methods (Legacy support)
         public Task<IEnumerable<AppUsage>> LoadAppUsageAsync() => Task.FromResult<IEnumerable<AppUsage>>(new List<AppUsage>());
         Task IDataService.SaveAppUsageAsync(IEnumerable<AppUsage> usage) => Task.CompletedTask;
-        public Task<IEnumerable<WebsiteUsage>> LoadWebsiteUsageAsync() => Task.FromResult<IEnumerable<WebsiteUsage>>(new List<WebsiteUsage>());
-        Task IDataService.SaveWebsiteUsageAsync(IEnumerable<WebsiteUsage> usage) => Task.CompletedTask;
+
+        public async Task<IEnumerable<WebsiteUsage>> LoadWebsiteUsageAsync()
+        {
+            var usages = new List<WebsiteUsage>();
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT Url, Domain, Title, StartTime, EndTime
+                FROM WebBrowseLog
+                ORDER BY StartTime DESC
+            ";
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                usages.Add(new WebsiteUsage
+                {
+                    Url = reader.GetString(0),
+                    Domain = reader.GetString(1),
+                    Title = reader.GetString(2),
+                    StartTime = DateTime.Parse(reader.GetString(3), null, DateTimeStyles.RoundtripKind),
+                    EndTime = DateTime.Parse(reader.GetString(4), null, DateTimeStyles.RoundtripKind)
+                });
+            }
+            return usages;
+        }
+
+        async Task IDataService.SaveWebsiteUsageAsync(IEnumerable<WebsiteUsage> usage)
+        {
+            foreach (var u in usage)
+            {
+                using var connection = _dbContext.CreateConnection();
+                using var command = connection.CreateCommand();
+                command.CommandText = @"
+                    INSERT INTO WebBrowseLog (Url, Domain, Title, Icon, StartTime, EndTime)
+                    VALUES ($url, $domain, $title, $icon, $startTime, $endTime)
+                ";
+                command.Parameters.AddWithValue("$url", u.Url);
+                command.Parameters.AddWithValue("$domain", string.IsNullOrWhiteSpace(u.Domain) ? UrlHelper.GetDomain(u.Url) : u.Domain);
+                command.Parameters.AddWithValue("$title", u.Title);
+                command.Parameters.AddWithValue("$icon", string.Empty);
+                command.Parameters.AddWithValue("$startTime", u.StartTime.ToString("o"));
+                command.Parameters.AddWithValue("$endTime", u.EndTime.ToString("o"));
+                await command.ExecuteNonQueryAsync();
+            }
+        }
 
         // Phase 3 & 4 methods
         public async Task<IEnumerable<RikkaTracker.Core.Models.ActivitySegment>> GetSegmentsAsync(DateTime start, DateTime end)

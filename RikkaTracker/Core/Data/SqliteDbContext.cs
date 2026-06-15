@@ -39,7 +39,7 @@ namespace RikkaTracker.Core.Data
                 command.ExecuteNonQuery();
             }
 
-            // Create table
+            // Create tables
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = @"
@@ -56,6 +56,18 @@ namespace RikkaTracker.Core.Data
                     CREATE INDEX IF NOT EXISTS IX_Log_Start ON ActivityLog(StartTime);
                     CREATE INDEX IF NOT EXISTS IX_Log_Process_Start ON ActivityLog(ProcessName, StartTime);
                     CREATE INDEX IF NOT EXISTS IX_Log_Process_Path_Start ON ActivityLog(ProcessPath, StartTime);
+
+                    CREATE TABLE IF NOT EXISTS WebBrowseLog (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Url TEXT NOT NULL,
+                        Domain TEXT NOT NULL,
+                        Title TEXT NOT NULL,
+                        Icon TEXT,
+                        StartTime TEXT NOT NULL,
+                        EndTime TEXT NOT NULL
+                    );
+                    CREATE INDEX IF NOT EXISTS IX_WebLog_Start ON WebBrowseLog(StartTime);
+                    CREATE INDEX IF NOT EXISTS IX_WebLog_Domain_Start ON WebBrowseLog(Domain, StartTime);
                 ";
                 command.ExecuteNonQuery();
             }
