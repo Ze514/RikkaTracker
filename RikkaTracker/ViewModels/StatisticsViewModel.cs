@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RikkaTracker.Core.Librarys;
 using RikkaTracker.Core.Models;
 using RikkaTracker.Core.Monitor;
 using RikkaTracker.Services;
@@ -145,7 +146,7 @@ namespace RikkaTracker.ViewModels
                             {
                                 current = new GanttSegment
                                 {
-                                    ProcessName = s.Domain,
+                                    ProcessName = UrlHelper.GetName(s.Domain),
                                     WindowTitle = s.Title,
                                     ProcessPath = s.Url,
                                     Status = ActivityStatus.ForegroundActive,
@@ -168,7 +169,7 @@ namespace RikkaTracker.ViewModels
                                     aggregated.Add(current);
                                     current = new GanttSegment
                                     {
-                                        ProcessName = s.Domain,
+                                        ProcessName = UrlHelper.GetName(s.Domain),
                                         WindowTitle = s.Title,
                                         ProcessPath = s.Url,
                                         Status = ActivityStatus.ForegroundActive,

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RikkaTracker.Core.Librarys;
 using RikkaTracker.Services;
 
 namespace RikkaTracker.ViewModels
@@ -55,7 +56,7 @@ namespace RikkaTracker.ViewModels
                     {
                         Processes.Add(new ProcessStatsModel
                         {
-                            ProcessName = item.Domain,
+                            ProcessName = UrlHelper.GetName(item.Domain),
                             TotalTime = item.TotalTime,
                             Percentage = totalTicks > 0 ? (double)item.TotalTime.Ticks / totalTicks : 0,
                             TimeDisplay = FormatTimeSpan(item.TotalTime),
@@ -89,7 +90,7 @@ namespace RikkaTracker.ViewModels
                         {
                             Processes.Add(new ProcessStatsModel
                             {
-                                ProcessName = item.Domain,
+                                ProcessName = UrlHelper.GetName(item.Domain),
                                 TotalTime = item.TotalTime,
                                 Percentage = combinedTotal > 0 ? (double)item.TotalTime.Ticks / combinedTotal : 0,
                                 TimeDisplay = FormatTimeSpan(item.TotalTime),
