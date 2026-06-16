@@ -448,15 +448,6 @@ namespace RikkaTracker.Controls
                             dc.DrawImage(group.Icon, new Rect(10, y + (rowHeight - iconSize) / 2, iconSize, iconSize));
                             textX += iconSize + iconPadding;
                         }
-                        else if (group.SegmentType == "Web")
-                        {
-                            double dotSize = 10;
-                            double dotX = 10 + (iconSize - dotSize) / 2;
-                            double dotY = y + (rowHeight - dotSize) / 2;
-                            Brush webDotBrush = new SolidColorBrush(Color.FromRgb(80, 200, 120));
-                            dc.DrawEllipse(webDotBrush, null, new Point(dotX + dotSize / 2, dotY + dotSize / 2), dotSize / 2, dotSize / 2);
-                            textX += iconSize + iconPadding;
-                        }
 
                         string label = group.SegmentType == "Web"
                             ? $"Web: {group.DisplayName}"
@@ -599,11 +590,6 @@ namespace RikkaTracker.Controls
 
         private Brush GetBrushForSegment(GanttSegment segment)
         {
-            if (segment.SegmentType == "Web")
-            {
-                return new SolidColorBrush(Color.FromRgb(80, 200, 120));
-            }
-
             var solidBrush = _palette[segment.RowIndex % _palette.Length] as SolidColorBrush;
             var baseColor = solidBrush?.Color ?? Colors.Gray;
 

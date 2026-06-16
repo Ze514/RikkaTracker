@@ -41,6 +41,7 @@ namespace RikkaTracker.ViewModels
             _isAutoStart = _configService.Config.StartWithWindows;
             _webMonitorEnabled = _configService.Config.WebMonitorEnabled;
             _displayMode = _configService.Config.DisplayMode;
+            _timelineSortMode = _configService.Config.TimelineSortMode;
         }
 
         [ObservableProperty]
@@ -344,6 +345,15 @@ namespace RikkaTracker.ViewModels
         partial void OnDisplayModeChanged(string value)
         {
             _configService.Config.DisplayMode = value;
+            _configService.Save();
+        }
+
+        [ObservableProperty]
+        private string _timelineSortMode = "Duration";
+
+        partial void OnTimelineSortModeChanged(string value)
+        {
+            _configService.Config.TimelineSortMode = value;
             _configService.Save();
         }
     }

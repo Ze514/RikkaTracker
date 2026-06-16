@@ -214,48 +214,37 @@ namespace RikkaTracker.ViewModels
             if (!ShowBackground)
                 filtered = filtered.Where(s => s.SegmentType == "Web" || s.Status != ActivityStatus.Background);
 
-            var appGroups = filtered.Where(s => s.SegmentType == "App")
-                .GroupBy(s => s.ProcessName)
-                .OrderByDescending(g => g.Sum(s => (s.End - s.Start).TotalSeconds))
-                .ToList();
+            var sortMode = _configService.Config.TimelineSortMode;
 
-            var webGroups = filtered.Where(s => s.SegmentType == "Web")
-                .GroupBy(s => s.Domain)
-                .OrderByDescending(g => g.Sum(s => (s.End - s.Start).TotalSeconds))
-                .ToList();
+            var groups = filtered
+                .GroupBy(s => s.SegmentType == "Web" ? "_W_" + s.Domain : "_A_" + s.ProcessName);
 
+            if (sortMode == "Recency")
+                groups = groups.OrderByDescending(g => g.Max(s => s.End));
+            else
+                groups = groups.OrderByDescending(g => g.Sum(s => (s.End - s.Start).TotalSeconds));
+
+            var orderedGroups = groups.ToList();
             var result = new List<GanttSegment>();
             int rowIndex = 0;
 
-            foreach (var group in appGroups)
+            foreach (var group in orderedGroups)
             {
                 foreach (var s in group)
                 {
                     result.Add(new GanttSegment
                     {
-                        ProcessName = s.ProcessName, ProcessPath = s.ProcessPath,
-                        WindowTitle = s.WindowTitle, Status = s.Status,
-                        Start = s.Start, End = s.End, Alias = s.Alias,
-                        Icon = s.Icon, SegmentType = s.SegmentType,
-                        RowIndex = rowIndex
-                    });
-                }
-                rowIndex++;
-            }
-
-            if (appGroups.Count > 0 && webGroups.Count > 0)
-                rowIndex++;
-
-            foreach (var group in webGroups)
-            {
-                foreach (var s in group)
-                {
-                    result.Add(new GanttSegment
-                    {
-                        ProcessName = s.ProcessName, WindowTitle = s.WindowTitle,
-                        ProcessPath = s.ProcessPath, Status = s.Status,
-                        Start = s.Start, End = s.End, Icon = s.Icon,
-                        SegmentType = s.SegmentType, Domain = s.Domain, Url = s.Url,
+                        ProcessName = s.ProcessName,
+                        ProcessPath = s.ProcessPath,
+                        WindowTitle = s.WindowTitle,
+                        Status = s.Status,
+                        Start = s.Start,
+                        End = s.End,
+                        Alias = s.Alias,
+                        Icon = s.Icon,
+                        SegmentType = s.SegmentType,
+                        Domain = s.Domain,
+                        Url = s.Url,
                         RowIndex = rowIndex
                     });
                 }

@@ -16,6 +16,8 @@
     <sys:String x:Key="StrTopSite">Top Site</sys:String>
     <sys:String x:Key="StrWebTotalTime">Total Browse</sys:String>
     <sys:String x:Key="StrNoWebData">No web browsing data</sys:String>
+    <sys:String x:Key="StrTimelineSortMode">Timeline Sort</sys:String>
+    <sys:String x:Key="StrTimelineSortModeDesc">Order rows by total duration or by latest activity time</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">Timeline</sys:String>

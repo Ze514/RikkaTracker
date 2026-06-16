@@ -16,6 +16,8 @@
     <sys:String x:Key="StrTopSite">最常访问</sys:String>
     <sys:String x:Key="StrWebTotalTime">浏览总时长</sys:String>
     <sys:String x:Key="StrNoWebData">暂无网页浏览数据</sys:String>
+    <sys:String x:Key="StrTimelineSortMode">时间轴排序</sys:String>
+    <sys:String x:Key="StrTimelineSortModeDesc">按总时长或最近活跃时间排列纵轴顺序</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">时间轴</sys:String>

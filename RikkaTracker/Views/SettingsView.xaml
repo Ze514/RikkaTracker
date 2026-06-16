@@ -108,6 +108,20 @@
                             <ComboBoxItem Content="Combined" Tag="Combined"/>
                         </ComboBox>
                     </Grid>
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="Timeline Sort" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="Order rows by total duration or by latest activity time" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineSortMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
+                            <ComboBoxItem Content="By Duration" Tag="Duration"/>
+                            <ComboBoxItem Content="By Recency" Tag="Recency"/>
+                        </ComboBox>
+                    </Grid>
                 </StackPanel>
             </ui:Card>
 

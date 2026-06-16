@@ -16,6 +16,7 @@ namespace RikkaTracker.Models
         public bool WebMonitorEnabled { get; set; } = true;
         public int WebSocketPort { get; set; } = 8910;
         public string DisplayMode { get; set; } = "Combined";
+        public string TimelineSortMode { get; set; } = "Duration";
         public List<FilterRule> FilterRules { get; set; } = new List<FilterRule>
         {
             // 默认免空闲检测（多媒体应用）
