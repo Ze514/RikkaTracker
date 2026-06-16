@@ -15,6 +15,7 @@ namespace RikkaTracker.Models
         public string Language { get; set; } = "Auto"; // "Auto", "zh-CN", "en-US"
         public bool WebMonitorEnabled { get; set; } = true;
         public int WebSocketPort { get; set; } = 8910;
+        public string DisplayMode { get; set; } = "Combined";
         public List<FilterRule> FilterRules { get; set; } = new List<FilterRule>
         {
             // 默认免空闲检测（多媒体应用）

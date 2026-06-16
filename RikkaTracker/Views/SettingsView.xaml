@@ -81,6 +81,33 @@
                             <ComboBoxItem Content="English" Tag="en-US"/>
                         </ComboBox>
                     </Grid>
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="Browser Monitor" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="Collect web browsing data via Chrome/Edge extension" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding WebMonitorEnabled}" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="Default View Mode" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="Choose which data to display across all pages" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding DisplayMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
+                            <ComboBoxItem Content="Apps Only" Tag="AppOnly"/>
+                            <ComboBoxItem Content="Web Only" Tag="WebOnly"/>
+                            <ComboBoxItem Content="Combined" Tag="Combined"/>
+                        </ComboBox>
+                    </Grid>
                 </StackPanel>
             </ui:Card>
 

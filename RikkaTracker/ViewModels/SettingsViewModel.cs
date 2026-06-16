@@ -38,9 +38,9 @@ namespace RikkaTracker.ViewModels
             _timelineZoomMode = _configService.Config.TimelineZoomMode;
             _language = _configService.Config.Language;
             _currentVersion = _updateService.GetCurrentVersion();
-            
-            // 初始化自启动属性
             _isAutoStart = _configService.Config.StartWithWindows;
+            _webMonitorEnabled = _configService.Config.WebMonitorEnabled;
+            _displayMode = _configService.Config.DisplayMode;
         }
 
         [ObservableProperty]
@@ -327,6 +327,24 @@ namespace RikkaTracker.ViewModels
                     _themeService.ApplyTheme(value ? "Dark" : "Light");
                 }
             }
+        }
+
+        [ObservableProperty]
+        private bool _webMonitorEnabled;
+
+        partial void OnWebMonitorEnabledChanged(bool value)
+        {
+            _configService.Config.WebMonitorEnabled = value;
+            _configService.Save();
+        }
+
+        [ObservableProperty]
+        private string _displayMode = "Combined";
+
+        partial void OnDisplayModeChanged(string value)
+        {
+            _configService.Config.DisplayMode = value;
+            _configService.Save();
         }
     }
 }

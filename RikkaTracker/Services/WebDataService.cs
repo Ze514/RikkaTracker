@@ -130,5 +130,19 @@ namespace RikkaTracker.Services
 
             return Enumerable.Range(0, 24).Select(h => (h, TimeSpan.FromSeconds(hourlyData[h])));
         }
+
+        public async Task UpdateDomainFaviconAsync(string domain, string localPath)
+        {
+            if (string.IsNullOrWhiteSpace(domain) || string.IsNullOrWhiteSpace(localPath))
+                return;
+
+            using var connection = _dbContext.CreateConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = "UPDATE WebBrowseLog SET Icon = $path WHERE Domain = $domain";
+            command.Parameters.AddWithValue("$path", localPath);
+            command.Parameters.AddWithValue("$domain", domain);
+            int rows = await command.ExecuteNonQueryAsync();
+            System.Diagnostics.Debug.WriteLine($"[Favicon] DB UPDATE: domain='{domain}', path='{localPath}', rows affected={rows}");
+        }
     }
 }

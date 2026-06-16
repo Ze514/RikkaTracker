@@ -124,6 +124,17 @@ namespace RikkaTracker.Services
 
                 await _webDataService.SaveSegmentAsync(segment);
 
+                _ = Task.Run(async () =>
+                {
+                    string localPath = await FaviconDownloader.DownloadAsync(
+                        data.Icon, segment.Domain, _configService.Config.DataStoragePath);
+                    if (!string.IsNullOrEmpty(localPath))
+                    {
+                        await _webDataService.UpdateDomainFaviconAsync(segment.Domain, localPath);
+                        _logger.Info($"[Favicon] Updated DB for domain '{segment.Domain}' -> {localPath}");
+                    }
+                });
+
                 var usage = new WebsiteUsage
                 {
                     Url = segment.Url,

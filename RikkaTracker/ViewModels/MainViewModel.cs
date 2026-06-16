@@ -1,22 +1,40 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using RikkaTracker.Services;
 
 namespace RikkaTracker.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
+        private readonly IConfigService _configService;
+
         [ObservableProperty]
         private string _statusText = string.Empty;
 
         [ObservableProperty]
         private ObservableObject? _currentViewModel;
 
+        [ObservableProperty]
+        private string _displayMode = "Combined";
+
         public MainViewModel()
         {
-            // 默认显示概览页
+            _configService = App.Current.ServiceProvider.GetRequiredService<IConfigService>();
+            DisplayMode = _configService.Config.DisplayMode;
             NavigateToDashboard();
         }
+
+        partial void OnDisplayModeChanged(string value)
+        {
+            if (_configService.Config.DisplayMode != value)
+            {
+                _configService.Config.DisplayMode = value;
+                _configService.Save();
+            }
+        }
+
+        public IConfigService GetConfigService() => _configService;
 
         [RelayCommand]
         private void NavigateToDashboard()

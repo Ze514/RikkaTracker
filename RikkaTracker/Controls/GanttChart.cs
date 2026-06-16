@@ -441,15 +441,29 @@ namespace RikkaTracker.Controls
                         double iconPadding = 8;
                         double textX = 10;
 
-                        // 绘制图标
+                        System.Diagnostics.Debug.WriteLine($"[Gantt] Row {group.RowIndex}: {group.DisplayName}, SegmentType={group.SegmentType}, Icon={group.Icon?.ToString() ?? "null"}");
+
                         if (group.Icon != null)
                         {
                             dc.DrawImage(group.Icon, new Rect(10, y + (rowHeight - iconSize) / 2, iconSize, iconSize));
                             textX += iconSize + iconPadding;
                         }
+                        else if (group.SegmentType == "Web")
+                        {
+                            double dotSize = 10;
+                            double dotX = 10 + (iconSize - dotSize) / 2;
+                            double dotY = y + (rowHeight - dotSize) / 2;
+                            Brush webDotBrush = new SolidColorBrush(Color.FromRgb(80, 200, 120));
+                            dc.DrawEllipse(webDotBrush, null, new Point(dotX + dotSize / 2, dotY + dotSize / 2), dotSize / 2, dotSize / 2);
+                            textX += iconSize + iconPadding;
+                        }
+
+                        string label = group.SegmentType == "Web"
+                            ? $"Web: {group.DisplayName}"
+                            : group.DisplayName;
 
                         var text = new FormattedText(
-                            group.DisplayName,
+                            label,
                             CultureInfo.CurrentUICulture,
                             FlowDirection.LeftToRight,
                             new Typeface("Segoe UI SemiBold"),
@@ -491,20 +505,33 @@ namespace RikkaTracker.Controls
 
             if (hit != null)
             {
-                string statusText = hit.Status switch
+                string tooltipContent;
+                if (hit.SegmentType == "Web")
                 {
-                    ActivityStatus.ForegroundActive => "前台活动",
-                    ActivityStatus.ForegroundInactive => "前台非活动",
-                    ActivityStatus.Background => "后台运行",
-                    _ => hit.Status.ToString()
-                };
+                    tooltipContent = $"【网页浏览】\n" +
+                                     $"站点: {hit.Domain}\n" +
+                                     $"标题: {hit.WindowTitle}\n" +
+                                     $"时间: {hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n" +
+                                     $"持续: {hit.Duration:hh\\:mm\\:ss}\n" +
+                                     $"网址: {hit.Url}";
+                }
+                else
+                {
+                    string statusText = hit.Status switch
+                    {
+                        ActivityStatus.ForegroundActive => "前台活动",
+                        ActivityStatus.ForegroundInactive => "前台非活动",
+                        ActivityStatus.Background => "后台运行",
+                        _ => hit.Status.ToString()
+                    };
 
-                string tooltipContent = $"【应用详情】\n" +
-                                       $"名称: {hit.DisplayName}\n" +
-                                       $"标题: {hit.WindowTitle}\n" +
-                                       $"时间: {hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n" +
-                                       $"持续: {hit.Duration:hh\\:mm\\:ss}\n" +
-                                       $"状态: {statusText}";
+                    tooltipContent = $"【应用详情】\n" +
+                                     $"名称: {hit.DisplayName}\n" +
+                                     $"标题: {hit.WindowTitle}\n" +
+                                     $"时间: {hit.Start:HH:mm:ss} - {hit.End:HH:mm:ss}\n" +
+                                     $"持续: {hit.Duration:hh\\:mm\\:ss}\n" +
+                                     $"状态: {statusText}";
+                }
 
                 // 使用单独的 ToolTip 控件以确保跟随鼠标且实时更新
                 if (_internalToolTip.Parent == null)
@@ -572,21 +599,23 @@ namespace RikkaTracker.Controls
 
         private Brush GetBrushForSegment(GanttSegment segment)
         {
+            if (segment.SegmentType == "Web")
+            {
+                return new SolidColorBrush(Color.FromRgb(80, 200, 120));
+            }
+
             var solidBrush = _palette[segment.RowIndex % _palette.Length] as SolidColorBrush;
             var baseColor = solidBrush?.Color ?? Colors.Gray;
 
             if (segment.Status == ActivityStatus.ForegroundInactive)
             {
-                // 二档：40% 透明度
                 return new SolidColorBrush(Color.FromArgb(100, baseColor.R, baseColor.G, baseColor.B)); 
             }
             else if (segment.Status == ActivityStatus.Background)
             {
-                // 三档：极浅灰色
                 return new SolidColorBrush(Color.FromRgb(240, 240, 240)); 
             }
 
-            // 一档：深色（不透明）
             return new SolidColorBrush(baseColor);
         }
     }

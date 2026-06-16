@@ -68,6 +68,18 @@
                 IsPaneToggleVisible="True"
                 OpenPaneLength="200">
                 
+                <ui:NavigationView.PaneHeader>
+                    <StackPanel Margin="12,8,12,12">
+                        <ui:TextBlock Text="View Mode" FontSize="11" Margin="0,0,0,4"
+                                      Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        <ComboBox SelectedValue="{Binding DisplayMode, Mode=TwoWay}" SelectedValuePath="Tag">
+                            <ComboBoxItem Tag="AppOnly" Content="Only Apps"/>
+                            <ComboBoxItem Tag="WebOnly" Content="Only Web"/>
+                            <ComboBoxItem Tag="Combined" Content="Combined"/>
+                        </ComboBox>
+                    </StackPanel>
+                </ui:NavigationView.PaneHeader>
+
                 <ui:NavigationView.MenuItems>
                     <ui:NavigationViewItem
                         Content="{DynamicResource StrDashboard}"

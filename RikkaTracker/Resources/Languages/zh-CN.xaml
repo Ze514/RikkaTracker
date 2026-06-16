@@ -13,6 +13,9 @@
     <sys:String x:Key="StrVsYesterday">较昨日对比</sys:String>
     <sys:String x:Key="StrMostActiveHour">最活跃时段</sys:String>
     <sys:String x:Key="StrAvgTimePerApp">平均单应用时长</sys:String>
+    <sys:String x:Key="StrTopSite">最常访问</sys:String>
+    <sys:String x:Key="StrWebTotalTime">浏览总时长</sys:String>
+    <sys:String x:Key="StrNoWebData">暂无网页浏览数据</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">时间轴</sys:String>

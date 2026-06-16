@@ -22,6 +22,7 @@ namespace RikkaTracker.ViewModels
         private SolidColorPaint? _axisLabelPaint;
         private SolidColorPaint? _axisSeparatorPaint;
         private SolidColorPaint? _columnFillPaint;
+        private SolidColorPaint? _webColumnFillPaint;
 
         [ObservableProperty]
         private string _totalTimeText = "0h 0m";
@@ -39,13 +40,16 @@ namespace RikkaTracker.ViewModels
         private ImageSource? _topAppIcon;
 
         [ObservableProperty]
-        private string _timeComparedToYesterday = "-";
-
-        [ObservableProperty]
         private string _mostActiveHour = "-";
 
         [ObservableProperty]
-        private string _averageTimePerApp = "-";
+        private string _webTotalTimeText = "0h 0m";
+
+        [ObservableProperty]
+        private string _topSiteDomain = "N/A";
+
+        [ObservableProperty]
+        private string _topSiteTimeText = "0h 0m";
 
         [ObservableProperty]
         private ISeries[] _series;
@@ -56,6 +60,15 @@ namespace RikkaTracker.ViewModels
         [ObservableProperty]
         private Axis[] _yAxes;
 
+        [ObservableProperty]
+        private ISeries[] _webSeries;
+
+        [ObservableProperty]
+        private Axis[] _webXAxes;
+
+        [ObservableProperty]
+        private Axis[] _webYAxes;
+
         public DashboardViewModel(IDataService dataService, IIconService iconService, IThemeService themeService)
         {
             _dataService = dataService;
@@ -65,7 +78,7 @@ namespace RikkaTracker.ViewModels
             _themeService.ThemeChanged += OnThemeChanged;
             UpdateChartColors(_themeService.GetCurrentTheme());
 
-            Series = new ISeries[]
+            var emptySeries = new ISeries[]
             {
                 new ColumnSeries<ObservablePoint>
                 {
@@ -77,8 +90,14 @@ namespace RikkaTracker.ViewModels
                 }
             };
 
-            XAxes = new Axis[] { new Axis { Labels = new string[0], LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
+            Series = emptySeries;
+            WebSeries = emptySeries;
+
+            var emptyAxis = new Axis[] { new Axis { Labels = new string[0], LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
+            XAxes = emptyAxis;
             YAxes = new Axis[] { new Axis { Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"), LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
+            WebXAxes = emptyAxis;
+            WebYAxes = new Axis[] { new Axis { Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"), LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
 
             InitializeAsync();
         }
@@ -92,80 +111,66 @@ namespace RikkaTracker.ViewModels
         {
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
-            var yesterday = today.AddDays(-1);
 
-            // 1. 获取今日汇总数据
-            var summary = await _dataService.GetStatsSummaryAsync(today, tomorrow);
-            TotalTimeText = FormatTimeSpan(summary.TotalTime);
-            AppCount = summary.AppCount;
-            TopAppName = summary.TopAppName;
-            TopAppTimeText = FormatTimeSpan(summary.TopAppTime);
-            TopAppIcon = _iconService.GetIcon(summary.TopAppName, summary.TopAppPath);
+            var appSummary = await _dataService.GetStatsSummaryAsync(today, tomorrow);
+            TotalTimeText = FormatTimeSpan(appSummary.TotalTime);
+            AppCount = appSummary.AppCount;
+            TopAppName = appSummary.TopAppName;
+            TopAppTimeText = FormatTimeSpan(appSummary.TopAppTime);
+            TopAppIcon = _iconService.GetIcon(appSummary.TopAppName, appSummary.TopAppPath);
 
-            // 2. 平均单应用时长
-            if (summary.AppCount > 0)
-            {
-                var avgSeconds = summary.TotalTime.TotalSeconds / summary.AppCount;
-                AverageTimePerApp = FormatTimeSpan(TimeSpan.FromSeconds(avgSeconds));
-            }
-            else
-            {
-                AverageTimePerApp = "0m";
-            }
+            var webSummary = await _dataService.GetWebStatsSummaryAsync(today, tomorrow);
+            WebTotalTimeText = FormatTimeSpan(webSummary.TotalTime);
+            TopSiteDomain = webSummary.TopDomain;
+            TopSiteTimeText = FormatTimeSpan(webSummary.TopDomainTime);
 
-            // 3. 与昨日对比
-            var yesterdaySummary = await _dataService.GetStatsSummaryAsync(yesterday, today);
-            var diff = summary.TotalTime - yesterdaySummary.TotalTime;
-            if (yesterdaySummary.TotalTime.TotalSeconds == 0)
-            {
-                TimeComparedToYesterday = diff.TotalSeconds > 0 ? "↑ 100%" : "-";
-            }
-            else
-            {
-                var percent = (diff.TotalSeconds / yesterdaySummary.TotalTime.TotalSeconds) * 100;
-                TimeComparedToYesterday = percent >= 0 ? $"↑ {Math.Abs(percent):F1}%" : $"↓ {Math.Abs(percent):F1}%";
-            }
-
-            // 4. 获取每小时活跃度与最活跃时段
-            var hourly = await _dataService.GetHourlyUsageAsync(today);
-            var hourlyList = hourly.ToList();
-            
+            var appHourly = await _dataService.GetHourlyUsageAsync(today);
+            var hourlyList = appHourly.ToList();
             var maxHour = hourlyList.OrderByDescending(h => h.TotalTime).FirstOrDefault();
-            if (maxHour.TotalTime.TotalSeconds > 0)
-            {
-                MostActiveHour = $"{maxHour.Hour:D2}:00 - {maxHour.Hour + 1:D2}:00";
-            }
-            else
-            {
-                MostActiveHour = "-";
-            }
+            MostActiveHour = maxHour.TotalTime.TotalSeconds > 0
+                ? $"{maxHour.Hour:D2}:00 - {maxHour.Hour + 1:D2}:00"
+                : "-";
 
-            // 5. 更新图表
-            var values = new List<ObservablePoint>();
+            var appValues = new List<ObservablePoint>();
             var labels = new List<string>();
             for (int i = 0; i < hourlyList.Count; i++)
             {
-                values.Add(new ObservablePoint(i, hourlyList[i].TotalTime.TotalSeconds));
+                appValues.Add(new ObservablePoint(i, hourlyList[i].TotalTime.TotalSeconds));
                 labels.Add($"{hourlyList[i].Hour}:00");
             }
 
-            var maxVal = values.Count > 0 ? values.Max(v => v.Y ?? 0) : 0;
-
             XAxes = new Axis[] { new Axis { Labels = labels, LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
-            YAxes = new Axis[] { new Axis { 
-                MinLimit = 0,
-                MaxLimit = maxVal == 0 ? 60 : null,
-                Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"),
-                LabelsPaint = _axisLabelPaint,
-                SeparatorsPaint = _axisSeparatorPaint
-            } };
-
+            YAxes = new Axis[] { new Axis { MinLimit = 0, Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"), LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
             Series = new ISeries[]
             {
                 new ColumnSeries<ObservablePoint>
                 {
-                    Values = values,
+                    Values = appValues,
                     Fill = _columnFillPaint,
+                    MaxBarWidth = 40,
+                    Rx = 4,
+                    Ry = 4
+                }
+            };
+
+            var webHourly = await _dataService.GetWebHourlyUsageAsync(today);
+            var webHourlyList = webHourly.ToList();
+            var webValues = new List<ObservablePoint>();
+            var webLabels = new List<string>();
+            for (int i = 0; i < webHourlyList.Count; i++)
+            {
+                webValues.Add(new ObservablePoint(i, webHourlyList[i].TotalTime.TotalSeconds));
+                webLabels.Add($"{webHourlyList[i].Hour}:00");
+            }
+
+            WebXAxes = new Axis[] { new Axis { Labels = webLabels, LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
+            WebYAxes = new Axis[] { new Axis { MinLimit = 0, Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"), LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
+            WebSeries = new ISeries[]
+            {
+                new ColumnSeries<ObservablePoint>
+                {
+                    Values = webValues,
+                    Fill = _webColumnFillPaint,
                     MaxBarWidth = 40,
                     Rx = 4,
                     Ry = 4
@@ -179,37 +184,25 @@ namespace RikkaTracker.ViewModels
             var labelColor = isDark ? new SKColor(220, 220, 220) : new SKColor(80, 80, 80);
             var separatorColor = isDark ? new SKColor(255, 255, 255, 30) : new SKColor(0, 0, 0, 15);
             var barColor = isDark ? new SKColor(244, 114, 182) : new SKColor(14, 165, 233);
+            var webBarColor = isDark ? new SKColor(80, 200, 120) : new SKColor(34, 139, 34);
 
-            ( _axisLabelPaint as IDisposable)?.Dispose();
-            ( _axisSeparatorPaint as IDisposable)?.Dispose();
-            ( _columnFillPaint as IDisposable)?.Dispose();
+            (_axisLabelPaint as IDisposable)?.Dispose();
+            (_axisSeparatorPaint as IDisposable)?.Dispose();
+            (_columnFillPaint as IDisposable)?.Dispose();
+            (_webColumnFillPaint as IDisposable)?.Dispose();
 
             _axisLabelPaint = new SolidColorPaint(labelColor);
             _axisSeparatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 1 };
             _columnFillPaint = new SolidColorPaint(barColor);
+            _webColumnFillPaint = new SolidColorPaint(webBarColor);
         }
 
         private void OnThemeChanged(string newTheme)
         {
             UpdateChartColors(newTheme);
-
-            if (XAxes != null && XAxes.Length > 0)
-            {
-                XAxes[0].LabelsPaint = _axisLabelPaint;
-                XAxes[0].SeparatorsPaint = _axisSeparatorPaint;
-            }
-            if (YAxes != null && YAxes.Length > 0)
-            {
-                YAxes[0].LabelsPaint = _axisLabelPaint;
-                YAxes[0].SeparatorsPaint = _axisSeparatorPaint;
-            }
-            if (Series != null && Series.Length > 0 && Series[0] is ColumnSeries<ObservablePoint> colSeries)
-            {
-                colSeries.Fill = _columnFillPaint;
-            }
         }
 
-        private string FormatTimeSpan(TimeSpan ts)
+        private static string FormatTimeSpan(TimeSpan ts)
         {
             if (ts.TotalHours >= 1)
                 return $"{(int)ts.TotalHours}h {ts.Minutes}m";

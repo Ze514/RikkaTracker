@@ -11,5 +11,6 @@ namespace RikkaTracker.Services
         Task<IEnumerable<WebBrowseSegment>> GetSegmentsAsync(DateTime start, DateTime end);
         Task<IEnumerable<(string Domain, string Title, string Icon, TimeSpan TotalTime)>> GetTopSitesAsync(DateTime start, DateTime end);
         Task<IEnumerable<(int Hour, TimeSpan TotalTime)>> GetHourlyUsageAsync(DateTime date);
+        Task UpdateDomainFaviconAsync(string domain, string localPath);
     }
 }
