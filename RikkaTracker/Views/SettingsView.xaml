@@ -122,6 +122,18 @@
                             <ComboBoxItem Content="By Recency" Tag="Recency"/>
                         </ComboBox>
                     </Grid>
+
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="Row Badges" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="Show colored rounded badges behind row labels in timeline" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowRowBadges}" VerticalAlignment="Center"/>
+                    </Grid>
                 </StackPanel>
             </ui:Card>
 

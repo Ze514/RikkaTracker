@@ -33,25 +33,45 @@
 
         <ui:Card Grid.Row="1" Padding="0" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
             <Grid VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- 固定时间轴刻度 -->
+                <Border Grid.Column="1" Grid.Row="0" Height="40" ClipToBounds="True">
+                    <ScrollViewer x:Name="TimeHeaderScroller" 
+                                  HorizontalScrollBarVisibility="Hidden"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  Background="Transparent">
+                        <controls:GanttChart ItemsSource="{Binding GanttSegments}" 
+                                             DisplayMode="TimeHeader"
+                                             ShowRowBadges="{Binding ShowRowBadges}"
+                                             PixelsPerHour="{Binding Value, ElementName=ZoomSlider}"
+                                             VerticalAlignment="Top"
+                                             HorizontalAlignment="Left"/>
+                    </ScrollViewer>
+                </Border>
+
                 <!-- 固定应用名称列 -->
-                <ScrollViewer x:Name="HeaderScroller" Grid.Column="0" 
+                <ScrollViewer x:Name="HeaderScroller" Grid.Column="0" Grid.Row="1" 
                               VerticalScrollBarVisibility="Hidden" 
                               HorizontalScrollBarVisibility="Disabled"
                               VerticalAlignment="Stretch">
                     <controls:GanttChart ItemsSource="{Binding GanttSegments}" 
                                          DisplayMode="Header"
+                                         ShowRowBadges="{Binding ShowRowBadges}"
                                          VerticalAlignment="Top"
                                          HorizontalAlignment="Left"
                                          SegmentClickedCommand="{Binding SegmentClickedCommand}" />
                 </ScrollViewer>
 
                 <!-- 可水平和垂直滚动的时间轴条带 -->
-                <ScrollViewer x:Name="TimelineScroller" Grid.Column="1" 
+                <ScrollViewer x:Name="TimelineScroller" Grid.Column="1" Grid.Row="1" 
                               HorizontalScrollBarVisibility="Auto" 
                               VerticalScrollBarVisibility="Auto"
                               VerticalAlignment="Stretch"
@@ -59,6 +79,7 @@
                               PreviewMouseWheel="TimelineScroller_PreviewMouseWheel">
                     <controls:GanttChart ItemsSource="{Binding GanttSegments}" 
                                          DisplayMode="Timeline"
+                                         ShowRowBadges="{Binding ShowRowBadges}"
                                          VerticalAlignment="Top"
                                          HorizontalAlignment="Left"
                                          PixelsPerHour="{Binding Value, ElementName=ZoomSlider}"
@@ -68,7 +89,7 @@
                 </ScrollViewer>
 
                 <!-- 加载中遮罩 -->
-                <ui:ProgressRing Grid.ColumnSpan="2"
+                <ui:ProgressRing Grid.ColumnSpan="2" Grid.RowSpan="2"
                                IsIndeterminate="True" 
                                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                VerticalAlignment="Center" 

@@ -30,6 +30,7 @@ namespace RikkaTracker.ViewModels
 
         public string ZoomMode => _configService.Config.TimelineZoomMode;
         public string DisplayMode => _configService.Config.DisplayMode;
+        public bool ShowRowBadges => _configService.Config.ShowRowBadges;
 
         [ObservableProperty]
         private DateTime _selectedDate;
@@ -155,7 +156,7 @@ namespace RikkaTracker.ViewModels
                                     SegmentType = "Web",
                                     Domain = s.Domain,
                                     Url = s.Url,
-                                    Icon = LoadFaviconSource(s.Icon)
+                                    Icon = LoadFaviconSource(s.Icon) ?? GlobeIcon.Source
                                 };
                             }
                             else
@@ -178,7 +179,7 @@ namespace RikkaTracker.ViewModels
                                         SegmentType = "Web",
                                         Domain = s.Domain,
                                         Url = s.Url,
-                                        Icon = LoadFaviconSource(s.Icon)
+                                        Icon = LoadFaviconSource(s.Icon) ?? GlobeIcon.Source
                                     };
                                 }
                             }

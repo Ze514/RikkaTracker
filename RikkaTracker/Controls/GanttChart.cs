@@ -13,7 +13,8 @@ namespace RikkaTracker.Controls
     {
         Full,
         Header,
-        Timeline
+        Timeline,
+        TimeHeader
     }
 
     public class GanttChart : FrameworkElement
@@ -94,6 +95,16 @@ namespace RikkaTracker.Controls
         public static readonly DependencyProperty ZoomModeProperty =
             DependencyProperty.Register("ZoomMode", typeof(string), typeof(GanttChart),
                 new PropertyMetadata("Center", OnZoomModeChanged));
+
+        public static readonly DependencyProperty ShowRowBadgesProperty =
+            DependencyProperty.Register("ShowRowBadges", typeof(bool), typeof(GanttChart),
+                new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public bool ShowRowBadges
+        {
+            get => (bool)GetValue(ShowRowBadgesProperty);
+            set => SetValue(ShowRowBadgesProperty, value);
+        }
 
         private static void OnZoomModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -263,14 +274,19 @@ namespace RikkaTracker.Controls
             double rowHeight = 40;
             double rowSpacing = 10;
             int maxRow = ItemsSource.Max(s => s.RowIndex);
-            double height = (maxRow + 1) * (rowHeight + rowSpacing) + 60;
+            double bottomPad = (DisplayMode == GanttDisplayMode.Header || DisplayMode == GanttDisplayMode.Timeline) ? 20 : 60;
+            double height = (maxRow + 1) * (rowHeight + rowSpacing) + bottomPad;
 
             double width = DisplayMode switch
             {
                 GanttDisplayMode.Header => _rowHeaderWidth,
                 GanttDisplayMode.Timeline => 24 * PixelsPerHour + 50,
+                GanttDisplayMode.TimeHeader => 24 * PixelsPerHour + 50,
                 _ => 24 * PixelsPerHour + _rowHeaderWidth + 50
             };
+
+            if (DisplayMode == GanttDisplayMode.TimeHeader)
+                return new Size(width, 40);
             
             return new Size(width, height);
         }
@@ -292,11 +308,13 @@ namespace RikkaTracker.Controls
 
                 double rowHeight = 40;
                 double rowSpacing = 10;
-                double topOffset = 40;
+                double topOffset = (DisplayMode == GanttDisplayMode.Header || DisplayMode == GanttDisplayMode.Timeline) ? 0 : 40;
                 double xOffset = DisplayMode == GanttDisplayMode.Timeline ? 0 : _rowHeaderWidth;
 
                 // 绘制背景与辅助线
                 DrawGrid(dc, baseTime, rowHeight, rowSpacing, topOffset, xOffset);
+
+                if (DisplayMode == GanttDisplayMode.TimeHeader) return;
 
                 if (ItemsSource == null || !ItemsSource.Any()) return;
 
@@ -345,8 +363,8 @@ namespace RikkaTracker.Controls
             double height = RenderSize.Height;
             double width = RenderSize.Width;
 
-            // 1. 绘制纵向时间线 (仅在 Timeline 模式)
-            if (DisplayMode != GanttDisplayMode.Header)
+            // 1. 绘制纵向时间线 (Full 或 TimeHeader 模式)
+            if (DisplayMode == GanttDisplayMode.Full || DisplayMode == GanttDisplayMode.TimeHeader)
             {
                 Pen timePen = new Pen(new SolidColorBrush(Color.FromArgb(30, 128, 128, 128)), 1);
                 timePen.DashStyle = DashStyles.Dash;
@@ -422,7 +440,7 @@ namespace RikkaTracker.Controls
             }
 
             // 2. 绘制横向行线与应用名称
-            if (ItemsSource != null && ItemsSource.Any())
+            if (DisplayMode != GanttDisplayMode.TimeHeader && ItemsSource != null && ItemsSource.Any())
             {
                 Pen rowPen = new Pen(new SolidColorBrush(Color.FromArgb(15, 128, 128, 128)), 1);
                 var rowGroups = ItemsSource.GroupBy(s => s.RowIndex).Select(g => g.First()).OrderBy(s => s.RowIndex);
@@ -437,21 +455,19 @@ namespace RikkaTracker.Controls
                     // 应用名称 (仅在 Header 模式)
                     if (DisplayMode != GanttDisplayMode.Timeline)
                     {
+                        double badgeLabelX = 4;
+                        double badgeWidth = 120;
+                        double badgePad = 8;
                         double iconSize = 20;
-                        double iconPadding = 8;
-                        double textX = 10;
+                        double iconPadding = 6;
+                        double iconX = badgeLabelX + badgePad;
+                        double textX = iconX;
 
-                        System.Diagnostics.Debug.WriteLine($"[Gantt] Row {group.RowIndex}: {group.DisplayName}, SegmentType={group.SegmentType}, Icon={group.Icon?.ToString() ?? "null"}");
-
+                        string label = group.DisplayName;
                         if (group.Icon != null)
-                        {
-                            dc.DrawImage(group.Icon, new Rect(10, y + (rowHeight - iconSize) / 2, iconSize, iconSize));
                             textX += iconSize + iconPadding;
-                        }
 
-                        string label = group.SegmentType == "Web"
-                            ? $"Web: {group.DisplayName}"
-                            : group.DisplayName;
+                        double maxTextWidth = (badgeLabelX + badgeWidth) - textX - badgePad;
 
                         var text = new FormattedText(
                             label,
@@ -461,10 +477,25 @@ namespace RikkaTracker.Controls
                             12,
                             (Brush)FindResource("TextFillColorPrimaryBrush") ?? Brushes.White,
                             VisualTreeHelper.GetDpi(this).PixelsPerDip);
-                        text.MaxTextWidth = _rowHeaderWidth - textX - 5;
-                        text.MaxTextHeight = rowHeight;
+                        text.MaxTextWidth = maxTextWidth;
+                        text.MaxTextHeight = rowHeight - 2;
                         text.Trimming = TextTrimming.CharacterEllipsis;
 
+                        // 1. 背景矩形（先画，在下层）
+                        if (ShowRowBadges)
+                        {
+                            Color badgeColor = group.SegmentType == "Web"
+                                ? Color.FromArgb(45, 244, 114, 182)
+                                : Color.FromArgb(45, 14, 165, 233);
+                            Brush badgeBrush = new SolidColorBrush(badgeColor);
+                            dc.DrawRoundedRectangle(badgeBrush, null, new Rect(badgeLabelX, y + 1, badgeWidth, rowHeight - 2), 6, 6);
+                        }
+
+                        // 2. 图标（在背景上方）
+                        if (group.Icon != null)
+                            dc.DrawImage(group.Icon, new Rect(iconX, y + (rowHeight - iconSize) / 2, iconSize, iconSize));
+
+                        // 3. 文字（最上层）
                         dc.DrawText(text, new Point(textX, y + (rowHeight - text.Height) / 2));
                     }
                 }
@@ -474,7 +505,7 @@ namespace RikkaTracker.Controls
         protected override void OnMouseMove(System.Windows.Input.MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (ItemsSource == null || !ItemsSource.Any() || DisplayMode == GanttDisplayMode.Header) return;
+            if (ItemsSource == null || !ItemsSource.Any() || DisplayMode == GanttDisplayMode.Header || DisplayMode == GanttDisplayMode.TimeHeader) return;
 
             Point pos = e.GetPosition(this);
             DateTime baseTime = ItemsSource.First().Start.Date;
@@ -558,7 +589,7 @@ namespace RikkaTracker.Controls
         protected override void OnMouseLeftButtonDown(System.Windows.Input.MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
-            if (ItemsSource == null || !ItemsSource.Any() || DisplayMode == GanttDisplayMode.Header) return;
+            if (ItemsSource == null || !ItemsSource.Any() || DisplayMode == GanttDisplayMode.Header || DisplayMode == GanttDisplayMode.TimeHeader) return;
 
             Point pos = e.GetPosition(this);
             DateTime baseTime = ItemsSource.First().Start.Date;

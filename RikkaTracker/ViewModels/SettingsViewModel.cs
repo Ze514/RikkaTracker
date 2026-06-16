@@ -42,6 +42,7 @@ namespace RikkaTracker.ViewModels
             _webMonitorEnabled = _configService.Config.WebMonitorEnabled;
             _displayMode = _configService.Config.DisplayMode;
             _timelineSortMode = _configService.Config.TimelineSortMode;
+            _showRowBadges = _configService.Config.ShowRowBadges;
         }
 
         [ObservableProperty]
@@ -354,6 +355,15 @@ namespace RikkaTracker.ViewModels
         partial void OnTimelineSortModeChanged(string value)
         {
             _configService.Config.TimelineSortMode = value;
+            _configService.Save();
+        }
+
+        [ObservableProperty]
+        private bool _showRowBadges = true;
+
+        partial void OnShowRowBadgesChanged(bool value)
+        {
+            _configService.Config.ShowRowBadges = value;
             _configService.Save();
         }
     }
