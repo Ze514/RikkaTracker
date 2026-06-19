@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Version>0.4.0</Version>
-    <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
+    <ApplicationIcon>assets\app-icon.ico</ApplicationIcon>
     
     <!-- 默认开启单文件发布与原生库嵌入 -->
     <PublishSingleFile>true</PublishSingleFile>
@@ -41,6 +41,3 @@
     <Resource Include="Assets\app-icon.png" />
   </ItemGroup>
 </Project>
-
-
-

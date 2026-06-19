@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="{DynamicResource StrDiagnosticConsole}" Height="500" Width="700"
-        Icon="pack://application:,,,/Assets/app-icon.ico"
+        Icon="pack://application:,,,/assets/app-icon.ico"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"

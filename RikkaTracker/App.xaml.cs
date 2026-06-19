@@ -104,7 +104,7 @@ namespace RikkaTracker
             // Initialize Tray Icon
             _notifyIcon = new TaskbarIcon();
             _notifyIcon.IconSource = new System.Windows.Media.Imaging.BitmapImage(
-                new Uri("pack://application:,,,/Assets/app-icon.png")
+                new Uri("pack://application:,,,/assets/app-icon.png")
             );
             _notifyIcon.ToolTipText = "RikkaTracker";
             _notifyIcon.DoubleClickCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(ShowMainWindow);

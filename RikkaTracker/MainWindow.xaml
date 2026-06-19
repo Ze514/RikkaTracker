@@ -9,7 +9,7 @@
         xmlns:views="clr-namespace:RikkaTracker.Views"
         mc:Ignorable="d"
         Title="RikkaTracker" Height="750" Width="1200"
-        Icon="Assets/app-icon.ico"
+        Icon="assets/app-icon.ico"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
@@ -48,7 +48,7 @@
         <ui:TitleBar Grid.Row="0">
             <ui:TitleBar.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                    <Image Source="pack://application:,,,/Assets/app-icon.png" Width="33" Height="33" VerticalAlignment="Center" />
+                    <Image Source="pack://application:,,,/assets/app-icon.png" Width="33" Height="33" VerticalAlignment="Center" />
                     <TextBlock Text="RikkaTracker" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontSize="14" />
                 </StackPanel>
             </ui:TitleBar.Header>

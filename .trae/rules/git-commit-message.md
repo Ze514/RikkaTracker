@@ -1,4 +1,7 @@
-## Git 提交消息生成规范
+---
+alwaysApply: true
+scene: git_message
+---
 
 ## 1. 强制格式规范（Commit Message 结构）
 必须严格遵循 **Conventional Commits 1.0.0** 格式：
