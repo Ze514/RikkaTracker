@@ -32,6 +32,11 @@ Built with high-performance `DrawingVisual` hybrid rendering, the timeline runs 
 - Optimized for ultimate lightweight operation, eliminating redundant features and inefficient rendering logic, built on native high-performance WPF rendering architecture.
 - The program runs resident in the background with extremely low memory usage and negligible CPU consumption. It has no pop-up windows, redundant background processes, or persistent network requests. It perfectly supports long-term silent background operation without impacting system performance, game frame rates, or office software experience, achieving fully imperceptible time tracking.
 
+### 4. Web Browsing Tracking & Browser Extension
+- Supports real-time web activity tracking through the browser extension, capturing the currently active web page and recording browsing duration.
+- Website domains are displayed as user-friendly names (e.g., `google.com` → "Google"), improving interface readability.
+- A dedicated view mode switch (Apps only / Web only / Combined) lets you flexibly browse different data dimensions.
+
 ---
 
 ![RikkaTracker Overview](public/概览页.png)
