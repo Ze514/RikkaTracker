@@ -151,7 +151,8 @@ namespace RikkaTracker.Services
             // ... 其余逻辑保持不变 ...
             _logger.Info($"Starting download: {updateInfo.DownloadUrl}");
             string tempPath = Path.Combine(Path.GetTempPath(), $"RikkaTracker-Update-{updateInfo.LatestVersion}.exe");
-            progressCallback?.Invoke(0, "Connecting to server...");
+            progressCallback?.Invoke(0,
+                System.Windows.Application.Current.Resources["StrDownloadConnecting"] as string ?? "Connecting to server...");
 
             try
             {
@@ -172,7 +173,17 @@ namespace RikkaTracker.Services
                             if (totalBytes != -1)
                             {
                                 double progress = (double)totalRead / totalBytes;
-                                progressCallback?.Invoke(progress, $"Downloading: {totalRead/1024.0/1024.0:F2}MB / {totalBytes/1024.0/1024.0:F2}MB");
+                                string? progressTemplate =
+                                    System.Windows.Application.Current.Resources["StrDownloadProgress"] as string;
+                                string template = string.IsNullOrEmpty(progressTemplate)
+                                    ? "Downloading: {0:F2} MB / {1:F2} MB"
+                                    : progressTemplate;
+                                string status = string.Format(
+                                    System.Globalization.CultureInfo.InvariantCulture,
+                                    template,
+                                    totalRead / 1024.0 / 1024.0,
+                                    totalBytes / 1024.0 / 1024.0);
+                                progressCallback?.Invoke(progress, status);
                             }
                         }
                     }

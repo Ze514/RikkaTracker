@@ -84,7 +84,7 @@
                     <!-- App 24h chart -->
                     <ui:Card Grid.Column="0" Padding="20">
                         <StackPanel>
-                            <ui:TextBlock Text="App 24h" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                            <ui:TextBlock Text="{DynamicResource StrAppChartTitle}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
                             <Grid Height="180">
                                 <lvc:CartesianChart Series="{Binding Series}" XAxes="{Binding XAxes}" YAxes="{Binding YAxes}" TooltipPosition="Top" Background="Transparent" />
                             </Grid>
@@ -94,7 +94,7 @@
                     <!-- Web 24h chart -->
                     <ui:Card Grid.Column="2" Padding="20">
                         <StackPanel>
-                            <ui:TextBlock Text="Web 24h" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                            <ui:TextBlock Text="{DynamicResource StrWebChartTitle}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
                             <Grid Height="180">
                                 <lvc:CartesianChart Series="{Binding WebSeries}" XAxes="{Binding WebXAxes}" YAxes="{Binding WebYAxes}" TooltipPosition="Top" Background="Transparent" />
                             </Grid>

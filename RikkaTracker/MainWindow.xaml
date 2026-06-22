@@ -8,7 +8,7 @@
         xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
         xmlns:views="clr-namespace:RikkaTracker.Views"
         mc:Ignorable="d"
-        Title="RikkaTracker" Height="750" Width="1200"
+        Title="{DynamicResource StrAppName}" Height="750" Width="1200"
         Icon="assets/app-icon.ico"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
@@ -49,7 +49,7 @@
             <ui:TitleBar.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
                     <Image Source="pack://application:,,,/assets/app-icon.png" Width="33" Height="33" VerticalAlignment="Center" />
-                    <TextBlock Text="RikkaTracker" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontSize="14" />
+                    <TextBlock Text="{DynamicResource StrAppName}" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontSize="14" />
                 </StackPanel>
             </ui:TitleBar.Header>
         </ui:TitleBar>
@@ -70,12 +70,12 @@
                 
                 <ui:NavigationView.PaneHeader>
                     <StackPanel Margin="12,8,12,12">
-                        <ui:TextBlock Text="View Mode" FontSize="11" Margin="0,0,0,4"
+                <ui:TextBlock Text="{DynamicResource StrViewMode}" FontSize="11" Margin="0,0,0,4"
                                       Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         <ComboBox SelectedValue="{Binding DisplayMode, Mode=TwoWay}" SelectedValuePath="Tag">
-                            <ComboBoxItem Tag="AppOnly" Content="Only Apps"/>
-                            <ComboBoxItem Tag="WebOnly" Content="Only Web"/>
-                            <ComboBoxItem Tag="Combined" Content="Combined"/>
+                            <ComboBoxItem Tag="AppOnly" Content="{DynamicResource StrDisplayModeAppOnly}"/>
+                            <ComboBoxItem Tag="WebOnly" Content="{DynamicResource StrDisplayModeWebOnly}"/>
+                            <ComboBoxItem Tag="Combined" Content="{DynamicResource StrDisplayModeCombined}"/>
                         </ComboBox>
                     </StackPanel>
                 </ui:NavigationView.PaneHeader>

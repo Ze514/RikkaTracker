@@ -106,7 +106,7 @@ namespace RikkaTracker
             _notifyIcon.IconSource = new System.Windows.Media.Imaging.BitmapImage(
                 new Uri("pack://application:,,,/assets/app-icon.png")
             );
-            _notifyIcon.ToolTipText = "RikkaTracker";
+            _notifyIcon.ToolTipText = (Current.Resources["StrAppName"] as string) ?? "RikkaTracker";
             _notifyIcon.DoubleClickCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(ShowMainWindow);
 
             bool startMinimized = false;

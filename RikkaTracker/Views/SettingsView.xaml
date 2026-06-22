@@ -77,8 +77,8 @@
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding Language}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
                             <ComboBoxItem Content="{DynamicResource StrLanguageAuto}" Tag="Auto"/>
-                            <ComboBoxItem Content="简体中文" Tag="zh-CN"/>
-                            <ComboBoxItem Content="English" Tag="en-US"/>
+                            <ComboBoxItem Content="{DynamicResource StrLanguageZh}" Tag="zh-CN"/>
+                            <ComboBoxItem Content="{DynamicResource StrLanguageEn}" Tag="en-US"/>
                         </ComboBox>
                     </Grid>
                     <Grid Margin="0,15,0,0">
@@ -87,8 +87,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="Browser Monitor" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="Collect web browsing data via Chrome/Edge extension" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitor}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitorDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding WebMonitorEnabled}" VerticalAlignment="Center"/>
                     </Grid>
@@ -99,13 +99,13 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="Default View Mode" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="Choose which data to display across all pages" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrDisplayMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrDisplayModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding DisplayMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
-                            <ComboBoxItem Content="Apps Only" Tag="AppOnly"/>
-                            <ComboBoxItem Content="Web Only" Tag="WebOnly"/>
-                            <ComboBoxItem Content="Combined" Tag="Combined"/>
+                            <ComboBoxItem Content="{DynamicResource StrDisplayModeAppOnly}" Tag="AppOnly"/>
+                            <ComboBoxItem Content="{DynamicResource StrDisplayModeWebOnly}" Tag="WebOnly"/>
+                            <ComboBoxItem Content="{DynamicResource StrDisplayModeCombined}" Tag="Combined"/>
                         </ComboBox>
                     </Grid>
                     <Grid Margin="0,15,0,0">
@@ -114,12 +114,12 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="Timeline Sort" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="Order rows by total duration or by latest activity time" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrTimelineSortMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrTimelineSortModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineSortMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
-                            <ComboBoxItem Content="By Duration" Tag="Duration"/>
-                            <ComboBoxItem Content="By Recency" Tag="Recency"/>
+                            <ComboBoxItem Content="{DynamicResource StrSortByDuration}" Tag="Duration"/>
+                            <ComboBoxItem Content="{DynamicResource StrSortByRecency}" Tag="Recency"/>
                         </ComboBox>
                     </Grid>
 
@@ -129,8 +129,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="Row Badges" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text="Show colored rounded badges behind row labels in timeline" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBlock Text="{DynamicResource StrRowBadges}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrRowBadgesDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowRowBadges}" VerticalAlignment="Center"/>
                     </Grid>
