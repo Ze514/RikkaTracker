@@ -20,6 +20,25 @@ namespace RikkaTracker.Services
 
         public event Action<WebsiteUsage>? WebUsageReceived;
 
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 连接状态变更事件，用于设置页显示插件连接状态
+        public event Action<bool>? ConnectionStatusChanged;
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 当前是否有浏览器扩展连接
+        public bool IsConnected
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _clients.Count > 0;
+                }
+            }
+        }
+
         public WebMonitorService(IWebDataService webDataService, ILoggerService logger, IConfigService configService)
         {
             _webDataService = webDataService;
@@ -45,12 +64,14 @@ namespace RikkaTracker.Services
                     {
                         lock (_lock) { _clients.Add(socket); }
                         _logger.Info($"[WebMonitor] Client connected ({_clients.Count} total)");
+                        ConnectionStatusChanged?.Invoke(true);
                     };
 
                     socket.OnClose = () =>
                     {
                         lock (_lock) { _clients.Remove(socket); }
                         _logger.Info($"[WebMonitor] Client disconnected ({_clients.Count} total)");
+                        ConnectionStatusChanged?.Invoke(false);
                     };
 
                     socket.OnMessage = message =>

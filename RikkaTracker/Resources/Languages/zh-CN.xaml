@@ -108,6 +108,8 @@
     <sys:String x:Key="StrBrowserMonitorManualStep4">4. 开启右上角的"开发者模式"</sys:String>
     <sys:String x:Key="StrBrowserMonitorManualStep5">5. 点击"加载已解压的扩展"，选择解压后得到的 extension 文件夹</sys:String>
     <sys:String x:Key="StrBrowserMonitorOpenRelease">打开 GitHub Releases</sys:String>
+    <sys:String x:Key="StrBrowserMonitorConnected">浏览器扩展已连接</sys:String>
+    <sys:String x:Key="StrBrowserMonitorDisconnected">浏览器扩展未连接</sys:String>
 
     <!-- Display Mode -->
     <sys:String x:Key="StrDisplayMode">默认视图模式</sys:String>

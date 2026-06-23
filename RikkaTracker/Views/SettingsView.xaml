@@ -149,20 +149,41 @@
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding WebMonitorEnabled}" VerticalAlignment="Center"/>
                     </Grid>
 
-                    <!-- 展开/折叠安装指引的按钮（收起时 ▼，展开时 ▲） -->
-                    <ui:Button Margin="0,10,0,0" 
-                               Command="{Binding ToggleInstallGuideCommand}"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               Cursor="Hand">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitorInstallGuide}" VerticalAlignment="Center"/>
-                            <ui:TextBlock Text=" ▼" VerticalAlignment="Center"
-                                           Visibility="{Binding IsInstallGuideExpanded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                            <ui:TextBlock Text=" ▲" VerticalAlignment="Center"
-                                           Visibility="{Binding IsInstallGuideExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <!-- @Author: trae + deepseek-V4-pro -->
+                    <!-- @Date: 2026-06-23 -->
+                    <!-- @Desc: 浏览器扩展连接状态指示器（绿色 = 已连接，灰色 = 未连接）
+                               与"查看安装指引"按钮同行，按钮位于 ToggleSwitch 正下方 -->
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- 左侧：连接状态指示器 -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- 绿色圆点（已连接） -->
+                            <Ellipse Width="8" Height="8" Fill="#4CAF50" VerticalAlignment="Center"
+                                     Visibility="{Binding IsExtensionConnected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <!-- 灰色圆点（未连接） -->
+                            <Ellipse Width="8" Height="8" Fill="#9E9E9E" VerticalAlignment="Center"
+                                     Visibility="{Binding IsExtensionConnected, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitorConnected}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="6,0,0,0"
+                                           Visibility="{Binding IsExtensionConnected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitorDisconnected}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="6,0,0,0"
+                                           Visibility="{Binding IsExtensionConnected, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                         </StackPanel>
-                    </ui:Button>
+                        <!-- 右侧：展开/折叠安装指引的按钮（收起时 ▼，展开时 ▲） -->
+                        <ui:Button Grid.Column="1"
+                                   Command="{Binding ToggleInstallGuideCommand}"
+                                   Cursor="Hand" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:TextBlock Text="{DynamicResource StrBrowserMonitorInstallGuide}" VerticalAlignment="Center"/>
+                                <ui:TextBlock Text=" ▼" VerticalAlignment="Center" Margin="2,0,0,0"
+                                               Visibility="{Binding IsInstallGuideExpanded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                <ui:TextBlock Text=" ▲" VerticalAlignment="Center" Margin="2,0,0,0"
+                                               Visibility="{Binding IsInstallGuideExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </Grid>
 
                     <!-- 安装指引详细内容（默认折叠，展开后可见） -->
                     <StackPanel Margin="0,10,0,0" Visibility="{Binding IsInstallGuideExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">

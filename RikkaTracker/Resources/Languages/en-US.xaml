@@ -108,6 +108,8 @@
     <sys:String x:Key="StrBrowserMonitorManualStep4">4. Enable "Developer mode" in the top-right corner</sys:String>
     <sys:String x:Key="StrBrowserMonitorManualStep5">5. Click "Load unpacked" and select the extracted "extension" folder</sys:String>
     <sys:String x:Key="StrBrowserMonitorOpenRelease">Open GitHub Releases</sys:String>
+    <sys:String x:Key="StrBrowserMonitorConnected">Extension connected</sys:String>
+    <sys:String x:Key="StrBrowserMonitorDisconnected">Extension disconnected</sys:String>
 
     <!-- Display Mode -->
     <sys:String x:Key="StrDisplayMode">Default View Mode</sys:String>
