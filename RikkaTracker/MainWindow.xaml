@@ -16,7 +16,7 @@
         WindowBackdropType="Mica"
         Background="Transparent">
     <Window.Resources>
-        <!-- @Author: trae + deepseek-3.1-pro -->
+        <!-- @Author: trae + deepseek-V4-pro -->
         <!-- @Date: 2026-06-22 -->
         <!-- @Desc: 用于导航栏收起/展开状态下切换视图模式显示形态的转换器 -->
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
@@ -77,10 +77,14 @@
                 OpenPaneLength="200">
                 
                 <ui:NavigationView.PaneHeader>
-                    <Grid>
+                    <!-- @Author: trae + deepseek-V4-pro -->
+                    <!-- @Date: 2026-06-23 -->
+                    <!-- @Desc: 固定高度的容器，保证展开/收起状态下视图模式切换区域高度一致 -->
+                    <Grid Height="60">
                         <!-- 展开状态：完整的视图模式下拉框 -->
                         <StackPanel Visibility="{Binding IsPaneOpen, ElementName=NavView, Converter={StaticResource BoolToVisibility}}"
-                                    Margin="12,8,12,12">
+                                    VerticalAlignment="Center"
+                                    Margin="12,0,12,0">
                             <ui:TextBlock Text="{DynamicResource StrViewMode}" FontSize="11" Margin="0,0,0,4"
                                           Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             <ComboBox SelectedValue="{Binding DisplayMode, Mode=TwoWay}" SelectedValuePath="Tag">
@@ -90,23 +94,35 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <!-- @Author: trae + deepseek-3.1-pro -->
-                        <!-- @Date: 2026-06-22 -->
-                        <!-- @Desc: 侧边导航栏收起时的紧凑模式图标按钮，使用 Segoe Fluent Icons 字体 -->
-                        <!--         点击可在三种显示模式间循环切换 -->
-                        <Button Command="{Binding CycleDisplayModeCommand}"
-                                Visibility="{Binding IsPaneOpen, ElementName=NavView, Converter={StaticResource InverseBoolToVisibility}}"
-                                Width="44" Height="44"
-                                Background="Transparent"
-                                HorizontalAlignment="Center"
-                                ToolTip="{DynamicResource StrViewMode}">
-                            <TextBlock Text="{Binding DisplayModeGlyph}" 
-                                      FontFamily="Segoe Fluent Icons" 
-                                      FontSize="20"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        </Button>
+                        <!-- @Author: trae + deepseek-V4-pro -->
+                        <!-- @Date: 2026-06-23 -->
+                        <!-- @Desc: 侧边导航栏收起时的紧凑模式区域：图标按钮 + 下方短标签 -->
+                        <!--         使用 StackPanel 垂直排列，避免重叠导致按钮无法点击 -->
+                        <!--         整体可见性由 InverseBoolToVisibility 根据侧边栏展开状态控制 -->
+                        <StackPanel Visibility="{Binding IsPaneOpen, ElementName=NavView, Converter={StaticResource InverseBoolToVisibility}}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <!-- @Date: 2026-06-22 -->
+                            <!-- @Desc: 图标按钮，点击可在三种显示模式间循环切换 -->
+                            <Button Command="{Binding CycleDisplayModeCommand}"
+                                    Width="44" Height="44"
+                                    Background="Transparent"
+                                    ToolTip="{DynamicResource StrViewMode}">
+                                <TextBlock Text="{Binding DisplayModeGlyph}" 
+                                          FontFamily="Segoe Fluent Icons" 
+                                          FontSize="20"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </Button>
+                            <!-- @Date: 2026-06-23 -->
+                            <!-- @Desc: 图标下方的简短模式标签，跟随 DisplayMode 实时切换 -->
+                            <TextBlock Text="{Binding DisplayModeShortLabel}" 
+                                       FontSize="10"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,10,0,8"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
                     </Grid>
                 </ui:NavigationView.PaneHeader>
 

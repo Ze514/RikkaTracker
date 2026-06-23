@@ -214,4 +214,11 @@
     <sys:String x:Key="StrExportPdfDetailTip">* The detailed log summary only shows up to 500 latest entries out of the first 1000. For full data, please export as Excel or CSV.</sys:String>
     <sys:String x:Key="StrExportPdfFooter">Report generated automatically by RikkaTracker. All rights reserved.</sys:String>
     <sys:String x:Key="StrExportPdfUnitApp"></sys:String>
+
+    <!-- @Author: trae + deepseek-V4-pro -->
+    <!-- @Date: 2026-06-23 -->
+    <!-- @Desc: Short labels below the view mode toggle button when sidebar is collapsed -->
+    <sys:String x:Key="StrDisplayModeShortAppOnly">App</sys:String>
+    <sys:String x:Key="StrDisplayModeShortWebOnly">Web</sys:String>
+    <sys:String x:Key="StrDisplayModeShortCombined">Mixed</sys:String>
 </ResourceDictionary>

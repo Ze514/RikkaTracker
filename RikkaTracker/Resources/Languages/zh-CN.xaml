@@ -214,4 +214,11 @@
     <sys:String x:Key="StrExportPdfDetailTip">* 报告中详细日志仅展示了前 1000 条中的 500 条最新摘要。完整数据请导出为 Excel 或 CSV。</sys:String>
     <sys:String x:Key="StrExportPdfFooter">报告由 RikkaTracker 自动生成。保留所有权利。</sys:String>
     <sys:String x:Key="StrExportPdfUnitApp">个</sys:String>
+
+    <!-- @Author: trae + deepseek-V4-pro -->
+    <!-- @Date: 2026-06-23 -->
+    <!-- @Desc: 侧边栏收起时视图模式切换按钮下方的简短标签 -->
+    <sys:String x:Key="StrDisplayModeShortAppOnly">应用</sys:String>
+    <sys:String x:Key="StrDisplayModeShortWebOnly">网页</sys:String>
+    <sys:String x:Key="StrDisplayModeShortCombined">混合</sys:String>
 </ResourceDictionary>

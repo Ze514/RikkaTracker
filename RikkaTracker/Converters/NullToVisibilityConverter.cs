@@ -32,7 +32,7 @@ namespace RikkaTracker.Converters
     }
 
     /// <summary>
-    /// @Author: trae + deepseek-3.1-pro
+    /// @Author: trae + deepseek-V4-pro
     /// @Date: 2026-06-22
     /// @Desc: Bool 值反转为 Visibility。当值为 true 时返回 Collapsed，false 时返回 Visible。
     ///        用于在侧边导航栏收起时显示紧凑版 UI 元素。

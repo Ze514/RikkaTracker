@@ -10,7 +10,7 @@
              d:DesignHeight="600" d:DesignWidth="1000"
              d:DataContext="{d:DesignInstance vm:StatisticsViewModel}">
     <UserControl.Resources>
-        <!-- @Author: trae + deepseek-3.1-pro -->
+        <!-- @Author: trae + deepseek-V4-pro -->
         <!-- @Date: 2026-06-23 -->
         <!-- @Desc: Segoe Fluent Icons 字体资源，用于 FontIcon 标记扩展 -->
         <FontFamily x:Key="SegoeFluentIcons">Segoe Fluent Icons</FontFamily>
