@@ -11,6 +11,10 @@
              d:DesignHeight="800" d:DesignWidth="1000"
              d:DataContext="{d:DesignInstance vm:UsageStatisticsViewModel}">
     <UserControl.Resources>
+        <!-- @Author: trae + deepseek-3.1-pro -->
+        <!-- @Date: 2026-06-23 -->
+        <!-- @Desc: Segoe Fluent Icons 字体资源，用于 FontIcon 标记扩展 -->
+        <FontFamily x:Key="SegoeFluentIcons">Segoe Fluent Icons</FontFamily>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:EnumMatchToBooleanConverter x:Key="EnumMatchToBooleanConverter"/>
         <local:EnumMatchToVisibilityConverter x:Key="EnumMatchToVisibilityConverter"/>
@@ -58,9 +62,11 @@
                         
                         <!-- 按周选择器 -->
                         <StackPanel Orientation="Horizontal" Visibility="{Binding CurrentMode, Converter={StaticResource EnumMatchToVisibilityConverter}, ConverterParameter=Week}">
-                            <ui:Button Command="{Binding PrevWeekCommand}" Icon="{ui:SymbolIcon ChevronLeft24}" Margin="0,0,10,0"/>
+                            <!-- @Desc: ChevronLeft → \uE76C (Segoe Fluent Icons) -->
+                            <ui:Button Command="{Binding PrevWeekCommand}" Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xE76C;}" Margin="0,0,10,0"/>
                             <ui:TextBlock Text="{Binding SelectedWeekDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
-                            <ui:Button Command="{Binding NextWeekCommand}" Icon="{ui:SymbolIcon ChevronRight24}" Margin="10,0,0,0"/>
+                            <!-- @Desc: ChevronRight → \uE76B (Segoe Fluent Icons) -->
+                            <ui:Button Command="{Binding NextWeekCommand}" Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xE76B;}" Margin="10,0,0,0"/>
                         </StackPanel>
 
                         <!-- 按月选择器 -->
@@ -114,7 +120,8 @@
                                         <!-- 图标 -->
                                         <Grid Width="24" Height="24" Margin="0,0,15,0">
                                             <Image Source="{Binding Icon}" Visibility="{Binding Icon, Converter={StaticResource NullToVisibilityConverter}}"/>
-                                            <ui:SymbolIcon Symbol="Apps24" FontSize="24" 
+                                            <!-- @Desc: AppIconDefault → \uECAA (Segoe Fluent Icons) -->
+                                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xECAA;" FontSize="24" 
                                                            Visibility="{Binding Icon, Converter={StaticResource InverseNullToVisibilityConverter}}"
                                                            Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                                         </Grid>
@@ -158,7 +165,8 @@
                                     </Style.Triggers>
                                 </Style>
                             </StackPanel.Style>
-                            <ui:SymbolIcon Symbol="Box24" FontSize="48" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="0,0,0,10"/>
+                            <!-- @Desc: Box → \uEC5F (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEC5F;" FontSize="48" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="0,0,0,10"/>
                             <ui:TextBlock Text="{DynamicResource StrNoData}" FontSize="16" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Grid>

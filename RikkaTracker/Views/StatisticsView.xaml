@@ -10,6 +10,10 @@
              d:DesignHeight="600" d:DesignWidth="1000"
              d:DataContext="{d:DesignInstance vm:StatisticsViewModel}">
     <UserControl.Resources>
+        <!-- @Author: trae + deepseek-3.1-pro -->
+        <!-- @Date: 2026-06-23 -->
+        <!-- @Desc: Segoe Fluent Icons 字体资源，用于 FontIcon 标记扩展 -->
+        <FontFamily x:Key="SegoeFluentIcons">Segoe Fluent Icons</FontFamily>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid Margin="20">
@@ -23,8 +27,10 @@
             <ui:TextBlock Text="{DynamicResource StrScale}" VerticalAlignment="Center" Margin="20,0,10,0"/>
             <Slider x:Name="ZoomSlider" Minimum="100" Maximum="2000" Value="1050" Width="100" VerticalAlignment="Center"/>
             
-            <ui:Button Content="{DynamicResource StrRefresh}" Icon="{ui:SymbolIcon ArrowSync24}" Command="{Binding RefreshCommand}" Margin="20,0,5,0" VerticalAlignment="Center"/>
-            <ui:Button Content="{DynamicResource StrTrackLatest}" Icon="{ui:SymbolIcon MyLocation24}" Command="{Binding FocusLatestCommand}" Margin="5,0,5,0" VerticalAlignment="Center"/>
+            <!-- @Desc: Sync → \uE895 (Segoe Fluent Icons) -->
+            <ui:Button Content="{DynamicResource StrRefresh}" Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xE895;}" Command="{Binding RefreshCommand}" Margin="20,0,5,0" VerticalAlignment="Center"/>
+            <!-- @Desc: MyLocation → \uE81C (Segoe Fluent Icons) -->
+            <ui:Button Content="{DynamicResource StrTrackLatest}" Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xE81C;}" Command="{Binding FocusLatestCommand}" Margin="5,0,5,0" VerticalAlignment="Center"/>
 
             <ui:TextBox PlaceholderText="{DynamicResource StrSearchApp}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="15,0,10,0" VerticalAlignment="Center"/>
             <ui:ToggleSwitch IsChecked="{Binding ShowInactive}" Content="{DynamicResource StrInactive}" Margin="10,0,0,0" VerticalAlignment="Center"/>

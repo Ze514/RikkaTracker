@@ -6,6 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:RikkaTracker"
         xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
+        xmlns:converters="clr-namespace:RikkaTracker.Converters"
         xmlns:views="clr-namespace:RikkaTracker.Views"
         mc:Ignorable="d"
         Title="{DynamicResource StrAppName}" Height="750" Width="1200"
@@ -15,6 +16,12 @@
         WindowBackdropType="Mica"
         Background="Transparent">
     <Window.Resources>
+        <!-- @Author: trae + deepseek-3.1-pro -->
+        <!-- @Date: 2026-06-22 -->
+        <!-- @Desc: 用于导航栏收起/展开状态下切换视图模式显示形态的转换器 -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
             <views:DashboardView/>
         </DataTemplate>
@@ -61,6 +68,7 @@
             </Grid.ColumnDefinitions>
 
             <ui:NavigationView
+                x:Name="NavView"
                 Grid.Column="0"
                 HorizontalAlignment="Left"
                 PaneDisplayMode="Left"
@@ -69,15 +77,37 @@
                 OpenPaneLength="200">
                 
                 <ui:NavigationView.PaneHeader>
-                    <StackPanel Margin="12,8,12,12">
-                <ui:TextBlock Text="{DynamicResource StrViewMode}" FontSize="11" Margin="0,0,0,4"
-                                      Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                        <ComboBox SelectedValue="{Binding DisplayMode, Mode=TwoWay}" SelectedValuePath="Tag">
-                            <ComboBoxItem Tag="AppOnly" Content="{DynamicResource StrDisplayModeAppOnly}"/>
-                            <ComboBoxItem Tag="WebOnly" Content="{DynamicResource StrDisplayModeWebOnly}"/>
-                            <ComboBoxItem Tag="Combined" Content="{DynamicResource StrDisplayModeCombined}"/>
-                        </ComboBox>
-                    </StackPanel>
+                    <Grid>
+                        <!-- 展开状态：完整的视图模式下拉框 -->
+                        <StackPanel Visibility="{Binding IsPaneOpen, ElementName=NavView, Converter={StaticResource BoolToVisibility}}"
+                                    Margin="12,8,12,12">
+                            <ui:TextBlock Text="{DynamicResource StrViewMode}" FontSize="11" Margin="0,0,0,4"
+                                          Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ComboBox SelectedValue="{Binding DisplayMode, Mode=TwoWay}" SelectedValuePath="Tag">
+                                <ComboBoxItem Tag="AppOnly" Content="{DynamicResource StrDisplayModeAppOnly}"/>
+                                <ComboBoxItem Tag="WebOnly" Content="{DynamicResource StrDisplayModeWebOnly}"/>
+                                <ComboBoxItem Tag="Combined" Content="{DynamicResource StrDisplayModeCombined}"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- @Author: trae + deepseek-3.1-pro -->
+                        <!-- @Date: 2026-06-22 -->
+                        <!-- @Desc: 侧边导航栏收起时的紧凑模式图标按钮，使用 Segoe Fluent Icons 字体 -->
+                        <!--         点击可在三种显示模式间循环切换 -->
+                        <Button Command="{Binding CycleDisplayModeCommand}"
+                                Visibility="{Binding IsPaneOpen, ElementName=NavView, Converter={StaticResource InverseBoolToVisibility}}"
+                                Width="44" Height="44"
+                                Background="Transparent"
+                                HorizontalAlignment="Center"
+                                ToolTip="{DynamicResource StrViewMode}">
+                            <TextBlock Text="{Binding DisplayModeGlyph}" 
+                                      FontFamily="Segoe Fluent Icons" 
+                                      FontSize="20"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </Button>
+                    </Grid>
                 </ui:NavigationView.PaneHeader>
 
                 <ui:NavigationView.MenuItems>
@@ -85,7 +115,8 @@
                         Content="{DynamicResource StrDashboard}"
                         Command="{Binding NavigateToDashboardCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Home24"/>
+                            <!-- @Desc: Home → \uE80F (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE80F;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
                     
@@ -93,7 +124,8 @@
                         Content="{DynamicResource StrActiveApps}"
                         Command="{Binding NavigateToActivityListCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Apps24"/>
+                            <!-- @Desc: AppIconDefault → \uECAA (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xECAA;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -101,7 +133,8 @@
                         Content="{DynamicResource StrTimeline}"
                         Command="{Binding NavigateToStatisticsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Clock24"/>
+                            <!-- @Desc: Clock → \uE916 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE916;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -109,7 +142,8 @@
                         Content="{DynamicResource StrUsageStatistics}"
                         Command="{Binding NavigateToUsageStatisticsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="DataBarVertical24"/>
+                            <!-- @Desc: DataBarVertical → \uE9F6 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE86F;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -117,7 +151,8 @@
                         Content="{DynamicResource StrFilterRules}"
                         Command="{Binding NavigateToFilterSettingsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Shield24"/>
+                            <!-- @Desc: Shield → \uEA18 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEA18;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -125,7 +160,8 @@
                         Content="{DynamicResource StrExport}"
                         Command="{Binding NavigateToExportCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="ArrowExportUp24"/>
+                            <!-- @Desc: Share → \uF12B (Segoe Fluent Icons，替代旧的 ArrowExportUp) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF12B;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
                 </ui:NavigationView.MenuItems>
@@ -135,7 +171,8 @@
                         Content="{DynamicResource StrSettings}"
                         Command="{Binding NavigateToSettingsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Settings24"/>
+                            <!-- @Desc: Settings → \uE713 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE713;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
                 </ui:NavigationView.FooterMenuItems>

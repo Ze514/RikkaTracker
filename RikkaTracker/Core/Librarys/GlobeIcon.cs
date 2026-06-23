@@ -15,7 +15,7 @@ namespace RikkaTracker.Core.Librarys
             try
             {
                 var typeface = new Typeface(
-                    new FontFamily("Segoe MDL2 Assets"),
+                    new FontFamily("Segoe Fluent Icons"),
                     FontStyles.Normal,
                     FontWeights.Normal,
                     FontStretches.Normal);

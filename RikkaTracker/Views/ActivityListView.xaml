@@ -39,7 +39,8 @@
                                     <!-- 图标 -->
                                     <Grid Width="24" Height="24" Margin="0,0,15,0">
                                         <Image Source="{Binding Icon}" Visibility="{Binding Icon, Converter={StaticResource NullToVisibilityConverter}}"/>
-                                        <ui:SymbolIcon Symbol="Apps24" FontSize="24" 
+                                        <!-- @Desc: AppIconDefault → \uECAA (Segoe Fluent Icons) -->
+                                        <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xECAA;" FontSize="24" 
                                                        Visibility="{Binding Icon, Converter={StaticResource InverseNullToVisibilityConverter}}"
                                                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                                     </Grid>
@@ -84,7 +85,8 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <ui:SymbolIcon Symbol="Box24" FontSize="48" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="0,0,0,10"/>
+                    <!-- @Desc: Box → \uEC5F (Segoe Fluent Icons) -->
+                    <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEC5F;" FontSize="48" Foreground="{ui:ThemeResource TextFillColorTertiaryBrush}" Margin="0,0,0,10"/>
                     <ui:TextBlock Text="{DynamicResource StrNoData}" FontSize="16" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                 </StackPanel>
 

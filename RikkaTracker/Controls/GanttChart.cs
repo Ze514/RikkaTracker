@@ -163,7 +163,7 @@ namespace RikkaTracker.Controls
             }), System.Windows.Threading.DispatcherPriority.DataBind);
         }
 
-        private System.Windows.Controls.ScrollViewer _parentScrollViewer;
+        private System.Windows.Controls.ScrollViewer? _parentScrollViewer;
         private double _lastStableCenterInHours = -1;
         private bool _isInternalScrolling = false;
 
