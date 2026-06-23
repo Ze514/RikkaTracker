@@ -104,17 +104,21 @@
                                     VerticalAlignment="Center">
                             <!-- @Date: 2026-06-22 -->
                             <!-- @Desc: 图标按钮，点击可在三种显示模式间循环切换 -->
-                            <Button Command="{Binding CycleDisplayModeCommand}"
-                                    Width="44" Height="44"
-                                    Background="Transparent"
-                                    ToolTip="{DynamicResource StrViewMode}">
-                                <TextBlock Text="{Binding DisplayModeGlyph}" 
-                                          FontFamily="Segoe Fluent Icons" 
-                                          FontSize="20"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </Button>
+                        <Button Command="{Binding CycleDisplayModeCommand}"
+                                Width="36" Height="36"
+                                Padding="0"
+                                MinWidth="0" MinHeight="0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Background="Transparent"
+                                ToolTip="{DynamicResource StrViewMode}">
+                            <TextBlock Text="{Binding DisplayModeGlyph}" 
+                                    FontFamily="Segoe Fluent Icons" 
+                                    FontSize="20"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </Button>
                             <!-- @Date: 2026-06-23 -->
                             <!-- @Desc: 图标下方的简短模式标签，跟随 DisplayMode 实时切换 -->
                             <TextBlock Text="{Binding DisplayModeShortLabel}" 
