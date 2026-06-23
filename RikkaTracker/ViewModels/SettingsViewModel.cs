@@ -38,6 +38,11 @@ namespace RikkaTracker.ViewModels
             _timelineZoomMode = _configService.Config.TimelineZoomMode;
             _language = _configService.Config.Language;
             _currentVersion = _updateService.GetCurrentVersion();
+            _isAutoStart = _configService.Config.StartWithWindows;
+            _webMonitorEnabled = _configService.Config.WebMonitorEnabled;
+            _displayMode = _configService.Config.DisplayMode;
+            _timelineSortMode = _configService.Config.TimelineSortMode;
+            _showRowBadges = _configService.Config.ShowRowBadges;
         }
 
         [ObservableProperty]
@@ -52,11 +57,17 @@ namespace RikkaTracker.ViewModels
         [ObservableProperty]
         private double _updateProgress;
 
+        // 从资源中获取字符串的便捷方法
+        private static string? GetResource(string key)
+        {
+            return System.Windows.Application.Current.Resources[key] as string;
+        }
+
         [RelayCommand]
         private async Task CheckForUpdate()
         {
             _logger.Info("User clicked 'Check for Updates'.");
-            UpdateStatus = (string)System.Windows.Application.Current.Resources["StrCheckUpdate"] + "...";
+            UpdateStatus = GetResource("StrCheckUpdate") + "...";
             
             try
             {
@@ -72,16 +83,16 @@ namespace RikkaTracker.ViewModels
                     case UpdateCheckStatus.NoUpdate:
                         _logger.Info("No update available.");
                         RikkaMessageBox.Show(
-                            (string)System.Windows.Application.Current.Resources["StrAlreadyLatest"], 
-                            (string)System.Windows.Application.Current.Resources["StrUpdate"]);
+                            GetResource("StrAlreadyLatest"),
+                            GetResource("StrUpdate"));
                         UpdateStatus = string.Empty;
                         break;
 
                     case UpdateCheckStatus.NetworkError:
                         _logger.Warning($"Update check failed due to network error: {result.ErrorMessage}");
                         RikkaMessageBox.Show(
-                            $"Network Error: {result.ErrorMessage}\n\nPlease check your internet connection or proxy settings.",
-                            "Update Check Failed",
+                            string.Format(GetResource("StrNetworkErrorMsg") ?? "Network Error: {0}", result.ErrorMessage),
+                            GetResource("StrUpdateCheckFailed"),
                             System.Windows.MessageBoxButton.OK,
                             System.Windows.MessageBoxImage.Warning);
                         UpdateStatus = string.Empty;
@@ -90,8 +101,8 @@ namespace RikkaTracker.ViewModels
                     case UpdateCheckStatus.AssetMissing:
                         _logger.Warning($"New version {result.LatestVersion} found, but no matching asset for this installation type.");
                         RikkaMessageBox.Show(
-                            $"New version {result.LatestVersion} is available, but the download package for your installation type was not found on the server.\n\nPlease visit GitHub releases manually.",
-                            "Asset Missing",
+                            string.Format(GetResource("StrAssetMissingMsg") ?? "Version {0} is available, but no matching asset was found.", result.LatestVersion),
+                            GetResource("StrUpdateCheckFailed"),
                             System.Windows.MessageBoxButton.OK,
                             System.Windows.MessageBoxImage.Warning);
                         UpdateStatus = string.Empty;
@@ -101,8 +112,8 @@ namespace RikkaTracker.ViewModels
                     default:
                         _logger.Error($"Internal error during update check: {result.ErrorMessage}");
                         RikkaMessageBox.Show(
-                            $"An internal error occurred: {result.ErrorMessage}",
-                            "Error",
+                            string.Format(GetResource("StrInternalErrorMsg") ?? "An internal error occurred: {0}", result.ErrorMessage),
+                            GetResource("StrError"),
                             System.Windows.MessageBoxButton.OK,
                             System.Windows.MessageBoxImage.Error);
                         UpdateStatus = string.Empty;
@@ -118,10 +129,11 @@ namespace RikkaTracker.ViewModels
 
         private void HandleUpdateFound(UpdateCheckResult result)
         {
-            var msg = (string)System.Windows.Application.Current.Resources["StrUpdateAvailable"];
+            string msg = GetResource("StrUpdateAvailable") ?? string.Empty;
+            string versionLabel = GetResource("StrVersion") ?? "Version";
             var choice = RikkaMessageBox.Show(
-                $"{msg}\n\n{(_localizationService.CurrentLanguage == "zh-CN" ? "版本" : "Version")}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
-                (string)System.Windows.Application.Current.Resources["StrUpdate"],
+                $"{msg}\n\n{versionLabel}: {result.LatestVersion}\n\n{result.ReleaseNotes}",
+                GetResource("StrUpdate"),
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Information);
 
@@ -159,9 +171,9 @@ namespace RikkaTracker.ViewModels
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     RikkaMessageBox.Show(
-                        $"Update download failed: {ex.Message}\n\nLogs: {_logger.GetLogPath()}", 
-                        "Error", 
-                        System.Windows.MessageBoxButton.OK, 
+                        string.Format(GetResource("StrUpdateDownloadFailed") ?? "Update download failed: {0}", ex.Message, _logger.GetLogPath()),
+                        GetResource("StrError"),
+                        System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Error);
                     IsUpdating = false;
                     UpdateStatus = string.Empty;
@@ -184,9 +196,9 @@ namespace RikkaTracker.ViewModels
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "选择数据库存储位置",
-                Filter = "SQLite Database (*.db)|*.db",
-                FileName = "tracker.db"
+                Title = GetResource("StrSelectDbLocationTitle"),
+                Filter = GetResource("StrDbFilter"),
+                FileName = GetResource("StrDbDefaultFileName")
             };
 
             if (dialog.ShowDialog() == true)
@@ -216,8 +228,8 @@ namespace RikkaTracker.ViewModels
                     _configService.Save();
 
                     RikkaMessageBox.Show(
-                        "数据已迁移。为了确保所有服务都使用新路径，请重启应用程序。",
-                        "更改成功",
+                        GetResource("StrDbMigratedSuccess"),
+                        GetResource("StrChangeSuccess"),
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Information);
                 }
@@ -225,8 +237,8 @@ namespace RikkaTracker.ViewModels
                 {
                     _logger.Error("Failed to migrate data path.", ex);
                     RikkaMessageBox.Show(
-                        $"迁移数据失败: {ex.Message}",
-                        "错误",
+                        string.Format(GetResource("StrDbMigrateFailed") ?? "Migrate failed: {0}", ex.Message),
+                        GetResource("StrError"),
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Error);
                 }
@@ -234,7 +246,24 @@ namespace RikkaTracker.ViewModels
         }
 
         [ObservableProperty]
-        private bool _isAutoStart = true;
+        private bool _isAutoStart;
+
+        // 监听自启动状态改变
+        partial void OnIsAutoStartChanged(bool value)
+        {
+            _configService.Config.StartWithWindows = value;
+            _configService.Save();
+
+            try
+            {
+                Helpers.StartupHelper.SetStartup(value);
+                _logger.Info($"已同步自启动注册表项，新值: {value}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"同步自启动注册表项失败: {ex.Message}", ex);
+            }
+        }
 
         [ObservableProperty]
         private string _storagePath;
@@ -263,7 +292,11 @@ namespace RikkaTracker.ViewModels
                 }
                 else
                 {
-                    RikkaMessageBox.Show("日志目录尚未创建或不存在。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    RikkaMessageBox.Show(
+                        GetResource("StrLogDirNotExist"),
+                        GetResource("StrPrompt"),
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
@@ -307,6 +340,42 @@ namespace RikkaTracker.ViewModels
                     _themeService.ApplyTheme(value ? "Dark" : "Light");
                 }
             }
+        }
+
+        [ObservableProperty]
+        private bool _webMonitorEnabled;
+
+        partial void OnWebMonitorEnabledChanged(bool value)
+        {
+            _configService.Config.WebMonitorEnabled = value;
+            _configService.Save();
+        }
+
+        [ObservableProperty]
+        private string _displayMode = "Combined";
+
+        partial void OnDisplayModeChanged(string value)
+        {
+            _configService.Config.DisplayMode = value;
+            _configService.Save();
+        }
+
+        [ObservableProperty]
+        private string _timelineSortMode = "Duration";
+
+        partial void OnTimelineSortModeChanged(string value)
+        {
+            _configService.Config.TimelineSortMode = value;
+            _configService.Save();
+        }
+
+        [ObservableProperty]
+        private bool _showRowBadges = true;
+
+        partial void OnShowRowBadgesChanged(bool value)
+        {
+            _configService.Config.ShowRowBadges = value;
+            _configService.Save();
         }
     }
 }

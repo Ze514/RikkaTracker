@@ -89,7 +89,7 @@ namespace RikkaTracker.Core.Monitor
                     IntPtr.Zero,
                     _winEventDelegate,
                     0, 0,
-                    Win32Api.WINEVENT_OUTOFCONTEXT | Win32Api.WINEVENT_SKIPOWNPROCESS);
+                    Win32Api.WINEVENT_OUTOFCONTEXT);
 
                 if (_hHook == IntPtr.Zero)
                 {

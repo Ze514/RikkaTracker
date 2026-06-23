@@ -5,11 +5,21 @@ using RikkaTracker.Models;
 
 namespace RikkaTracker.Services
 {
+    /*
+     * @Author: trae + deepseek-V4-pro
+     * @Date: 2026-06-23
+     * @Desc: 配置服务接口。新增 ConfigChanged 事件，用于在配置变更时通知
+     *        各 ViewModel 即时刷新（如切换视图模式时刷新时间轴和活跃应用页）。
+     */
     public interface IConfigService
     {
         AppConfig Config { get; }
         void Save();
         void Load();
+        /// <summary>
+        /// 配置变更时触发。各 ViewModel 可订阅此事件以即时刷新数据。
+        /// </summary>
+        event Action? ConfigChanged;
     }
 
     public class ConfigService : IConfigService
@@ -86,6 +96,13 @@ namespace RikkaTracker.Services
             }
         }
 
+        /*
+         * @Author: trae + deepseek-V4-pro
+         * @Date: 2026-06-23
+         * @Desc: 保存配置并在成功后触发 ConfigChanged 事件，通知各订阅者刷新。
+         */
+        public event Action? ConfigChanged;
+
         public void Save()
         {
             if (string.IsNullOrEmpty(_configFilePath)) return;
@@ -95,6 +112,8 @@ namespace RikkaTracker.Services
                 string json = JsonSerializer.Serialize(_config, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(_configFilePath, json);
                 _logger.Info("Configuration saved successfully.");
+                // 通知所有订阅者配置已变更
+                ConfigChanged?.Invoke();
             }
             catch (UnauthorizedAccessException uex)
             {

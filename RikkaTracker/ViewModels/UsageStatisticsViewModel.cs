@@ -29,23 +29,25 @@ namespace RikkaTracker.ViewModels
         private readonly IIconService _iconService;
         private readonly ILocalizationService _localizationService;
         private readonly IThemeService _themeService;
+        private readonly IConfigService _configService;
 
         private SolidColorPaint? _axisLabelPaint;
         private SolidColorPaint? _axisSeparatorPaint;
         private SolidColorPaint? _columnFillPaint;
+        private SolidColorPaint? _webColumnFillPaint;
 
-        public UsageStatisticsViewModel(IDataService dataService, IIconService iconService, ILocalizationService localizationService, IThemeService themeService)
+        public UsageStatisticsViewModel(IDataService dataService, IIconService iconService, ILocalizationService localizationService, IThemeService themeService, IConfigService configService)
         {
             _dataService = dataService;
             _iconService = iconService;
             _localizationService = localizationService;
             _themeService = themeService;
+            _configService = configService;
 
             _themeService.ThemeChanged += OnThemeChanged;
             UpdateChartColors(_themeService.GetCurrentTheme());
-            
-            // Initialize chart first so that property setters triggering LoadDataAsync won't throw NRE
-            Series = new ISeries[]
+
+            var emptySeries = new ISeries[]
             {
                 new ColumnSeries<ObservablePoint>
                 {
@@ -56,6 +58,8 @@ namespace RikkaTracker.ViewModels
                     Ry = 4
                 }
             };
+
+            Series = emptySeries;
 
             XAxes = new Axis[] { new Axis { Labels = new string[0], LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
             YAxes = new Axis[] { new Axis { Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"), LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
@@ -154,32 +158,82 @@ namespace RikkaTracker.ViewModels
             try
             {
                 var values = new List<ObservablePoint>();
+                var webValues = new List<ObservablePoint>();
                 var labels = new List<string>();
+                string displayMode = _configService?.Config.DisplayMode ?? "Combined";
+                bool showApp = displayMode != "WebOnly";
 
                 if (CurrentMode == StatisticsMode.Day)
                 {
-                    var data = await _dataService.GetHourlyUsageAsync(SelectedDate);
-                    var list = data.ToList();
-                    for(int i = 0; i < list.Count; i++) {
-                        values.Add(new ObservablePoint(i, list[i].TotalTime.TotalSeconds));
-                        labels.Add($"{list[i].Hour}:00");
+                    if (showApp)
+                    {
+                        var data = await _dataService.GetHourlyUsageAsync(SelectedDate);
+                        var list = data.ToList();
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            values.Add(new ObservablePoint(i, list[i].TotalTime.TotalSeconds));
+                            labels.Add($"{list[i].Hour}:00");
+                        }
                     }
-                    
-                    // Clear leaderboard until user clicks
+
+                    if (!showApp || displayMode == "Combined")
+                    {
+                        var webData = await _dataService.GetWebHourlyUsageAsync(SelectedDate);
+                        var webList = webData.ToList();
+                        if (labels.Count == 0)
+                        {
+                            for (int i = 0; i < webList.Count; i++)
+                            {
+                                webValues.Add(new ObservablePoint(i, webList[i].TotalTime.TotalSeconds));
+                                labels.Add($"{webList[i].Hour}:00");
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < webList.Count; i++)
+                                webValues.Add(new ObservablePoint(i, webList[i].TotalTime.TotalSeconds));
+                        }
+                    }
                     Leaderboard.Clear();
                 }
                 else if (CurrentMode == StatisticsMode.Week)
                 {
                     var start = SelectedWeekStart.Date;
                     var end = start.AddDays(7);
-                    var data = await _dataService.GetDailyTrendAsync(start, end);
-                    var dict = data.ToDictionary(d => d.Date, d => d.TotalTime.TotalSeconds);
 
-                    for (int i = 0; i < 7; i++)
+                    if (showApp)
                     {
-                        var d = start.AddDays(i);
-                        values.Add(new ObservablePoint(i, dict.ContainsKey(d) ? dict[d] : 0));
-                        labels.Add(d.ToString("MM-dd ddd"));
+                        var data = await _dataService.GetDailyTrendAsync(start, end);
+                        var dict = data.ToDictionary(d => d.Date, d => d.TotalTime.TotalSeconds);
+                        for (int i = 0; i < 7; i++)
+                        {
+                            var d = start.AddDays(i);
+                            values.Add(new ObservablePoint(i, dict.ContainsKey(d) ? dict[d] : 0));
+                            labels.Add(d.ToString("MM-dd ddd"));
+                        }
+                    }
+
+                    if (!showApp || displayMode == "Combined")
+                    {
+                        var webData = await _dataService.GetWebDailyTrendAsync(start, end);
+                        var webDict = webData.ToDictionary(d => d.Date, d => d.TotalTime.TotalSeconds);
+                        if (labels.Count == 0)
+                        {
+                            for (int i = 0; i < 7; i++)
+                            {
+                                var d = start.AddDays(i);
+                                webValues.Add(new ObservablePoint(i, webDict.ContainsKey(d) ? webDict[d] : 0));
+                                labels.Add(d.ToString("MM-dd ddd"));
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < 7; i++)
+                            {
+                                var d = start.AddDays(i);
+                                webValues.Add(new ObservablePoint(i, webDict.ContainsKey(d) ? webDict[d] : 0));
+                            }
+                        }
                     }
                     Leaderboard.Clear();
                 }
@@ -187,53 +241,106 @@ namespace RikkaTracker.ViewModels
                 {
                     var start = new DateTime(SelectedYear, SelectedMonth, 1);
                     var end = start.AddMonths(1);
-                    var data = await _dataService.GetDailyTrendAsync(start, end);
-                    var dict = data.ToDictionary(d => d.Date, d => d.TotalTime.TotalSeconds);
-
                     int days = DateTime.DaysInMonth(SelectedYear, SelectedMonth);
-                    for (int i = 1; i <= days; i++)
+
+                    if (showApp)
                     {
-                        var d = new DateTime(SelectedYear, SelectedMonth, i);
-                        values.Add(new ObservablePoint(i - 1, dict.ContainsKey(d) ? dict[d] : 0));
-                        labels.Add($"{i}");
+                        var data = await _dataService.GetDailyTrendAsync(start, end);
+                        var dict = data.ToDictionary(d => d.Date, d => d.TotalTime.TotalSeconds);
+                        for (int i = 1; i <= days; i++)
+                        {
+                            var d = new DateTime(SelectedYear, SelectedMonth, i);
+                            values.Add(new ObservablePoint(i - 1, dict.ContainsKey(d) ? dict[d] : 0));
+                            labels.Add($"{i}");
+                        }
+                    }
+
+                    if (!showApp || displayMode == "Combined")
+                    {
+                        var webData = await _dataService.GetWebDailyTrendAsync(start, end);
+                        var webDict = webData.ToDictionary(d => d.Date, d => d.TotalTime.TotalSeconds);
+                        if (labels.Count == 0)
+                        {
+                            for (int i = 1; i <= days; i++)
+                            {
+                                var d = new DateTime(SelectedYear, SelectedMonth, i);
+                                webValues.Add(new ObservablePoint(i - 1, webDict.ContainsKey(d) ? webDict[d] : 0));
+                                labels.Add($"{i}");
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 1; i <= days; i++)
+                            {
+                                var d = new DateTime(SelectedYear, SelectedMonth, i);
+                                webValues.Add(new ObservablePoint(i - 1, webDict.ContainsKey(d) ? webDict[d] : 0));
+                            }
+                        }
                     }
                     Leaderboard.Clear();
                 }
                 else if (CurrentMode == StatisticsMode.Year)
                 {
-                    var data = await _dataService.GetMonthlyTrendAsync(SelectedYearOnly);
-                    var dict = data.ToDictionary(d => d.Month, d => d.TotalTime.TotalSeconds);
-
-                    for (int i = 1; i <= 12; i++)
+                    if (showApp)
                     {
-                        values.Add(new ObservablePoint(i - 1, dict.ContainsKey(i) ? dict[i] : 0));
-                        labels.Add($"{i}" + _localizationService.GetString("StrUnitMonth", "月"));
+                        var data = await _dataService.GetMonthlyTrendAsync(SelectedYearOnly);
+                        var dict = data.ToDictionary(d => d.Month, d => d.TotalTime.TotalSeconds);
+                        for (int i = 1; i <= 12; i++)
+                        {
+                            values.Add(new ObservablePoint(i - 1, dict.ContainsKey(i) ? dict[i] : 0));
+                            labels.Add($"{i}" + _localizationService.GetString("StrUnitMonth", "月"));
+                        }
+                    }
+
+                    if (!showApp || displayMode == "Combined")
+                    {
+                        var webData = await _dataService.GetWebMonthlyTrendAsync(SelectedYearOnly);
+                        var webDict = webData.ToDictionary(d => d.Month, d => d.TotalTime.TotalSeconds);
+                        if (labels.Count == 0)
+                        {
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                webValues.Add(new ObservablePoint(i - 1, webDict.ContainsKey(i) ? webDict[i] : 0));
+                                labels.Add($"{i}" + _localizationService.GetString("StrUnitMonth", ""));
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 1; i <= 12; i++)
+                                webValues.Add(new ObservablePoint(i - 1, webDict.ContainsKey(i) ? webDict[i] : 0));
+                        }
                     }
                     Leaderboard.Clear();
                 }
 
-                var maxVal = values.Count > 0 ? values.Max(v => v.Y ?? 0) : 0;
-                
                 XAxes = new Axis[] { new Axis { Labels = labels, LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
-                YAxes = new Axis[] { new Axis { 
-                    MinLimit = 0,
-                    MaxLimit = maxVal == 0 ? 60 : null, // Default max to 60s if no data
-                    Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"),
-                    LabelsPaint = _axisLabelPaint,
-                    SeparatorsPaint = _axisSeparatorPaint
-                } };
+                YAxes = new Axis[] { new Axis { MinLimit = 0, Labeler = value => TimeSpan.FromSeconds(value).ToString(@"hh\:mm\:ss"), LabelsPaint = _axisLabelPaint, SeparatorsPaint = _axisSeparatorPaint } };
 
-                Series = new ISeries[]
+                var seriesList = new List<ISeries>();
+                if (values.Count > 0 || webValues.Count == 0)
                 {
-                    new ColumnSeries<ObservablePoint>
+                    seriesList.Add(new ColumnSeries<ObservablePoint>
                     {
-                        Values = values,
+                        Values = values.Count > 0 ? values : new ObservablePoint[0],
                         Fill = _columnFillPaint,
                         MaxBarWidth = 40,
                         Rx = 4,
                         Ry = 4
-                    }
-                };
+                    });
+                }
+                if (webValues.Count > 0)
+                {
+                    seriesList.Add(new ColumnSeries<ObservablePoint>
+                    {
+                        Values = webValues,
+                        Fill = _webColumnFillPaint,
+                        MaxBarWidth = 40,
+                        Rx = 4,
+                        Ry = 4
+                    });
+                }
+
+                Series = seriesList.ToArray();
             }
             finally
             {
@@ -247,14 +354,17 @@ namespace RikkaTracker.ViewModels
             var labelColor = isDark ? new SKColor(220, 220, 220) : new SKColor(80, 80, 80);
             var separatorColor = isDark ? new SKColor(255, 255, 255, 30) : new SKColor(0, 0, 0, 15);
             var barColor = isDark ? new SKColor(244, 114, 182) : new SKColor(14, 165, 233);
+            var webBarColor = isDark ? new SKColor(80, 200, 120) : new SKColor(34, 139, 34);
 
             ( _axisLabelPaint as IDisposable)?.Dispose();
             ( _axisSeparatorPaint as IDisposable)?.Dispose();
             ( _columnFillPaint as IDisposable)?.Dispose();
+            ( _webColumnFillPaint as IDisposable)?.Dispose();
 
             _axisLabelPaint = new SolidColorPaint(labelColor);
             _axisSeparatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 1 };
             _columnFillPaint = new SolidColorPaint(barColor);
+            _webColumnFillPaint = new SolidColorPaint(webBarColor);
         }
 
         private void OnThemeChanged(string newTheme)
@@ -321,21 +431,43 @@ namespace RikkaTracker.ViewModels
             IsLoading = true;
             try
             {
-                var stats = await _dataService.GetTotalTimeByProcessAsync(start, end);
-                var list = stats.ToList();
-                var totalTicks = list.Sum(s => s.TotalTime.Ticks);
+                string displayMode = _configService?.Config.DisplayMode ?? "Combined";
 
-                Leaderboard.Clear();
-                foreach (var item in list)
+                if (displayMode == "WebOnly")
                 {
-                    Leaderboard.Add(new ProcessStatsModel
+                    var stats = await _dataService.GetTopSitesByDomainAsync(start, end);
+                    var list = stats.ToList();
+                    var totalTicks = list.Sum(s => s.TotalTime.Ticks);
+                    Leaderboard.Clear();
+                    foreach (var item in list)
                     {
-                        ProcessName = item.ProcessName,
-                        TotalTime = item.TotalTime,
-                        Percentage = totalTicks > 0 ? (double)item.TotalTime.Ticks / totalTicks : 0,
-                        TimeDisplay = FormatTimeSpan(item.TotalTime),
-                        Icon = _iconService.GetIcon(item.ProcessName, item.ProcessPath)
-                    });
+                        Leaderboard.Add(new ProcessStatsModel
+                        {
+                            ProcessName = item.Domain,
+                            TotalTime = item.TotalTime,
+                            Percentage = totalTicks > 0 ? (double)item.TotalTime.Ticks / totalTicks : 0,
+                            TimeDisplay = FormatTimeSpan(item.TotalTime),
+                            IsWeb = true
+                        });
+                    }
+                }
+                else
+                {
+                    var stats = await _dataService.GetTotalTimeByProcessAsync(start, end);
+                    var list = stats.ToList();
+                    var totalTicks = list.Sum(s => s.TotalTime.Ticks);
+                    Leaderboard.Clear();
+                    foreach (var item in list)
+                    {
+                        Leaderboard.Add(new ProcessStatsModel
+                        {
+                            ProcessName = item.ProcessName,
+                            TotalTime = item.TotalTime,
+                            Percentage = totalTicks > 0 ? (double)item.TotalTime.Ticks / totalTicks : 0,
+                            TimeDisplay = FormatTimeSpan(item.TotalTime),
+                            Icon = _iconService.GetIcon(item.ProcessName, item.ProcessPath)
+                        });
+                    }
                 }
             }
             finally

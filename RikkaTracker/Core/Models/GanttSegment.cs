@@ -13,6 +13,9 @@ namespace RikkaTracker.Core.Models
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public int RowIndex { get; set; }
+        public string SegmentType { get; set; } = "App";
+        public string Url { get; set; } = string.Empty;
+        public string Domain { get; set; } = string.Empty;
         
         [System.Text.Json.Serialization.JsonIgnore]
         public System.Windows.Media.ImageSource? Icon { get; set; }

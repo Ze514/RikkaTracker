@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace RikkaTracker.Views
@@ -10,7 +12,6 @@ namespace RikkaTracker.Views
             this.DataContextChanged += StatisticsView_DataContextChanged;
             this.Loaded += (s, e) => 
             {
-                // 页面加载时尝试滚动一次
                 Dispatcher.BeginInvoke(new Action(() => ScrollToLatest()), System.Windows.Threading.DispatcherPriority.Background);
             };
         }
@@ -31,7 +32,6 @@ namespace RikkaTracker.Views
         {
             if (e.PropertyName == nameof(ViewModels.StatisticsViewModel.RefreshTrigger))
             {
-                // 只有当显式触发刷新（加载数据或点击追踪）时，才滚动到最新记录
                 Dispatcher.BeginInvoke(new Action(() => 
                 {
                     ScrollToLatest();
@@ -44,7 +44,6 @@ namespace RikkaTracker.Views
             if (TimelineScroller == null || DataContext is not ViewModels.StatisticsViewModel vm) return;
             if (vm.GanttSegments == null || !vm.GanttSegments.Any()) return;
 
-            // 强制布局更新以确保 ViewportWidth 准确
             TimelineScroller.UpdateLayout();
 
             var segments = vm.GanttSegments.ToList();
@@ -53,8 +52,6 @@ namespace RikkaTracker.Views
             var pixelsPerHour = ZoomSlider.Value;
 
             double x = (latestEnd - baseTime).TotalHours * pixelsPerHour;
-            
-            // 将最新记录定位在视图中间
             double targetOffset = x - (TimelineScroller.ViewportWidth / 2);
             if (targetOffset < 0) targetOffset = 0;
             
@@ -67,11 +64,14 @@ namespace RikkaTracker.Views
             {
                 HeaderScroller.ScrollToVerticalOffset(e.VerticalOffset);
             }
+            if (e.HorizontalChange != 0)
+            {
+                TimeHeaderScroller.ScrollToHorizontalOffset(e.HorizontalOffset);
+            }
         }
 
         private void TimelineScroller_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
-            // 如果按住了 Shift，或者按照用户需求默认就进行水平滚动
             TimelineScroller.ScrollToHorizontalOffset(TimelineScroller.HorizontalOffset - e.Delta);
             e.Handled = true;
         }

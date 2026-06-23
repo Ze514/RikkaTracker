@@ -13,6 +13,11 @@
     <sys:String x:Key="StrVsYesterday">Vs Yesterday</sys:String>
     <sys:String x:Key="StrMostActiveHour">Most Active Hour</sys:String>
     <sys:String x:Key="StrAvgTimePerApp">Avg Time / App</sys:String>
+    <sys:String x:Key="StrTopSite">Top Site</sys:String>
+    <sys:String x:Key="StrWebTotalTime">Total Browse</sys:String>
+    <sys:String x:Key="StrNoWebData">No web browsing data</sys:String>
+    <sys:String x:Key="StrTimelineSortMode">Timeline Sort</sys:String>
+    <sys:String x:Key="StrTimelineSortModeDesc">Order rows by total duration or by latest activity time</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">Timeline</sys:String>
@@ -88,6 +93,52 @@
     <sys:String x:Key="StrSelectExportLocation">Please select a location to save the export file</sys:String>
     <sys:String x:Key="StrExportNoData">No activity logs found in the selected range, cannot export.</sys:String>
     <sys:String x:Key="StrExportNoAppSelected">Please select at least one application to export.</sys:String>
+    <!-- Web Monitor / Browser Extension -->
+    <sys:String x:Key="StrBrowserMonitor">Browser Monitor</sys:String>
+    <sys:String x:Key="StrBrowserMonitorDesc">Collect web browsing data via the Chrome / Edge extension</sys:String>
+
+    <!-- Display Mode -->
+    <sys:String x:Key="StrDisplayMode">Default View Mode</sys:String>
+    <sys:String x:Key="StrDisplayModeDesc">Choose which data to display across all pages by default</sys:String>
+    <sys:String x:Key="StrDisplayModeAppOnly">Apps Only</sys:String>
+    <sys:String x:Key="StrDisplayModeWebOnly">Web Only</sys:String>
+    <sys:String x:Key="StrDisplayModeCombined">Combined</sys:String>
+
+    <!-- Timeline Sort & Row Badges -->
+    <sys:String x:Key="StrSortByDuration">By Duration</sys:String>
+    <sys:String x:Key="StrSortByRecency">By Recency</sys:String>
+    <sys:String x:Key="StrRowBadges">Row Badges</sys:String>
+    <sys:String x:Key="StrRowBadgesDesc">Show colored rounded badges behind row labels in the timeline</sys:String>
+
+    <!-- Language names -->
+    <sys:String x:Key="StrLanguageZh">简体中文</sys:String>
+    <sys:String x:Key="StrLanguageEn">English</sys:String>
+
+    <!-- Navigation View: View Mode Header -->
+    <sys:String x:Key="StrViewMode">View Mode</sys:String>
+
+    <!-- Dashboard Chart Headers -->
+    <sys:String x:Key="StrAppChartTitle">App Activity 24h</sys:String>
+    <sys:String x:Key="StrWebChartTitle">Web Browsing 24h</sys:String>
+
+    <!-- Update / Dialog messages in SettingsViewModel -->
+    <sys:String x:Key="StrUpdateCheckFailed">Update Check Failed</sys:String>
+    <sys:String x:Key="StrNetworkErrorMsg">Network Error: {0}&#10;&#10;Please check your internet connection or proxy settings.</sys:String>
+    <sys:String x:Key="StrAssetMissingMsg">Version {0} is available, but the download package for your installation type was not found.&#10;&#10;Please visit GitHub releases manually.</sys:String>
+    <sys:String x:Key="StrInternalErrorMsg">An internal error occurred: {0}</sys:String>
+    <sys:String x:Key="StrUpdateDownloadFailed">Update download failed: {0}&#10;&#10;Logs: {1}</sys:String>
+    <sys:String x:Key="StrVersion">Version</sys:String>
+
+    <!-- Change Storage Path -->
+    <sys:String x:Key="StrSelectDbLocationTitle">Select Database Storage Location</sys:String>
+    <sys:String x:Key="StrDbFilter">SQLite Database (*.db)|*.db</sys:String>
+    <sys:String x:Key="StrDbDefaultFileName">tracker.db</sys:String>
+    <sys:String x:Key="StrChangeSuccess">Change Succeeded</sys:String>
+
+    <!-- Download Progress -->
+    <sys:String x:Key="StrDownloadConnecting">Connecting to server...</sys:String>
+    <sys:String x:Key="StrDownloadProgress">Downloading: {0:F2} MB / {1:F2} MB</sys:String>
+
     <!-- System Common -->
     <sys:String x:Key="StrOk">OK</sys:String>
     <sys:String x:Key="StrCancel">Cancel</sys:String>
@@ -97,6 +148,18 @@
     <sys:String x:Key="StrError">Error</sys:String>
     <sys:String x:Key="StrPrompt">Info</sys:String>
     <sys:String x:Key="StrSuccess">Success</sys:String>
+
+    <!-- App Name (used in tray / window titles) -->
+    <sys:String x:Key="StrAppName">RikkaTracker</sys:String>
+
+    <!-- App Startup & Errors -->
+    <sys:String x:Key="StrDuplicateInstanceTitle">RikkaTracker</sys:String>
+    <sys:String x:Key="StrDuplicateInstanceMessage">RikkaTracker is already running.</sys:String>
+    <sys:String x:Key="StrFatalErrorTitle">Fatal Error</sys:String>
+    <sys:String x:Key="StrFatalErrorUiMessage">The application encountered a critical UI thread error, which will be logged. Attempting to shut down. See logs for details.</sys:String>
+    <sys:String x:Key="StrFatalErrorNonUiMessage">The application encountered a critical non-UI thread error. See logs for details.</sys:String>
+    <sys:String x:Key="StrInitFailedTitle">Initialization Failed</sys:String>
+    <sys:String x:Key="StrInitFailedMessage">Failed to start core services. The application may not function correctly. See logs for details.</sys:String>
 
     <!-- Additional Settings & Filter -->
     <sys:String x:Key="StrLogManagement">Log Management</sys:String>
@@ -151,4 +214,11 @@
     <sys:String x:Key="StrExportPdfDetailTip">* The detailed log summary only shows up to 500 latest entries out of the first 1000. For full data, please export as Excel or CSV.</sys:String>
     <sys:String x:Key="StrExportPdfFooter">Report generated automatically by RikkaTracker. All rights reserved.</sys:String>
     <sys:String x:Key="StrExportPdfUnitApp"></sys:String>
+
+    <!-- @Author: trae + deepseek-V4-pro -->
+    <!-- @Date: 2026-06-23 -->
+    <!-- @Desc: Short labels below the view mode toggle button when sidebar is collapsed -->
+    <sys:String x:Key="StrDisplayModeShortAppOnly">App</sys:String>
+    <sys:String x:Key="StrDisplayModeShortWebOnly">Web</sys:String>
+    <sys:String x:Key="StrDisplayModeShortCombined">Mixed</sys:String>
 </ResourceDictionary>

@@ -13,6 +13,11 @@
     <sys:String x:Key="StrVsYesterday">较昨日对比</sys:String>
     <sys:String x:Key="StrMostActiveHour">最活跃时段</sys:String>
     <sys:String x:Key="StrAvgTimePerApp">平均单应用时长</sys:String>
+    <sys:String x:Key="StrTopSite">最常访问</sys:String>
+    <sys:String x:Key="StrWebTotalTime">浏览总时长</sys:String>
+    <sys:String x:Key="StrNoWebData">暂无网页浏览数据</sys:String>
+    <sys:String x:Key="StrTimelineSortMode">时间轴排序</sys:String>
+    <sys:String x:Key="StrTimelineSortModeDesc">按总时长或最近活跃时间排列纵轴顺序</sys:String>
 
     <!-- Statistics/Timeline -->
     <sys:String x:Key="StrTimeline">时间轴</sys:String>
@@ -88,6 +93,52 @@
     <sys:String x:Key="StrSelectExportLocation">请选择导出文件的保存位置</sys:String>
     <sys:String x:Key="StrExportNoData">所选时间区间内无活动记录，无法导出。</sys:String>
     <sys:String x:Key="StrExportNoAppSelected">请至少勾选一个要导出的应用。</sys:String>
+    <!-- Web Monitor / Browser Extension -->
+    <sys:String x:Key="StrBrowserMonitor">浏览器监控</sys:String>
+    <sys:String x:Key="StrBrowserMonitorDesc">通过 Chrome / Edge 扩展程序收集网页浏览数据</sys:String>
+
+    <!-- Display Mode -->
+    <sys:String x:Key="StrDisplayMode">默认视图模式</sys:String>
+    <sys:String x:Key="StrDisplayModeDesc">选择所有页面默认显示的数据类别</sys:String>
+    <sys:String x:Key="StrDisplayModeAppOnly">仅应用</sys:String>
+    <sys:String x:Key="StrDisplayModeWebOnly">仅网页</sys:String>
+    <sys:String x:Key="StrDisplayModeCombined">合并显示</sys:String>
+
+    <!-- Timeline Sort & Row Badges -->
+    <sys:String x:Key="StrSortByDuration">按总时长</sys:String>
+    <sys:String x:Key="StrSortByRecency">按最近活跃</sys:String>
+    <sys:String x:Key="StrRowBadges">行徽章</sys:String>
+    <sys:String x:Key="StrRowBadgesDesc">在时间轴中为行标签显示彩色圆角徽章</sys:String>
+
+    <!-- Language names -->
+    <sys:String x:Key="StrLanguageZh">简体中文</sys:String>
+    <sys:String x:Key="StrLanguageEn">English</sys:String>
+
+    <!-- Navigation View: View Mode Header -->
+    <sys:String x:Key="StrViewMode">视图模式</sys:String>
+
+    <!-- Dashboard Chart Headers -->
+    <sys:String x:Key="StrAppChartTitle">应用活跃度 24h</sys:String>
+    <sys:String x:Key="StrWebChartTitle">网页浏览 24h</sys:String>
+
+    <!-- Update / Dialog messages in SettingsViewModel -->
+    <sys:String x:Key="StrUpdateCheckFailed">更新检查失败</sys:String>
+    <sys:String x:Key="StrNetworkErrorMsg">网络错误: {0}&#10;&#10;请检查网络连接或代理设置。</sys:String>
+    <sys:String x:Key="StrAssetMissingMsg">发现新版本 {0}，但没有找到匹配你安装类型的下载包。&#10;&#10;请手动访问 GitHub Releases 下载。</sys:String>
+    <sys:String x:Key="StrInternalErrorMsg">发生内部错误: {0}</sys:String>
+    <sys:String x:Key="StrUpdateDownloadFailed">下载更新失败: {0}&#10;&#10;日志: {1}</sys:String>
+    <sys:String x:Key="StrVersion">版本</sys:String>
+
+    <!-- Change Storage Path -->
+    <sys:String x:Key="StrSelectDbLocationTitle">选择数据库存储位置</sys:String>
+    <sys:String x:Key="StrDbFilter">SQLite 数据库 (*.db)|*.db</sys:String>
+    <sys:String x:Key="StrDbDefaultFileName">tracker.db</sys:String>
+    <sys:String x:Key="StrChangeSuccess">更改成功</sys:String>
+
+    <!-- Download Progress -->
+    <sys:String x:Key="StrDownloadConnecting">正在连接服务器...</sys:String>
+    <sys:String x:Key="StrDownloadProgress">正在下载: {0:F2} MB / {1:F2} MB</sys:String>
+
     <!-- System Common -->
     <sys:String x:Key="StrOk">确定</sys:String>
     <sys:String x:Key="StrCancel">取消</sys:String>
@@ -97,6 +148,18 @@
     <sys:String x:Key="StrError">错误</sys:String>
     <sys:String x:Key="StrPrompt">提示</sys:String>
     <sys:String x:Key="StrSuccess">成功</sys:String>
+
+    <!-- App Name (used in tray / window titles) -->
+    <sys:String x:Key="StrAppName">RikkaTracker</sys:String>
+
+    <!-- App Startup & Errors -->
+    <sys:String x:Key="StrDuplicateInstanceTitle">RikkaTracker</sys:String>
+    <sys:String x:Key="StrDuplicateInstanceMessage">RikkaTracker 已经在运行中。</sys:String>
+    <sys:String x:Key="StrFatalErrorTitle">致命错误</sys:String>
+    <sys:String x:Key="StrFatalErrorUiMessage">应用遇到了严重的 UI 线程错误，即将记录并尝试关闭。详情请见日志。</sys:String>
+    <sys:String x:Key="StrFatalErrorNonUiMessage">应用遇到了严重的非 UI 线程错误，详情请见日志。</sys:String>
+    <sys:String x:Key="StrInitFailedTitle">初始化失败</sys:String>
+    <sys:String x:Key="StrInitFailedMessage">启动核心服务失败，应用可能无法正常工作。请检查日志。</sys:String>
 
     <!-- Additional Settings & Filter -->
     <sys:String x:Key="StrLogManagement">日志管理</sys:String>
@@ -151,4 +214,11 @@
     <sys:String x:Key="StrExportPdfDetailTip">* 报告中详细日志仅展示了前 1000 条中的 500 条最新摘要。完整数据请导出为 Excel 或 CSV。</sys:String>
     <sys:String x:Key="StrExportPdfFooter">报告由 RikkaTracker 自动生成。保留所有权利。</sys:String>
     <sys:String x:Key="StrExportPdfUnitApp">个</sys:String>
+
+    <!-- @Author: trae + deepseek-V4-pro -->
+    <!-- @Date: 2026-06-23 -->
+    <!-- @Desc: 侧边栏收起时视图模式切换按钮下方的简短标签 -->
+    <sys:String x:Key="StrDisplayModeShortAppOnly">应用</sys:String>
+    <sys:String x:Key="StrDisplayModeShortWebOnly">网页</sys:String>
+    <sys:String x:Key="StrDisplayModeShortCombined">混合</sys:String>
 </ResourceDictionary>

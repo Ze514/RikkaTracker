@@ -125,6 +125,45 @@ jobs:
           # 准备 Light 版 EXE
           Copy-Item ./artifacts/light/RikkaTracker.exe RikkaTracker-v$version-Light.exe
 
+      # ============================================================
+      # @Author: trae + deepseek-v4-flash
+      # @Date:   2026-06-23
+      # @Desc:   打包 Chrome 扩展为 zip 压缩包，内部结构为
+      #          "RikkaTracker Sentry.zip/extension/manifest.json"
+      # ============================================================
+      - name: Package Chrome Extension
+        shell: pwsh
+        run: |
+          # 创建临时文件夹，将扩展文件放入 "extension" 子目录
+          $extSrc  = "WebExtensions/Chrome"
+          $tempDir = "./temp-ext-pack"
+          $extDir  = "$tempDir/extension"
+          
+          New-Item -ItemType Directory -Force -Path $extDir | Out-Null
+          
+          # 复制所有扩展文件到 extension 目录
+          Copy-Item -Recurse -Force "$extSrc/*" $extDir
+          
+          # 压缩为 "RikkaTracker Sentry.zip"
+          Compress-Archive -Path "$tempDir/*" -DestinationPath "RikkaTracker Sentry.zip" -Force
+          
+          # 清理临时目录
+          Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
+          
+          echo "Chrome extension packaged: RikkaTracker Sentry.zip"
+          # 验证压缩包内部结构
+          $zipPath = "RikkaTracker Sentry.zip"
+          if (Test-Path $zipPath) {
+            $zipInfo = Get-Item $zipPath
+            echo "Zip size: $("{0:N2}" -f ($zipInfo.Length / 1MB)) MB"
+            # 列出 zip 内部文件结构
+            echo "Contents of zip:"
+            & 7z l "$zipPath" | Select-String -Pattern "extension/"
+          } else {
+            echo "ERROR: Zip file not created!"
+            exit 1
+          }
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:
@@ -133,13 +172,16 @@ jobs:
           name: 'RikkaTracker v${{ env.VERSION }}'
           files: |
             RikkaTracker-v*.exe
+            RikkaTracker Sentry.zip
           body: |
             ## RikkaTracker v${{ env.VERSION }}
             
             ### 下载说明
-              - Portable: 普通版（ 自包含.NET 8，安装即用）。
+              - Portable: 普通版（自包含.NET 8，安装即用）。
               - Light: 轻量版（体积极小，需本地已安装 .NET 8）。
+              - Chrome Extension: RikkaTracker Sentry（Chrome 浏览器扩展）。
               - Portable: Regular edition (self-contained .NET 8).
               - Light: Lightweight edition (extremely small size, requires .NET 8 installed locally).
+              - Chrome Extension: RikkaTracker Sentry (Chrome browser extension).
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

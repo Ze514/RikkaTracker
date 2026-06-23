@@ -6,15 +6,22 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:RikkaTracker"
         xmlns:vm="clr-namespace:RikkaTracker.ViewModels"
+        xmlns:converters="clr-namespace:RikkaTracker.Converters"
         xmlns:views="clr-namespace:RikkaTracker.Views"
         mc:Ignorable="d"
-        Title="RikkaTracker" Height="750" Width="1200"
-        Icon="Assets/app-icon.ico"
+        Title="{DynamicResource StrAppName}" Height="750" Width="1200"
+        Icon="assets/app-icon.ico"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
         Background="Transparent">
     <Window.Resources>
+        <!-- @Author: trae + deepseek-V4-pro -->
+        <!-- @Date: 2026-06-22 -->
+        <!-- @Desc: 用于导航栏收起/展开状态下切换视图模式显示形态的转换器 -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
             <views:DashboardView/>
         </DataTemplate>
@@ -48,8 +55,8 @@
         <ui:TitleBar Grid.Row="0">
             <ui:TitleBar.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                    <Image Source="pack://application:,,,/Assets/app-icon.png" Width="33" Height="33" VerticalAlignment="Center" />
-                    <TextBlock Text="RikkaTracker" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontSize="14" />
+                    <Image Source="pack://application:,,,/assets/app-icon.png" Width="33" Height="33" VerticalAlignment="Center" />
+                    <TextBlock Text="{DynamicResource StrAppName}" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontSize="14" />
                 </StackPanel>
             </ui:TitleBar.Header>
         </ui:TitleBar>
@@ -61,6 +68,7 @@
             </Grid.ColumnDefinitions>
 
             <ui:NavigationView
+                x:Name="NavView"
                 Grid.Column="0"
                 HorizontalAlignment="Left"
                 PaneDisplayMode="Left"
@@ -68,12 +76,67 @@
                 IsPaneToggleVisible="True"
                 OpenPaneLength="200">
                 
+                <ui:NavigationView.PaneHeader>
+                    <!-- @Author: trae + deepseek-V4-pro -->
+                    <!-- @Date: 2026-06-23 -->
+                    <!-- @Desc: 固定高度的容器，保证展开/收起状态下视图模式切换区域高度一致 -->
+                    <Grid Height="60">
+                        <!-- 展开状态：完整的视图模式下拉框 -->
+                        <StackPanel Visibility="{Binding IsPaneOpen, ElementName=NavView, Converter={StaticResource BoolToVisibility}}"
+                                    VerticalAlignment="Center"
+                                    Margin="12,0,12,0">
+                            <ui:TextBlock Text="{DynamicResource StrViewMode}" FontSize="11" Margin="0,0,0,4"
+                                          Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <ComboBox SelectedValue="{Binding DisplayMode, Mode=TwoWay}" SelectedValuePath="Tag">
+                                <ComboBoxItem Tag="AppOnly" Content="{DynamicResource StrDisplayModeAppOnly}"/>
+                                <ComboBoxItem Tag="WebOnly" Content="{DynamicResource StrDisplayModeWebOnly}"/>
+                                <ComboBoxItem Tag="Combined" Content="{DynamicResource StrDisplayModeCombined}"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- @Author: trae + deepseek-V4-pro -->
+                        <!-- @Date: 2026-06-23 -->
+                        <!-- @Desc: 侧边导航栏收起时的紧凑模式区域：图标按钮 + 下方短标签 -->
+                        <!--         使用 StackPanel 垂直排列，避免重叠导致按钮无法点击 -->
+                        <!--         整体可见性由 InverseBoolToVisibility 根据侧边栏展开状态控制 -->
+                        <StackPanel Visibility="{Binding IsPaneOpen, ElementName=NavView, Converter={StaticResource InverseBoolToVisibility}}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <!-- @Date: 2026-06-22 -->
+                            <!-- @Desc: 图标按钮，点击可在三种显示模式间循环切换 -->
+                        <Button Command="{Binding CycleDisplayModeCommand}"
+                                Width="36" Height="36"
+                                Padding="0"
+                                MinWidth="0" MinHeight="0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Background="Transparent"
+                                ToolTip="{DynamicResource StrViewMode}">
+                            <TextBlock Text="{Binding DisplayModeGlyph}" 
+                                    FontFamily="Segoe Fluent Icons" 
+                                    FontSize="20"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </Button>
+                            <!-- @Date: 2026-06-23 -->
+                            <!-- @Desc: 图标下方的简短模式标签，跟随 DisplayMode 实时切换 -->
+                            <TextBlock Text="{Binding DisplayModeShortLabel}" 
+                                       FontSize="10"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,10,0,8"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </ui:NavigationView.PaneHeader>
+
                 <ui:NavigationView.MenuItems>
                     <ui:NavigationViewItem
                         Content="{DynamicResource StrDashboard}"
                         Command="{Binding NavigateToDashboardCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Home24"/>
+                            <!-- @Desc: Home → \uE80F (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE80F;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
                     
@@ -81,7 +144,8 @@
                         Content="{DynamicResource StrActiveApps}"
                         Command="{Binding NavigateToActivityListCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Apps24"/>
+                            <!-- @Desc: AppIconDefault → \uECAA (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xECAA;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -89,7 +153,8 @@
                         Content="{DynamicResource StrTimeline}"
                         Command="{Binding NavigateToStatisticsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Clock24"/>
+                            <!-- @Desc: Clock → \uE916 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE916;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -97,7 +162,8 @@
                         Content="{DynamicResource StrUsageStatistics}"
                         Command="{Binding NavigateToUsageStatisticsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="DataBarVertical24"/>
+                            <!-- @Desc: DataBarVertical → \uE9F6 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE86F;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -105,7 +171,8 @@
                         Content="{DynamicResource StrFilterRules}"
                         Command="{Binding NavigateToFilterSettingsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Shield24"/>
+                            <!-- @Desc: Shield → \uEA18 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEA18;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
@@ -113,7 +180,8 @@
                         Content="{DynamicResource StrExport}"
                         Command="{Binding NavigateToExportCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="ArrowExportUp24"/>
+                            <!-- @Desc: Share → \uF12B (Segoe Fluent Icons，替代旧的 ArrowExportUp) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF12B;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
                 </ui:NavigationView.MenuItems>
@@ -123,7 +191,8 @@
                         Content="{DynamicResource StrSettings}"
                         Command="{Binding NavigateToSettingsCommand}">
                         <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Settings24"/>
+                            <!-- @Desc: Settings → \uE713 (Segoe Fluent Icons) -->
+                            <ui:FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE713;" FontSize="20"/>
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
                 </ui:NavigationView.FooterMenuItems>

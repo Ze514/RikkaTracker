@@ -6,12 +6,18 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
+    <!-- @Author: trae + deepseek-V4-pro -->
+    <!-- @Date: 2026-06-23 -->
+    <!-- @Desc: Segoe Fluent Icons 字体资源，用于 FontIcon 标记扩展 -->
+    <UserControl.Resources>
+        <FontFamily x:Key="SegoeFluentIcons">Segoe Fluent Icons</FontFamily>
+    </UserControl.Resources>
     <Grid Margin="20">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>
             <ui:TextBlock Text="{DynamicResource StrSettings}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
-            <ui:Card Padding="20" Margin="0,0,0,10">
+            <ui:Card Padding="10" Margin="0,0,0,10">
                 <StackPanel>
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
@@ -19,7 +25,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrIdleTimeout}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrIdleTimeout}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrIdleTimeoutDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -34,7 +40,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrAutoStart}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrAutoStart}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrAutoStartDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAutoStart}" VerticalAlignment="Center"/>
@@ -46,7 +52,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrDarkMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrDarkMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrDarkModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center"/>
@@ -57,7 +63,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrZoomMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrZoomMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrZoomModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineZoomMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
@@ -72,19 +78,72 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrLanguage}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrLanguage}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrLanguageDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding Language}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
                             <ComboBoxItem Content="{DynamicResource StrLanguageAuto}" Tag="Auto"/>
-                            <ComboBoxItem Content="简体中文" Tag="zh-CN"/>
-                            <ComboBoxItem Content="English" Tag="en-US"/>
+                            <ComboBoxItem Content="{DynamicResource StrLanguageZh}" Tag="zh-CN"/>
+                            <ComboBoxItem Content="{DynamicResource StrLanguageEn}" Tag="en-US"/>
                         </ComboBox>
+                    </Grid>
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitor}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitorDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding WebMonitorEnabled}" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="{DynamicResource StrDisplayMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <ui:TextBlock Text="{DynamicResource StrDisplayModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding DisplayMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
+                            <ComboBoxItem Content="{DynamicResource StrDisplayModeAppOnly}" Tag="AppOnly"/>
+                            <ComboBoxItem Content="{DynamicResource StrDisplayModeWebOnly}" Tag="WebOnly"/>
+                            <ComboBoxItem Content="{DynamicResource StrDisplayModeCombined}" Tag="Combined"/>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="{DynamicResource StrTimelineSortMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <ui:TextBlock Text="{DynamicResource StrTimelineSortModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineSortMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
+                            <ComboBoxItem Content="{DynamicResource StrSortByDuration}" Tag="Duration"/>
+                            <ComboBoxItem Content="{DynamicResource StrSortByRecency}" Tag="Recency"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="{DynamicResource StrRowBadges}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <ui:TextBlock Text="{DynamicResource StrRowBadgesDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowRowBadges}" VerticalAlignment="Center"/>
                     </Grid>
                 </StackPanel>
             </ui:Card>
 
-            <ui:Card Padding="20" Margin="0,20,0,0">
+            <ui:Card Padding="10" Margin="0,15,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -97,57 +156,63 @@
                         </ui:TextBlock>
                         
                         <StackPanel Margin="0,10,0,0" Visibility="{Binding IsUpdating, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <ui:TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{ui:ThemeResource SystemFillColorSuccessBrush}" Margin="0,0,0,5"/>
+                            <ui:TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{ui:ThemeResource SystemFillColorSuccessBrush}" Margin="0,0,0,0"/>
                             <ProgressBar Value="{Binding UpdateProgress}" Minimum="0" Maximum="100" Height="4" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
+                    <!-- @Desc: CloudDownload → \uE9F5 (Segoe Fluent Icons) -->
                     <ui:Button Grid.Column="1" 
                                Content="{DynamicResource StrCheckUpdate}" 
-                               Icon="{ui:SymbolIcon CloudArrowDown24}" 
+                               Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xE9F5;}" 
                                Command="{Binding CheckForUpdateCommand}"
                                IsEnabled="{Binding IsUpdating, Converter={StaticResource InverseBooleanConverter}}"
                                VerticalAlignment="Center"/>
                 </Grid>
             </ui:Card>
             
-            <ui:Card Padding="20" Margin="0,20,0,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <ui:TextBlock Text="{DynamicResource StrDataStorage}" VerticalAlignment="Center"/>
-                        <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                    <ui:Button Grid.Column="1" 
-                               Content="{DynamicResource StrChange}" 
-                               Icon="{ui:SymbolIcon Folder24}" 
-                               Command="{Binding ChangeStoragePathCommand}"
-                               VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
-            
-            <ui:Card Padding="20" Margin="0,20,0,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <ui:TextBlock Text="{DynamicResource StrLogManagement}" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        <ui:TextBlock Text="{DynamicResource StrLogManagementDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:Button Content="{DynamicResource StrOpenDiagnosticConsole}" 
-                                   Icon="{ui:SymbolIcon DeveloperBoard24}" 
-                                   Command="{Binding OpenDiagnosticConsoleCommand}"
-                                   Margin="0,0,10,0"/>
-                        <ui:Button Content="{DynamicResource StrOpenLogFolder}" 
-                                   Icon="{ui:SymbolIcon FolderOpen24}" 
-                                   Command="{Binding OpenLogFolderCommand}"/>
-                    </StackPanel>
-                </Grid>
+            <ui:Card Padding="10" Margin="0,20,0,0">
+                <StackPanel>
+                    <!-- 数据存储路径 -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="{DynamicResource StrDataStorage}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <!-- @Desc: Folder → \uE838 (Segoe Fluent Icons) -->
+                        <ui:Button Grid.Column="1" 
+                                   Content="{DynamicResource StrChange}" 
+                                   Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xE838;}" 
+                                   Command="{Binding ChangeStoragePathCommand}"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                
+                    <!-- 日志管理 -->
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <ui:TextBlock Text="{DynamicResource StrLogManagement}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <ui:TextBlock Text="{DynamicResource StrLogManagementDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- @Desc: DeveloperBoard → \uEC48 (Segoe Fluent Icons) -->
+                            <ui:Button Content="{DynamicResource StrOpenDiagnosticConsole}" 
+                                       Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xEC48;}" 
+                                       Command="{Binding OpenDiagnosticConsoleCommand}"
+                                       Margin="0,0,10,0"/>
+                            <!-- @Desc: FolderOpen → \uED25 (Segoe Fluent Icons) -->
+                            <ui:Button Content="{DynamicResource StrOpenLogFolder}" 
+                                       Icon="{ui:FontIcon FontFamily={StaticResource SegoeFluentIcons}, Glyph=&#xED25;}" 
+                                       Command="{Binding OpenLogFolderCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
             </ui:Card>
             </StackPanel>
         </ScrollViewer>

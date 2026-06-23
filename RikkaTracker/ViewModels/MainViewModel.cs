@@ -1,22 +1,97 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using RikkaTracker.Services;
 
 namespace RikkaTracker.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
+        private readonly IConfigService _configService;
+
+        /// <summary>
+        /// @Author: trae + deepseek-V4-pro
+        /// @Date: 2026-06-22
+        /// @Desc: 显示模式枚举列表，用于循环切换。顺序为：仅应用 → 仅网页 → 混合
+        /// </summary>
+        private readonly string[] _displayModes = { "AppOnly", "WebOnly", "Combined" };
+
         [ObservableProperty]
         private string _statusText = string.Empty;
 
         [ObservableProperty]
         private ObservableObject? _currentViewModel;
 
+        [ObservableProperty]
+        private string _displayMode = "Combined";
+
         public MainViewModel()
         {
-            // 默认显示概览页
+            _configService = App.Current.ServiceProvider.GetRequiredService<IConfigService>();
+            DisplayMode = _configService.Config.DisplayMode;
             NavigateToDashboard();
         }
+
+        /// <summary>
+        /// @Author: trae + deepseek-V4-pro
+        /// @Date: 2026-06-22
+        /// @Desc: 获取当前显示模式对应的 Segoe Fluent Icons 图标字符。
+        ///         AppOnly → \uECAA (AppIconDefault 应用图标)
+        ///         WebOnly → \uE774 (Globe 地球图标)
+        ///         Combined → \uF168 (GroupList 分组列表/混合图标)
+        /// </summary>
+        public string DisplayModeGlyph => DisplayMode switch
+        {
+            "AppOnly" => "\uECAA",
+            "WebOnly" => "\uE774",
+            "Combined" => "\uF168",
+            _ => "\uF168"
+        };
+
+        /// <summary>
+        /// @Author: trae + deepseek-V4-pro
+        /// @Date: 2026-06-23
+        /// @Desc: 获取当前显示模式对应的简短中文/英文标签。
+        ///         用于侧边栏收起时图标按钮下方显示的文字。
+        ///         通过 App.Current.Resources 获取国际化字符串。
+        /// </summary>
+        public string DisplayModeShortLabel => DisplayMode switch
+        {
+            "AppOnly" => App.Current.Resources["StrDisplayModeShortAppOnly"] as string ?? "应用",
+            "WebOnly" => App.Current.Resources["StrDisplayModeShortWebOnly"] as string ?? "网页",
+            "Combined" => App.Current.Resources["StrDisplayModeShortCombined"] as string ?? "混合",
+            _ => "混合"
+        };
+
+        partial void OnDisplayModeChanged(string value)
+        {
+            if (_configService.Config.DisplayMode != value)
+            {
+                _configService.Config.DisplayMode = value;
+                _configService.Save();
+            }
+            // 通知图标属性更新，使紧凑模式下的图标按钮同步刷新
+            OnPropertyChanged(nameof(DisplayModeGlyph));
+            // 通知短标签属性更新
+            OnPropertyChanged(nameof(DisplayModeShortLabel));
+        }
+
+        /// <summary>
+        /// @Author: trae + deepseek-V4-pro
+        /// @Date: 2026-06-22
+        /// @Desc: 循环切换显示模式。在 AppOnly → WebOnly → Combined 间顺序轮转，
+        ///         用于侧边导航栏收起时的图标点击切换。
+        /// </summary>
+        [RelayCommand]
+        private void CycleDisplayMode()
+        {
+            var currentIndex = Array.IndexOf(_displayModes, DisplayMode);
+            if (currentIndex < 0) currentIndex = 2; // 默认回退到 Combined
+            var nextIndex = (currentIndex + 1) % _displayModes.Length;
+            DisplayMode = _displayModes[nextIndex];
+        }
+
+        public IConfigService GetConfigService() => _configService;
 
         [RelayCommand]
         private void NavigateToDashboard()
