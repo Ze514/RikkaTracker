@@ -351,6 +351,88 @@ namespace RikkaTracker.ViewModels
             _configService.Save();
         }
 
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 浏览器扩展商店及 GitHub Release URL 常量
+        private const string ChromeExtensionStoreUrl = "https://chrome.google.com/webstore/detail/rikkatracker-sentry/...";
+        private const string EdgeExtensionStoreUrl = "https://microsoftedge.microsoft.com/addons/detail/rikkatracker-sentry/...";
+        private const string GitHubReleaseUrl = "https://github.com/remnant-song/RikkaTrack/releases/latest";
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 安装指引展开/折叠状态
+        [ObservableProperty]
+        private bool _isInstallGuideExpanded;
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 打开 Chrome 网上应用店
+        [RelayCommand]
+        private void OpenChromeStore()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = ChromeExtensionStoreUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open Chrome Web Store.", ex);
+            }
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 打开 Edge 加载项商店
+        [RelayCommand]
+        private void OpenEdgeStore()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = EdgeExtensionStoreUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open Edge Add-ons Store.", ex);
+            }
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 打开 GitHub Releases 下载页
+        [RelayCommand]
+        private void OpenGitHubRelease()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = GitHubReleaseUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open GitHub Releases page.", ex);
+            }
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 切换安装指引展开/折叠
+        [RelayCommand]
+        private void ToggleInstallGuide()
+        {
+            IsInstallGuideExpanded = !IsInstallGuideExpanded;
+        }
+
         [ObservableProperty]
         private string _displayMode = "Combined";
 

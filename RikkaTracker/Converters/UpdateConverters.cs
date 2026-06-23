@@ -32,4 +32,21 @@ namespace RikkaTracker.Converters
             return value;
         }
     }
+
+    // @Author: trae + deepseek-V4-pro
+    // @Date: 2026-06-23
+    // @Desc: 布尔值 true→Collapsed, false→Visible（与 BooleanToVisibilityConverter 反向）
+    public class InverseBooleanToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b) return b ? Visibility.Collapsed : Visibility.Visible;
+            return Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
