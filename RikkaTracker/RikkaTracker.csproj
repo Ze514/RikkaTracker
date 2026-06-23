@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <ApplicationIcon>assets\app-icon.ico</ApplicationIcon>
     
     <!-- 默认开启单文件发布与原生库嵌入 -->
@@ -41,3 +41,4 @@
     <Resource Include="Assets\app-icon.png" />
   </ItemGroup>
 </Project>
+
