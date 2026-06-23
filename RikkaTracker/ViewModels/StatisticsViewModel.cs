@@ -20,12 +20,34 @@ namespace RikkaTracker.ViewModels
         private readonly IIconService _iconService;
         private readonly IConfigService _configService;
 
+        /*
+         * @Author: trae + deepseek-V4-pro
+         * @Date: 2026-06-23
+         * @Desc: 构造函数。订阅 ConfigChanged 事件，当视图模式切换时即时刷新时间轴数据。
+         */
         public StatisticsViewModel(IDataService dataService, IIconService iconService, IConfigService configService)
         {
             _dataService = dataService;
             _iconService = iconService;
             _configService = configService;
             SelectedDate = DateTime.Today;
+            // 订阅配置变更事件，实现视图模式切换时即时刷新
+            _configService.ConfigChanged += OnConfigChanged;
+        }
+
+        /// <summary>
+        /// @Author: trae + deepseek-V4-pro
+        /// @Date: 2026-06-23
+        /// @Desc: 配置变更回调。当 DisplayMode 变化时，重新加载时间轴数据。
+        /// </summary>
+        private void OnConfigChanged()
+        {
+            // 通知 UI 绑定属性（DisplayMode）已变更
+            OnPropertyChanged(nameof(DisplayMode));
+            OnPropertyChanged(nameof(ShowRowBadges));
+            OnPropertyChanged(nameof(ZoomMode));
+            // 重新加载数据
+            _ = LoadGanttDataAsync();
         }
 
         public string ZoomMode => _configService.Config.TimelineZoomMode;
