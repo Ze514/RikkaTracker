@@ -25,7 +25,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrIdleTimeout}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrIdleTimeout}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrIdleTimeoutDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -40,7 +40,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrAutoStart}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrAutoStart}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrAutoStartDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAutoStart}" VerticalAlignment="Center"/>
@@ -52,7 +52,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrDarkMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrDarkMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrDarkModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center"/>
@@ -63,7 +63,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrZoomMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrZoomMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrZoomModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineZoomMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
@@ -78,7 +78,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrLanguage}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrLanguage}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrLanguageDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding Language}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
@@ -93,7 +93,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitor}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrBrowserMonitor}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrBrowserMonitorDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding WebMonitorEnabled}" VerticalAlignment="Center"/>
@@ -105,7 +105,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrDisplayMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrDisplayMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrDisplayModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding DisplayMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
@@ -120,7 +120,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrTimelineSortMode}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrTimelineSortMode}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrTimelineSortModeDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="1" SelectedValue="{Binding TimelineSortMode}" SelectedValuePath="Tag" Width="150" VerticalAlignment="Center">
@@ -135,7 +135,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <ui:TextBlock Text="{DynamicResource StrRowBadges}" VerticalAlignment="Center"/>
+                            <ui:TextBlock Text="{DynamicResource StrRowBadges}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ui:TextBlock Text="{DynamicResource StrRowBadgesDesc}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowRowBadges}" VerticalAlignment="Center"/>
@@ -177,7 +177,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <ui:TextBlock Text="{DynamicResource StrDataStorage}" VerticalAlignment="Center"/>
+                        <ui:TextBlock Text="{DynamicResource StrDataStorage}" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         <ui:TextBlock Text="{Binding StoragePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                     <!-- @Desc: Folder → \uE838 (Segoe Fluent Icons) -->
