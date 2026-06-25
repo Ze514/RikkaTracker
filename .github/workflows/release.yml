@@ -164,6 +164,96 @@ jobs:
             exit 1
           }
 
+      # ============================================================
+      # @Author: trae + deepseek-v4-flash
+      # @Date:   2026-06-24
+      # @Desc:   使用 WiX Toolset 分别将 Portable 和 Light 版单文件 EXE
+      #          打包为 MSI 安装包，以适配 Microsoft Store 上架要求。
+      #          MSI 采用 perUser 安装范围，静默安装时由 Store 自动使用
+      #          /qn 开关，无需提供返回代码。
+      #          基于 RikkaTracker.wxs 配置生成，包含开始菜单与桌面快捷方式。
+      # @Modify: 2026-06-24 初始新增；2026-06-24 扩充为同时生成 Portable 和 Light 两个版本
+      # ============================================================
+      - name: Build MSI Installers
+        shell: pwsh
+        run: |
+          $version = "${{ env.VERSION }}"
+          # MSI Product Version 要求四段格式 x.x.x.x，若不足四段则补 .0
+          # ponytail: WiX 3.x 对三段版本号会报错，这里做一次补齐，升级到 WiX 4.x 后可移除
+          $msiVersion = $version
+          $parts = $version.Split('.')
+          if ($parts.Count -lt 4) {
+            $msiVersion = $version + ".0" * (4 - $parts.Count)
+          }
+          echo "Original version: $version, MSI version: $msiVersion"
+
+          # 查找 WiX Toolset（windows-latest runner 通常预装 WiX 3.x）
+          $wixSearchPaths = @(
+            "C:\Program Files (x86)\WiX Toolset v3.14\bin",
+            "C:\Program Files (x86)\WiX Toolset v3.11\bin",
+            "C:\Program Files (x86)\WiX Toolset v3.10\bin"
+          )
+          $wixBin = $wixSearchPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $wixBin) {
+            echo "WiX not found in common paths, searching..."
+            $candleFound = Get-ChildItem "C:\Program Files*\WiX*" -Recurse -Filter "candle.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($candleFound) {
+              $wixBin = $candleFound.DirectoryName
+            } else {
+              throw "WiX Toolset not found on runner"
+            }
+          }
+          $candle = Join-Path $wixBin "candle.exe"
+          $light  = Join-Path $wixBin "light.exe"
+          echo "Using WiX from: $wixBin"
+
+          # 定义要打包的变体列表（名称 -> 构件的 artifact 目录名）
+          $variants = @{
+            "Portable" = "./artifacts/portable"
+            "Light"    = "./artifacts/light"
+          }
+
+          foreach ($variant in $variants.Keys) {
+            echo "========================================"
+            echo "Building MSI for $variant variant..."
+            echo "========================================"
+
+            $artifactDir = $variants[$variant]
+            $outputPath = (Resolve-Path $artifactDir).Path
+            echo "OutputPath (EXE location): $outputPath"
+
+            # 编译 .wxs 到 .wixobj
+            & $candle RikkaTracker.wxs `
+              -dBuildVersion=$msiVersion `
+              -dOutputPath="$outputPath" `
+              -o "./RikkaTracker-$variant.wixobj"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "candle.exe failed for $variant variant with exit code $LASTEXITCODE"
+            }
+
+            # 链接生成 .msi 安装包
+            & $light "./RikkaTracker-$variant.wixobj" `
+              -o "./RikkaTracker-v$version-$variant.msi"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "light.exe failed for $variant variant with exit code $LASTEXITCODE"
+            }
+
+            # 验证 MSI 文件生成结果
+            $msiPath = "./RikkaTracker-v$version-$variant.msi"
+            if (Test-Path $msiPath) {
+              $msiInfo = Get-Item $msiPath
+              echo "MSI created successfully: $($msiInfo.FullName)"
+              echo "MSI size: $("{0:N2}" -f ($msiInfo.Length / 1MB)) MB"
+            } else {
+              throw "$variant MSI file not created at $msiPath"
+            }
+          }
+
+          echo "========================================"
+          echo "All MSI installers generated successfully."
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:
@@ -172,6 +262,7 @@ jobs:
           name: 'RikkaTracker v${{ env.VERSION }}'
           files: |
             RikkaTracker-v*.exe
+            RikkaTracker-v*.msi
             RikkaTracker Sentry.zip
           body: |
             ## RikkaTracker v${{ env.VERSION }}
@@ -179,9 +270,13 @@ jobs:
             ### 下载说明
               - Portable: 普通版（自包含.NET 8，安装即用）。
               - Light: 轻量版（体积极小，需本地已安装 .NET 8）。
+              - MSI-Portable: 安装包（基于 Portable 版打包，自包含 .NET 8）。
+              - MSI-Light: 安装包（基于 Light 版打包，需本地已安装 .NET 8）。
               - Chrome Extension: RikkaTracker Sentry（Chrome 浏览器扩展）。
               - Portable: Regular edition (self-contained .NET 8).
               - Light: Lightweight edition (extremely small size, requires .NET 8 installed locally).
+              - MSI-Portable: Installer package (self-contained .NET 8).
+              - MSI-Light: Installer package (requires .NET 8 installed locally).
               - Chrome Extension: RikkaTracker Sentry (Chrome browser extension).
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
