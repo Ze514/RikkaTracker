@@ -42,11 +42,13 @@
 
 ![RikkaTracker 概览页](public/概览页.png)
 
-![RikkaTracker 时间轴](public/时间轴.png)
+![RikkaTracker 时间轴](public/0.5.2/时间轴.png)
 
 ![RikkaTracker 低资源占用](public/低资源占用.png)
 
 ![RikkaTracker 策略规则](public/策略规则.png)
+
+![RikkaTracker 设置](public/0.5.2/设置.png)
 
 
 ---
