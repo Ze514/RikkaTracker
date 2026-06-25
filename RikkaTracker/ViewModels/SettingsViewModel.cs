@@ -18,19 +18,22 @@ namespace RikkaTracker.ViewModels
         private readonly ILocalizationService _localizationService;
         private readonly IUpdateService _updateService;
         private readonly ILoggerService _logger;
+        private readonly IWebMonitorService _webMonitorService;
 
         public SettingsViewModel(
             IThemeService themeService, 
             IConfigService configService, 
             ILocalizationService localizationService, 
             IUpdateService updateService,
-            ILoggerService logger)
+            ILoggerService logger,
+            IWebMonitorService webMonitorService)
         {
             _themeService = themeService;
             _configService = configService;
             _localizationService = localizationService;
             _updateService = updateService;
             _logger = logger;
+            _webMonitorService = webMonitorService;
             
             _isDarkMode = _themeService.GetCurrentTheme() == "Dark";
             _idleTimeoutMinutes = _configService.Config.IdleTimeoutMinutes;
@@ -43,6 +46,23 @@ namespace RikkaTracker.ViewModels
             _displayMode = _configService.Config.DisplayMode;
             _timelineSortMode = _configService.Config.TimelineSortMode;
             _showRowBadges = _configService.Config.ShowRowBadges;
+
+            // @Author: trae + deepseek-V4-pro
+            // @Date: 2026-06-23
+            // @Desc: 初始化扩展连接状态并订阅状态变更
+            _isExtensionConnected = _webMonitorService.IsConnected;
+            _webMonitorService.ConnectionStatusChanged += OnExtensionConnectionStatusChanged;
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 浏览器扩展连接状态变更回调
+        private void OnExtensionConnectionStatusChanged(bool connected)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                IsExtensionConnected = connected;
+            });
         }
 
         [ObservableProperty]
@@ -342,6 +362,12 @@ namespace RikkaTracker.ViewModels
             }
         }
 
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 浏览器扩展连接状态（用于设置页绿色/灰色圆点）
+        [ObservableProperty]
+        private bool _isExtensionConnected;
+
         [ObservableProperty]
         private bool _webMonitorEnabled;
 
@@ -349,6 +375,88 @@ namespace RikkaTracker.ViewModels
         {
             _configService.Config.WebMonitorEnabled = value;
             _configService.Save();
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 浏览器扩展商店及 GitHub Release URL 常量
+        private const string ChromeExtensionStoreUrl = "https://chrome.google.com/webstore/detail/rikkatracker-sentry/...";
+        private const string EdgeExtensionStoreUrl = "https://microsoftedge.microsoft.com/addons/detail/rikkatracker-sentry/...";
+        private const string GitHubReleaseUrl = "https://github.com/remnant-song/RikkaTrack/releases/latest";
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 安装指引展开/折叠状态
+        [ObservableProperty]
+        private bool _isInstallGuideExpanded;
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 打开 Chrome 网上应用店
+        [RelayCommand]
+        private void OpenChromeStore()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = ChromeExtensionStoreUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open Chrome Web Store.", ex);
+            }
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 打开 Edge 加载项商店
+        [RelayCommand]
+        private void OpenEdgeStore()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = EdgeExtensionStoreUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open Edge Add-ons Store.", ex);
+            }
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 打开 GitHub Releases 下载页
+        [RelayCommand]
+        private void OpenGitHubRelease()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = GitHubReleaseUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Failed to open GitHub Releases page.", ex);
+            }
+        }
+
+        // @Author: trae + deepseek-V4-pro
+        // @Date: 2026-06-23
+        // @Desc: 切换安装指引展开/折叠
+        [RelayCommand]
+        private void ToggleInstallGuide()
+        {
+            IsInstallGuideExpanded = !IsInstallGuideExpanded;
         }
 
         [ObservableProperty]
