@@ -224,18 +224,16 @@ jobs:
             echo "OutputPath (EXE location): $outputPath"
 
             # 编译 .wxs 到 .wixobj
-            & $candle RikkaTracker.wxs `
-              -dBuildVersion=$msiVersion `
-              -dOutputPath="$outputPath" `
-              -o "./RikkaTracker-$variant.wixobj"
+            # ponytail: 各参数用双引号包裹以确保 PowerShell 正确展开变量，
+            #           避免因 = 和反引号续行导致变量名未被替换
+            & $candle RikkaTracker.wxs "-dBuildVersion=$msiVersion" "-dOutputPath=$outputPath" "-o=./RikkaTracker-$variant.wixobj"
 
             if ($LASTEXITCODE -ne 0) {
               throw "candle.exe failed for $variant variant with exit code $LASTEXITCODE"
             }
 
             # 链接生成 .msi 安装包
-            & $light "./RikkaTracker-$variant.wixobj" `
-              -o "./RikkaTracker-v$version-$variant.msi"
+            & $light "./RikkaTracker-$variant.wixobj" "-o=./RikkaTracker-v$version-$variant.msi"
 
             if ($LASTEXITCODE -ne 0) {
               throw "light.exe failed for $variant variant with exit code $LASTEXITCODE"
