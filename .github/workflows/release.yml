@@ -112,7 +112,8 @@ jobs:
         shell: pwsh
         run: |
           [xml]$xml = Get-Content RikkaTracker/RikkaTracker.csproj
-          $version = $xml.Project.PropertyGroup.Version.Trim()
+          # SelectSingleNode 直接定位 <Version> 元素，不受多个 PropertyGroup 影响
+          $version = $xml.SelectSingleNode("//Version").InnerText.Trim()
           echo "VERSION=$version" >> $env:GITHUB_ENV
           echo "Version found: $version"
 
