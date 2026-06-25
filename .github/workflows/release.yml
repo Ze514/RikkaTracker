@@ -112,7 +112,7 @@ jobs:
         shell: pwsh
         run: |
           [xml]$xml = Get-Content RikkaTracker/RikkaTracker.csproj
-          $version = $xml.Project.PropertyGroup.Version
+          $version = $xml.Project.PropertyGroup.Version.Trim()
           echo "VERSION=$version" >> $env:GITHUB_ENV
           echo "Version found: $version"
 
@@ -177,7 +177,7 @@ jobs:
       - name: Build MSI Installers
         shell: pwsh
         run: |
-          $version = "${{ env.VERSION }}"
+          $version = "${{ env.VERSION }}".Trim()
           # MSI Product Version 要求四段格式 x.x.x.x，若不足四段则补 .0
           # ponytail: WiX 3.x 对三段版本号会报错，这里做一次补齐，升级到 WiX 4.x 后可移除
           $msiVersion = $version
