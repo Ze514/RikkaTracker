@@ -252,6 +252,64 @@ jobs:
           echo "========================================"
           echo "All MSI installers generated successfully."
 
+      # ============================================================
+      # @Author: trae + GLM-5.2
+      # @Date:   2026-06-25
+      # @Desc:   将 MSI 安装包上传到 Cloudflare R2 对象存储，
+      #          提供不带重定向的直链下载 URL，以满足 Microsoft Store
+      #          的包 URL 要求。R2 通过 S3 兼容 API 操作。
+      #          需要以下 GitHub Secrets：
+      #           - R2_ACCESS_KEY_ID:  R2 API 令牌的访问密钥 ID
+      #           - R2_SECRET_ACCESS_KEY: R2 API 令牌的秘密访问密钥
+      #           - R2_ENDPOINT: R2 S3 端点（如 https://<accountid>.r2.cloudflarestorage.com）
+      #           - R2_BUCKET: R2 存储桶名称
+      #           上传后的直链 URL 格式（需在 R2 控制台开启 Public Bucket）：
+      #           https://pub-<hash>.r2.dev/<filename>  或自定义域名
+      # ============================================================
+      - name: Upload MSI to Cloudflare R2
+        shell: pwsh
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          $version = "${{ env.VERSION }}".Trim()
+          echo "Uploading MSI files for version: $version to R2 bucket: $env:R2_BUCKET"
+
+          # 配置 AWS CLI 使用 R2 S3 端点
+          aws configure set aws_access_key_id "$env:R2_ACCESS_KEY_ID"
+          aws configure set aws_secret_access_key "$env:R2_SECRET_ACCESS_KEY"
+          aws configure set default.region auto
+
+          $msiFiles = @(
+            "RikkaTracker-v$version-Portable.msi",
+            "RikkaTracker-v$version-Light.msi"
+          )
+
+          $allSuccess = $true
+          foreach ($msi in $msiFiles) {
+            if (Test-Path "./$msi") {
+              echo "----------------------------------------"
+              echo "Uploading $msi to R2..."
+              aws s3 cp "./$msi" "s3://$env:R2_BUCKET/$msi" --endpoint-url "$env:R2_ENDPOINT" --only-show-errors
+              if ($LASTEXITCODE -ne 0) {
+                echo "ERROR: Failed to upload $msi to R2"
+                $allSuccess = $false
+              } else {
+                echo "Uploaded successfully: $msi"
+              }
+            } else {
+              echo "Warning: $msi not found, skipping..."
+            }
+          }
+
+          if (-not $allSuccess) {
+            throw "One or more MSI files failed to upload to Cloudflare R2"
+          }
+          echo "========================================"
+          echo "All MSI files uploaded to Cloudflare R2 successfully."
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:
