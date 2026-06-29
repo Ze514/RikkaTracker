@@ -45,8 +45,11 @@
     <sys:String x:Key="StrIdleTimeoutDesc">在此时间后无操作，活跃应用将标记为非活动状态</sys:String>
     <sys:String x:Key="StrAutoStart">开机自启动</sys:String>
     <sys:String x:Key="StrAutoStartDesc">随系统启动自动进入监控状态</sys:String>
-    <sys:String x:Key="StrDarkMode">深色模式</sys:String>
-    <sys:String x:Key="StrDarkModeDesc">切换应用的主题风格</sys:String>
+    <sys:String x:Key="StrTheme">主题模式</sys:String>
+    <sys:String x:Key="StrThemeDesc">跟随系统主题或手动指定亮色/深色，使用 Windows 调色板主色调</sys:String>
+    <sys:String x:Key="StrThemeSystem">跟随系统</sys:String>
+    <sys:String x:Key="StrThemeLight">浅色</sys:String>
+    <sys:String x:Key="StrThemeDark">深色（加深）</sys:String>
     <sys:String x:Key="StrZoomMode">时间轴缩放模式</sys:String>
     <sys:String x:Key="StrZoomModeDesc">缩放时以屏幕中线为准，或保持最新记录点不动</sys:String>
     <sys:String x:Key="StrZoomModeCenter">视口中心</sys:String>

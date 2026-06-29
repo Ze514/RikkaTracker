@@ -10,7 +10,7 @@ namespace RikkaTracker.Models
         public string DataStoragePath { get; set; } = string.Empty;
         public bool GitSyncEnabled { get; set; } = false;
         public string GitRepositoryPath { get; set; } = string.Empty;
-        public string Theme { get; set; } = "Dark"; // "Light" or "Dark"
+        public string Theme { get; set; } = "System"; // "System", "Light", or "Dark"
         public string TimelineZoomMode { get; set; } = "Center"; // "Center" or "Latest"
         public string Language { get; set; } = "Auto"; // "Auto", "zh-CN", "en-US"
         public bool WebMonitorEnabled { get; set; } = true;
