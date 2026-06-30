@@ -6,12 +6,6 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
-    <!-- @Author: trae + deepseek-V4-pro -->
-    <!-- @Date: 2026-06-23 -->
-    <!-- @Desc: Segoe Fluent Icons 字体资源，用于 FontIcon 标记扩展 -->
-    <UserControl.Resources>
-        
-    </UserControl.Resources>
     <Grid Margin="20">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>

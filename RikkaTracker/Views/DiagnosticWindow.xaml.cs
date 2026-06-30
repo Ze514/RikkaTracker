@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using RikkaTracker.Core.Monitor;
+using RikkaTracker.Helpers;
 using Wpf.Ui.Controls;
 
 namespace RikkaTracker.Views
@@ -38,7 +39,7 @@ namespace RikkaTracker.Views
 
             // Fall back to solid themed background on Windows 10
             // (Mica/Acrylic legacy fallbacks are unreliable across builds).
-            if (!IsWindows11OrNewer && WindowBackdropType == WindowBackdropType.Mica)
+            if (!PlatformHelper.IsWindows11OrNewer && WindowBackdropType == WindowBackdropType.Mica)
             {
                 WindowBackdropType = WindowBackdropType.None;
                 SetResourceReference(BackgroundProperty, "ApplicationBackgroundBrush");
@@ -59,7 +60,6 @@ namespace RikkaTracker.Views
             UpdateTopmostButtonAppearance();
         }
 
-        private static bool IsWindows11OrNewer => Environment.OSVersion.Version.Build >= 22000;
 
         private void OnAppActivityChanged(object? sender, AppActivityChangedEventArgs e)
         {

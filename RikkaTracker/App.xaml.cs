@@ -224,7 +224,14 @@ namespace RikkaTracker
             {
                 ServiceProvider.GetRequiredService<IThemeService>().RefreshAccent();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // @Author: trae + deepseek-v4-pro
+                // @Date: 2026-06-30
+                // @Desc: 记录 RefreshAccent 失败日志，避免静默吞没异常导致
+                //        窗口丢失强调色而用户不知情。
+                _logger?.Warning($"RefreshAccent failed in ShowMainWindow: {ex.Message}");
+            }
 
             mainWindow.Closed += (s, e) =>
             {

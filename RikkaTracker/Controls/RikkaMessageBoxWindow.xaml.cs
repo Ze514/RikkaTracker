@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Media;
+using RikkaTracker.Helpers;
 using Wpf.Ui.Controls;
 
 namespace RikkaTracker.Controls
@@ -15,7 +16,7 @@ namespace RikkaTracker.Controls
 
             // Fall back to solid themed background on Windows 10
             // (Mica/Acrylic legacy fallbacks are unreliable across builds).
-            if (!IsWindows11OrNewer && WindowBackdropType == WindowBackdropType.Mica)
+            if (!PlatformHelper.IsWindows11OrNewer && WindowBackdropType == WindowBackdropType.Mica)
             {
                 WindowBackdropType = WindowBackdropType.None;
                 SetResourceReference(BackgroundProperty, "ApplicationBackgroundBrush");
@@ -27,8 +28,6 @@ namespace RikkaTracker.Controls
             SetupIcon(image);
             SetupButtons(button);
         }
-
-        private static bool IsWindows11OrNewer => Environment.OSVersion.Version.Build >= 22000;
 
         private void SetupIcon(MessageBoxImage image)
         {

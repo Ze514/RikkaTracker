@@ -9,6 +9,7 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.Defaults;
 using SkiaSharp;
+using RikkaTracker.Helpers;
 using RikkaTracker.Services;
 
 namespace RikkaTracker.ViewModels
@@ -178,20 +179,34 @@ namespace RikkaTracker.ViewModels
             };
         }
 
+        /*
+         * @Author: trae + default-model
+         * @Date:   2026-06-30
+         * @Modify: 2026-06-30 – 重构：提取共享工具方法至 ChartColorHelper；
+         *          暗色模式下网页柱体增加去饱和处理（DesaturateSkColor），
+         *          使其与强调色应用柱体有明显视觉区分。
+         */
         private void UpdateChartColors(string theme)
         {
-            var isDark = IsThemeEffectivelyDark(theme);
-            var labelColor = isDark ? new SKColor(220, 220, 220) : new SKColor(80, 80, 80);
-            var separatorColor = isDark ? new SKColor(255, 255, 255, 30) : new SKColor(0, 0, 0, 15);
+            var isDark = ChartColorHelper.IsThemeEffectivelyDark(theme);
+            var labelColor = isDark
+                ? new SKColor(220, 220, 220)
+                : new SKColor(80, 80, 80);
+            var separatorColor = isDark
+                ? new SKColor(255, 255, 255, 30)
+                : new SKColor(0, 0, 0, 15);
 
             // Derive bar colors from the Windows accent color so charts follow the palette
-            var accent = GetAccentSkColor();
+            var accent = ChartColorHelper.GetAccentSkColor();
             // App bars: accent itself (brightened a touch in dark mode for contrast)
-            var barColor = isDark ? BrightenSkColor(accent, 0.20f) : accent;
-            // Web bars: secondary variant (shift hue for visual distinction)
+            var barColor = isDark
+                ? ChartColorHelper.BrightenSkColor(accent, 0.20f)
+                : accent;
+            // Web bars: shift hue (light mode) or desaturate accent (dark mode)
+            // for visual distinction from app bars.
             var webBarColor = isDark
-                ? new SKColor(accent.Red, accent.Green, accent.Blue)  // same hue, will be desaturated below
-                : ShiftHueSkColor(accent, 0.15f);
+                ? ChartColorHelper.DesaturateSkColor(accent, 0.40f)
+                : ChartColorHelper.ShiftHueSkColor(accent, 0.15f);
 
             (_axisLabelPaint as IDisposable)?.Dispose();
             (_axisSeparatorPaint as IDisposable)?.Dispose();
@@ -199,67 +214,15 @@ namespace RikkaTracker.ViewModels
             (_webColumnFillPaint as IDisposable)?.Dispose();
 
             _axisLabelPaint = new SolidColorPaint(labelColor);
-            _axisSeparatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 1 };
+            _axisSeparatorPaint = new SolidColorPaint(separatorColor)
+                { StrokeThickness = 1 };
             _columnFillPaint = new SolidColorPaint(barColor);
             _webColumnFillPaint = new SolidColorPaint(webBarColor);
-        }
-
-        /// <summary>Reads the Windows accent color as an SKColor for chart rendering.</summary>
-        private static SKColor GetAccentSkColor()
-        {
-            try
-            {
-                var accent = Wpf.Ui.Appearance.ApplicationAccentColorManager.GetColorizationColor();
-                return new SKColor(accent.R, accent.G, accent.B);
-            }
-            catch
-            {
-                return new SKColor(14, 165, 233); // fallback blue
-            }
-        }
-
-        private static SKColor BrightenSkColor(SKColor c, float factor)
-        {
-            factor = Math.Clamp(factor, 0f, 1f);
-            return new SKColor(
-                (byte)(c.Red  + (255 - c.Red)  * factor),
-                (byte)(c.Green + (255 - c.Green) * factor),
-                (byte)(c.Blue + (255 - c.Blue) * factor));
-        }
-
-        private static SKColor ShiftHueSkColor(SKColor c, float amount)
-        {
-            // Simple RGB shift for a secondary chart color distinct from the accent
-            return new SKColor(
-                (byte)Math.Clamp(c.Red  + c.Blue * amount, 0, 255),
-                (byte)Math.Clamp(c.Green - c.Red * amount, 0, 255),
-                (byte)Math.Clamp(c.Blue - c.Green * amount, 0, 255));
         }
 
         private void OnThemeChanged(string newTheme)
         {
             UpdateChartColors(newTheme);
-        }
-
-        /// <summary>
-        /// Resolves "System" to the effective WPF-UI theme so chart colors
-        /// correctly follow the actual light/dark state.
-        /// </summary>
-        private static bool IsThemeEffectivelyDark(string theme)
-        {
-            if (theme.Equals("Dark", StringComparison.OrdinalIgnoreCase)) return true;
-            if (theme.Equals("Light", StringComparison.OrdinalIgnoreCase)) return false;
-
-            // "System" or unknown: check WPF-UI's current effective theme
-            try
-            {
-                return Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme()
-                    == Wpf.Ui.Appearance.ApplicationTheme.Dark;
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         private static string FormatTimeSpan(TimeSpan ts)

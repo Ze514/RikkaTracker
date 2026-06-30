@@ -1,7 +1,7 @@
-using System;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
+using RikkaTracker.Helpers;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -17,7 +17,7 @@ namespace RikkaTracker
             App.EnsureLiveChartsConfigured();
             InitializeComponent();
 
-            if (!IsWindows11OrNewer)
+            if (!PlatformHelper.IsWindows11OrNewer)
             {
                 // Windows 10 does not support Mica. Acrylic's legacy fallback is
                 // unreliable across builds. Use no backdrop with a solid themed
@@ -46,7 +46,5 @@ namespace RikkaTracker
             ApplicationThemeManager.Changed -= OnThemeChanged;
             base.OnClosed(e);
         }
-
-        private static bool IsWindows11OrNewer => Environment.OSVersion.Version.Build >= 22000;
     }
 }

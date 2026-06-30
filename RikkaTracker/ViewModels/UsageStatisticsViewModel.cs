@@ -11,6 +11,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.Defaults;
 using SkiaSharp;
+using RikkaTracker.Helpers;
 using RikkaTracker.Services;
 
 namespace RikkaTracker.ViewModels
@@ -348,18 +349,24 @@ namespace RikkaTracker.ViewModels
             }
         }
 
+        /*
+         * @Author: trae + default-model
+         * @Date:   2026-06-30
+         * @Modify: 2026-06-30 – 重构：提取共享工具方法至 ChartColorHelper；
+         *          暗色模式下网页柱体增加去饱和处理（DesaturateSkColor）。
+         */
         private void UpdateChartColors(string theme)
         {
-            var isDark = IsThemeEffectivelyDark(theme);
+            var isDark = ChartColorHelper.IsThemeEffectivelyDark(theme);
             var labelColor = isDark ? new SKColor(220, 220, 220) : new SKColor(80, 80, 80);
             var separatorColor = isDark ? new SKColor(255, 255, 255, 30) : new SKColor(0, 0, 0, 15);
 
             // Derive bar colors from the Windows accent color so charts follow the palette
-            var accent = GetAccentSkColor();
-            var barColor = isDark ? BrightenSkColor(accent, 0.20f) : accent;
+            var accent = ChartColorHelper.GetAccentSkColor();
+            var barColor = isDark ? ChartColorHelper.BrightenSkColor(accent, 0.20f) : accent;
             var webBarColor = isDark
-                ? new SKColor(accent.Red, accent.Green, accent.Blue)
-                : ShiftHueSkColor(accent, 0.15f);
+                ? ChartColorHelper.DesaturateSkColor(accent, 0.40f)
+                : ChartColorHelper.ShiftHueSkColor(accent, 0.15f);
 
             ( _axisLabelPaint as IDisposable)?.Dispose();
             ( _axisSeparatorPaint as IDisposable)?.Dispose();
@@ -370,37 +377,6 @@ namespace RikkaTracker.ViewModels
             _axisSeparatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 1 };
             _columnFillPaint = new SolidColorPaint(barColor);
             _webColumnFillPaint = new SolidColorPaint(webBarColor);
-        }
-
-        /// <summary>Reads the Windows accent color as an SKColor for chart rendering.</summary>
-        private static SKColor GetAccentSkColor()
-        {
-            try
-            {
-                var accent = Wpf.Ui.Appearance.ApplicationAccentColorManager.GetColorizationColor();
-                return new SKColor(accent.R, accent.G, accent.B);
-            }
-            catch
-            {
-                return new SKColor(14, 165, 233);
-            }
-        }
-
-        private static SKColor BrightenSkColor(SKColor c, float factor)
-        {
-            factor = Math.Clamp(factor, 0f, 1f);
-            return new SKColor(
-                (byte)(c.Red  + (255 - c.Red)  * factor),
-                (byte)(c.Green + (255 - c.Green) * factor),
-                (byte)(c.Blue + (255 - c.Blue) * factor));
-        }
-
-        private static SKColor ShiftHueSkColor(SKColor c, float amount)
-        {
-            return new SKColor(
-                (byte)Math.Clamp(c.Red  + c.Blue * amount, 0, 255),
-                (byte)Math.Clamp(c.Green - c.Red * amount, 0, 255),
-                (byte)Math.Clamp(c.Blue - c.Green * amount, 0, 255));
         }
 
         private void OnThemeChanged(string newTheme)
@@ -420,26 +396,6 @@ namespace RikkaTracker.ViewModels
             if (Series != null && Series.Length > 0 && Series[0] is ColumnSeries<ObservablePoint> colSeries)
             {
                 colSeries.Fill = _columnFillPaint;
-            }
-        }
-
-        /// <summary>
-        /// Resolves "System" to the effective WPF-UI theme so chart colors
-        /// correctly follow the actual light/dark state.
-        /// </summary>
-        private static bool IsThemeEffectivelyDark(string theme)
-        {
-            if (theme.Equals("Dark", StringComparison.OrdinalIgnoreCase)) return true;
-            if (theme.Equals("Light", StringComparison.OrdinalIgnoreCase)) return false;
-
-            try
-            {
-                return Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme()
-                    == Wpf.Ui.Appearance.ApplicationTheme.Dark;
-            }
-            catch
-            {
-                return false;
             }
         }
 
