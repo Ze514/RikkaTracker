@@ -45,8 +45,11 @@
     <sys:String x:Key="StrIdleTimeoutDesc">Mark as inactive after this period of no user input</sys:String>
     <sys:String x:Key="StrAutoStart">Start with Windows</sys:String>
     <sys:String x:Key="StrAutoStartDesc">Automatically start monitoring on system boot</sys:String>
-    <sys:String x:Key="StrDarkMode">Dark Mode</sys:String>
-    <sys:String x:Key="StrDarkModeDesc">Toggle application theme style</sys:String>
+    <sys:String x:Key="StrTheme">Theme</sys:String>
+    <sys:String x:Key="StrThemeDesc">Follow system theme or choose Light/Dark manually, using Windows palette accent colors</sys:String>
+    <sys:String x:Key="StrThemeSystem">Follow System</sys:String>
+    <sys:String x:Key="StrThemeLight">Light</sys:String>
+    <sys:String x:Key="StrThemeDark">Dark (Deepened)</sys:String>
     <sys:String x:Key="StrZoomMode">Zoom Anchor Mode</sys:String>
     <sys:String x:Key="StrZoomModeDesc">Scale around viewport center or stick to latest point</sys:String>
     <sys:String x:Key="StrZoomModeCenter">Viewport Center</sys:String>

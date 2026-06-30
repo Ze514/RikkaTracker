@@ -35,7 +35,7 @@ namespace RikkaTracker.ViewModels
             _logger = logger;
             _webMonitorService = webMonitorService;
             
-            _isDarkMode = _themeService.GetCurrentTheme() == "Dark";
+            _theme = _themeService.GetCurrentTheme();
             _idleTimeoutMinutes = _configService.Config.IdleTimeoutMinutes;
             _storagePath = _configService.Config.DataStoragePath;
             _timelineZoomMode = _configService.Config.TimelineZoomMode;
@@ -349,15 +349,15 @@ namespace RikkaTracker.ViewModels
             }
         }
 
-        private bool _isDarkMode;
-        public bool IsDarkMode
+        private string _theme = "System";
+        public string Theme
         {
-            get => _isDarkMode;
+            get => _theme;
             set
             {
-                if (SetProperty(ref _isDarkMode, value))
+                if (SetProperty(ref _theme, value))
                 {
-                    _themeService.ApplyTheme(value ? "Dark" : "Light");
+                    _themeService.ApplyTheme(value);
                 }
             }
         }

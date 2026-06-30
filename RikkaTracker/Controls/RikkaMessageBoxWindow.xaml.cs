@@ -12,13 +12,23 @@ namespace RikkaTracker.Controls
         public RikkaMessageBoxWindow(string message, string title, System.Windows.MessageBoxButton button, MessageBoxImage image)
         {
             InitializeComponent();
-            
+
+            // Fall back to solid themed background on Windows 10
+            // (Mica/Acrylic legacy fallbacks are unreliable across builds).
+            if (!IsWindows11OrNewer && WindowBackdropType == WindowBackdropType.Mica)
+            {
+                WindowBackdropType = WindowBackdropType.None;
+                SetResourceReference(BackgroundProperty, "ApplicationBackgroundBrush");
+            }
+
             Title = title;
             MessageText.Text = message;
 
             SetupIcon(image);
             SetupButtons(button);
         }
+
+        private static bool IsWindows11OrNewer => Environment.OSVersion.Version.Build >= 22000;
 
         private void SetupIcon(MessageBoxImage image)
         {

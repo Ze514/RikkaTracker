@@ -218,6 +218,14 @@ namespace RikkaTracker
                 DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
             };
 
+            // Re-stamp accent resources so the fresh window picks up the
+            // Windows-palette-derived colors (not B/W defaults).
+            try
+            {
+                ServiceProvider.GetRequiredService<IThemeService>().RefreshAccent();
+            }
+            catch { }
+
             mainWindow.Closed += (s, e) =>
             {
                 MainWindow = null;
