@@ -205,43 +205,89 @@ namespace RikkaTracker
 
         public void ShowMainWindow()
         {
+            /*
+             * @Author: trae + GLM-5.2
+             * @Date: 2026-06-30
+             * @Desc: 修复 PR #23 合并后任务栏"概览"无法打开窗口的问题。
+             *        根因：原实现将 MainWindow = mainWindow 置于 Show() 之前，
+             *        若 Show() 抛异常（主题/Mica 初始化失败），MainWindow 会卡在
+             *        非 null 状态，后续点击均命中 Activate 分支但窗口实际不可见。
+             *        修复：将赋值移至 Show() 成功之后，并在 Activate 分支增加
+             *        可见性检查与日志，确保窗口真正显示。
+             * @Modify: 2026-06-30 trae + GLM-5.2 – 增加调试日志与异常保护
+             */
+            _logger?.Info($"ShowMainWindow called. MainWindow == null: {MainWindow == null}");
+
             if (MainWindow != null)
             {
-                MainWindow.Activate();
-                if (MainWindow.WindowState == WindowState.Minimized)
-                    MainWindow.WindowState = WindowState.Normal;
-                return;
+                // 检查窗口是否真正可见。若窗口处于异常状态（已关闭但 Closed 未触发，
+                // 或 Visibility 非 Visible），则清除引用并走创建分支。
+                // 注意：仅检查 IsVisible 而非 IsLoaded，因为 new 后 IsLoaded 即为 true，
+                // 但 Show() 失败的窗口 IsVisible 仍为 false。
+                if (MainWindow.IsVisible)
+                {
+                    _logger?.Info($"Activating existing MainWindow. IsVisible={MainWindow.IsVisible}, WindowState={MainWindow.WindowState}");
+                    MainWindow.Activate();
+                    if (MainWindow.WindowState == WindowState.Minimized)
+                        MainWindow.WindowState = WindowState.Normal;
+                    return;
+                }
+                else
+                {
+                    // 窗口引用存在但不可见，说明之前的 Show() 可能失败或窗口已异常关闭。
+                    // 清除陈旧引用，重新创建窗口。
+                    _logger?.Warning($"MainWindow reference exists but not visible (IsVisible={MainWindow.IsVisible}). Clearing stale reference and recreating.");
+                    MainWindow = null;
+                }
             }
 
-            var mainWindow = new MainWindow
-            {
-                DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
-            };
-
-            // Re-stamp accent resources so the fresh window picks up the
-            // Windows-palette-derived colors (not B/W defaults).
             try
             {
-                ServiceProvider.GetRequiredService<IThemeService>().RefreshAccent();
+                _logger?.Info("Creating new MainWindow instance...");
+                var mainWindow = new MainWindow
+                {
+                    DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
+                };
+                _logger?.Info("MainWindow instance created successfully.");
+
+                // Re-stamp accent resources so the fresh window picks up the
+                // Windows-palette-derived colors (not B/W defaults).
+                try
+                {
+                    ServiceProvider.GetRequiredService<IThemeService>().RefreshAccent();
+                }
+                catch (Exception ex)
+                {
+                    // @Author: trae + deepseek-v4-pro
+                    // @Date: 2026-06-30
+                    // @Desc: 记录 RefreshAccent 失败日志，避免静默吞没异常导致
+                    //        窗口丢失强调色而用户不知情。
+                    _logger?.Warning($"RefreshAccent failed in ShowMainWindow: {ex.Message}");
+                }
+
+                mainWindow.Closed += (s, e) =>
+                {
+                    _logger?.Info("MainWindow Closed event fired. Setting MainWindow = null.");
+                    MainWindow = null;
+                    // 执行主动垃圾收集与物理内存换出
+                    Win32Api.MinimizeMemory();
+                };
+
+                // 关键修复：先 Show() 成功后再赋值 MainWindow。
+                // 这样若 Show() 抛异常，MainWindow 保持 null，下次点击会重新创建，
+                // 而不是卡在 Activate 分支无法显示窗口。
+                mainWindow.Show();
+                _logger?.Info("MainWindow.Show() completed successfully.");
+                MainWindow = mainWindow;
             }
             catch (Exception ex)
             {
-                // @Author: trae + deepseek-v4-pro
-                // @Date: 2026-06-30
-                // @Desc: 记录 RefreshAccent 失败日志，避免静默吞没异常导致
-                //        窗口丢失强调色而用户不知情。
-                _logger?.Warning($"RefreshAccent failed in ShowMainWindow: {ex.Message}");
+                // Show() 或构造过程中抛异常时记录日志。
+                // 不设置 MainWindow，下次点击会重新尝试创建。
+                _logger?.Error("Failed to create or show MainWindow.", ex);
+                System.Console.WriteLine($"[ShowMainWindow Failed] {ex}");
+                System.Diagnostics.Debug.WriteLine($"[ShowMainWindow Failed] {ex}");
             }
-
-            mainWindow.Closed += (s, e) =>
-            {
-                MainWindow = null;
-                // 执行主动垃圾收集与物理内存换出
-                Win32Api.MinimizeMemory();
-            };
-
-            MainWindow = mainWindow;
-            mainWindow.Show();
         }
 
         private void UpdateTrayMenu()
